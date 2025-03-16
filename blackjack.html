@@ -1,207 +1,260 @@
+<!-- FULL CLEAN BLACKJACK HTML (MODERN + PROFILE POPUP + STYLED BUTTONS) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blackjack Premium</title>
+  <title>Blackjack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0e0e10;
+      --primary: #00ffc8;
+      --glass: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.15);
+      --hit-color: #4ef58d;
+      --stay-color: #ff6b6b;
+    }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
     }
 
     body {
-      background: #121212;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
       padding: 20px;
+    }
+
+    .container {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 25px rgba(0, 255, 200, 0.1);
+      position: relative;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
-      max-width: 900px;
       margin-bottom: 20px;
     }
 
-    .profile {
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .balance {
       display: flex;
       align-items: center;
       cursor: pointer;
     }
 
-    .profile img {
+    .balance img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
       margin-right: 10px;
+      border: 2px solid var(--primary);
     }
 
-    .balance {
-      background: #1f1f1f;
-      padding: 10px 15px;
-      border-radius: 10px;
-      color: lightgreen;
+    .balance span {
+      font-weight: 600;
+      color: #0f0;
     }
 
-    .game-container {
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 900px;
-      width: 100%;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    .zone {
+      margin: 20px 0;
     }
 
-    .cards, .actions {
+    .zone h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .cards {
       display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin: 15px 0;
+      gap: 10px;
     }
 
     .card {
-      background: #333;
-      padding: 10px 15px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
+      width: 60px;
+      height: 90px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 5px #000;
     }
 
-    .actions button {
-      padding: 10px 20px;
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      border-radius: 10px;
+      font-size: 1rem;
+      background: #1b1b1e;
+      color: #fff;
+    }
+
+    button {
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: bold;
+      transition: background 0.3s ease;
     }
 
-    .hit {
-      background: #34d399;
+    #goBtn { background: var(--hit-color); color: #000; }
+    #goBtn:hover { background: #38df77; }
+
+    #stayBtn { background: var(--stay-color); color: #fff; }
+    #stayBtn:hover { background: #ff4d4d; }
+
+    #startBtn {
+      background: var(--primary);
       color: #000;
     }
 
-    .stay {
-      background: #f87171;
-      color: #000;
+    #startBtn:hover {
+      background: #00cfa0;
     }
 
+    #logMsg {
+      margin-top: 15px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    /* Profile Popup */
     .popup {
-      position: fixed;
+      position: absolute;
       top: 60px;
-      right: 20px;
-      background: #222;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+      right: 10px;
+      background: #1e1e22;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      z-index: 99;
       display: none;
-      z-index: 999;
       width: 250px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
     }
 
     .popup h3 {
       margin-bottom: 10px;
-      color: cyan;
+      font-size: 1rem;
+      color: var(--primary);
     }
 
     .popup p {
-      margin: 6px 0;
-    }
-
-    .popup button {
-      margin-top: 10px;
-      background: red;
-      border: none;
-      padding: 8px 15px;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
+      margin: 5px 0;
+      font-size: 0.9rem;
     }
 
     .popup a {
-      display: inline-block;
-      margin-top: 10px;
-      color: lightblue;
+      color: #00ffc8;
+      display: block;
+      margin: 10px 0;
       text-decoration: underline;
     }
 
-    .leaderboard {
-      margin-top: 30px;
+    .logout {
+      background: #ff4444;
+      color: #fff;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
       width: 100%;
-      max-width: 900px;
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
+      cursor: pointer;
     }
 
-    .leaderboard h2 {
-      margin-bottom: 15px;
-      color: gold;
+    .logout:hover {
+      background: #dd3333;
     }
 
-    .leaderboard ul {
-      list-style: none;
-    }
+    @media(max-width: 500px) {
+      .card {
+        width: 45px;
+        height: 70px;
+        font-size: 1rem;
+      }
 
-    .leaderboard li {
-      padding: 10px;
-      background: #292929;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .fire {
-      color: orange;
-      margin-right: 5px;
+      h1 {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="profile" onclick="togglePopup()">
-      <img src="https://i.pravatar.cc/150?img=11" id="profile-pic" />
-      <span id="username">User</span>
+  <div class="container">
+    <header>
+      <h1>Blackjack</h1>
+      <div class="balance" onclick="togglePopup()">
+        <img id="profilePic" src="" alt="Avatar" />
+        <span>$<span id="balance">0.00</span></span>
+      </div>
+    </header>
+
+    <div class="popup" id="profilePopup">
+      <h3>User Info</h3>
+      <p><strong>Email:</strong> <span id="popupEmail">-</span></p>
+      <p><strong>Username:</strong> <span id="popupName">-</span></p>
+      <p><strong>Balance:</strong> $<span id="popupBal">0.00</span></p>
+      <a href="homepage.html">Go to Dashboard</a>
+      <button class="logout" onclick="logout()">Logout</button>
     </div>
-    <div class="balance" id="balance-display">$0.00</div>
-  </header>
 
-  <div class="popup" id="profile-popup">
-    <h3>Profile</h3>
-    <p><strong>Email:</strong> <span id="user-email"></span></p>
-    <p><strong>Username:</strong> <span id="user-name"></span></p>
-    <p><strong>Balance:</strong> <span id="user-balance">$0.00</span></p>
-    <a href="homepage.html">Go to Dashboard</a><br />
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <div class="game-container">
-    <h1>Blackjack</h1>
-    <div class="cards" id="player-cards"></div>
-    <div class="actions">
-      <button class="hit" onclick="hit()">Go</button>
-      <button class="stay" onclick="stay()">Stay</button>
+    <div class="zone">
+      <h2>Dealer (<span id="dealerSum">0</span>)</h2>
+      <div id="dealerCards" class="cards"></div>
     </div>
-    <div class="cards" id="dealer-cards"></div>
-    <div id="result"></div>
+
+    <div class="zone">
+      <h2>You (<span id="playerSum">0</span>)</h2>
+      <div id="playerCards" class="cards"></div>
+    </div>
+
+    <div class="controls">
+      <input type="number" id="betAmount" placeholder="Enter your bet ($0.10+)" min="0.10" step="0.10" />
+      <button id="startBtn" onclick="startGame()">Start Game</button>
+      <button id="goBtn" onclick="hit()">Go</button>
+      <button id="stayBtn" onclick="stay()">Stay</button>
+    </div>
+
+    <div id="logMsg"></div>
   </div>
 
-  <div class="leaderboard" id="leaderboard">
-    <h2>Top Recent Bets</h2>
-    <ul id="bet-list"></ul>
-  </div>
-
-  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -210,91 +263,134 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
     const db = getDatabase(app);
 
-    let currentUser = null;
+    let user, balance = 0, playerCards = [], dealerCards = [], gameOver = false;
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("user-email").textContent = user.email;
-        document.getElementById("user-name").textContent = user.displayName || "Anonymous";
+    const dealerSumEl = document.getElementById("dealerSum");
+    const playerSumEl = document.getElementById("playerSum");
+    const dealerCardsEl = document.getElementById("dealerCards");
+    const playerCardsEl = document.getElementById("playerCards");
+    const balanceEl = document.getElementById("balance");
+    const logMsg = document.getElementById("logMsg");
 
-        const uid = user.uid;
-        const balanceRef = ref(db, "users/" + uid + "/balance");
-        onValue(balanceRef, (snapshot) => {
-          const balance = snapshot.val() || 0;
-          document.getElementById("balance-display").textContent = `$${balance.toFixed(2)}`;
-          document.getElementById("user-balance").textContent = `$${balance.toFixed(2)}`;
+    onAuthStateChanged(auth, (u) => {
+      if (u) {
+        user = u;
+        const avatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid.slice(0, 10)}`;
+        document.getElementById("profilePic").src = user.photoURL || avatar;
+        document.getElementById("popupEmail").textContent = user.email;
+        document.getElementById("popupName").textContent = user.displayName || user.uid.slice(0, 8);
+
+        const balanceRef = ref(db, "users/" + user.uid + "/balance");
+        onValue(balanceRef, (snap) => {
+          balance = parseFloat(snap.val()) || 0;
+          balanceEl.textContent = balance.toFixed(2);
+          document.getElementById("popupBal").textContent = balance.toFixed(2);
         });
+      } else {
+        alert("You must be logged in!");
       }
     });
 
-    function logout() {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
+    const cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
+
+    function drawCard() {
+      return cardValues[Math.floor(Math.random() * cardValues.length)];
     }
 
-    function togglePopup() {
-      const popup = document.getElementById("profile-popup");
+    function calcSum(cards) {
+      let sum = cards.reduce((a, b) => a + b, 0);
+      let aces = cards.filter(c => c === 11).length;
+      while (sum > 21 && aces--) sum -= 10;
+      return sum;
+    }
+
+    function renderCards() {
+      dealerCardsEl.innerHTML = dealerCards.map(c => `<div class="card">${c}</div>`).join("");
+      playerCardsEl.innerHTML = playerCards.map(c => `<div class="card">${c}</div>`).join("");
+      dealerSumEl.textContent = calcSum(dealerCards);
+      playerSumEl.textContent = calcSum(playerCards);
+    }
+
+    window.startGame = function () {
+      if (!user || (playerCards.length && !gameOver)) return;
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      if (isNaN(bet) || bet < 0.1) return log("Min bet is $0.10");
+      if (bet > balance) return log("Not enough balance");
+
+      updateBalance(balance - bet);
+      playerCards = [drawCard(), drawCard()];
+      dealerCards = [drawCard()];
+      renderCards();
+      gameOver = false;
+      log("Game started!");
+    };
+
+    window.hit = function () {
+      if (gameOver || !playerCards.length) return;
+      playerCards.push(drawCard());
+      renderCards();
+      const sum = calcSum(playerCards);
+      if (sum > 21) endGame(false);
+    };
+
+    window.stay = function () {
+      if (gameOver || !playerCards.length) return;
+      while (calcSum(dealerCards) < 17) dealerCards.push(drawCard());
+      renderCards();
+
+      const playerSum = calcSum(playerCards);
+      const dealerSum = calcSum(dealerCards);
+
+      if (dealerSum > 21 || playerSum > dealerSum) endGame(true);
+      else if (dealerSum === playerSum) endGame(null);
+      else endGame(false);
+    };
+
+    function endGame(win) {
+      gameOver = true;
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      if (win === true) {
+        log("You win!");
+        updateBalance(balance + bet * 2);
+      } else if (win === null) {
+        log("Draw. Bet returned.");
+        updateBalance(balance + bet);
+      } else {
+        log("You lose.");
+      }
+
+      setTimeout(() => {
+        playerCards = [];
+        dealerCards = [];
+        renderCards();
+      }, 1500);
+    }
+
+    function updateBalance(newBal) {
+      if (!user) return;
+      balance = parseFloat(newBal.toFixed(2));
+      set(ref(db, "users/" + user.uid + "/balance"), balance);
+    }
+
+    function log(msg) {
+      logMsg.textContent = msg;
+    }
+
+    window.togglePopup = function () {
+      const popup = document.getElementById("profilePopup");
       popup.style.display = popup.style.display === "block" ? "none" : "block";
-    }
+    };
 
-    // Dummy game logic for testing
-    function hit() {
-      document.getElementById("player-cards").innerHTML += `<div class="card">🂠</div>`;
-    }
-
-    function stay() {
-      document.getElementById("dealer-cards").innerHTML += `<div class="card">🂠</div>`;
-      document.getElementById("result").textContent = "Game Ended. (Logic not implemented)";
-    }
-
-    // Leaderboard Logic
-    function loadLeaderboard() {
-      const betList = document.getElementById("bet-list");
-      const betsRef = ref(db, "recentBets");
-
-      onValue(betsRef, (snapshot) => {
-        const data = snapshot.val();
-        const bets = [];
-
-        if (data) {
-          Object.entries(data).forEach(([key, value]) => {
-            if (value.amount && value.amount > 0) {
-              bets.push(value);
-            }
-          });
-        }
-
-        if (bets.length === 0) {
-          for (let i = 0; i < 5; i++) {
-            bets.push({
-              user: "anonymous",
-              amount: (Math.random() * 5 + 1).toFixed(2)
-            });
-          }
-        }
-
-        const top5 = bets.slice(-5).reverse();
-        betList.innerHTML = top5.map(bet => `
-          <li>
-            <span>${bet.user !== "anonymous" ? "🔥 " : ""}${bet.user.slice(0, 3)}***</span>
-            <span>$${bet.amount}</span>
-          </li>
-        `).join("");
-      });
-    }
-
-    loadLeaderboard();
-    setInterval(loadLeaderboard, 3000);
+    window.logout = function () {
+      signOut(auth).then(() => location.reload());
+    };
   </script>
 </body>
 </html>
