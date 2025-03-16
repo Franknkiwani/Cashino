@@ -2,107 +2,56 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Deposit Money</title>
-
-  <!-- PayPal SDK with Live Client ID -->
-  <script src="https://www.paypal.com/sdk/js?client-id=AQlRInnmKjWmwHMNBE-z6za2NcSqhfaj3vD9x_AoQEoeVVtOxqvfjtGN9ixSVARi0IT9vhPeLo3AxwC5&currency=USD&components=buttons"></script>
-
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 500px;
-      margin: auto;
-      padding: 2rem;
-    }
-    h1 {
-      text-align: center;
-    }
-    label, input, button {
-      display: block;
-      width: 100%;
-      margin-top: 1rem;
-    }
-    #paypal-button-container {
-      margin-top: 1.5rem;
-    }
-  </style>
+  <script src="https://www.paypal.com/sdk/js?client-id=AQlRInnmKjWmwHMNBE-z6za2NcSqhfaj3vD9x_AoQEoeVVtOxqvfjtGN9ixSVARi0IT9vhPeLo3AxwC5&currency=USD"></script>
 </head>
 <body>
-  <h1>Deposit Money</h1>
-
-  <!-- Show User Info -->
-  <div id="user-info">
-    <p><strong>Username:</strong> <span id="username">Loading...</span></p>
-    <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+  <h2>Deposit to Your Account</h2>
+  <div>
+    <label>Amount (USD):</label>
+    <input type="number" id="amount" min="0.001" max="1000" step="0.001">
   </div>
-
-  <!-- Deposit Form -->
-  <form id="deposit-form">
-    <label for="amount">Amount ($0.001 - $1000)</label>
-    <input type="number" id="amount" step="0.001" min="0.001" max="1000" required>
-    <button type="submit">Start Deposit</button>
-  </form>
-
-  <!-- PayPal Button goes here -->
+  <br>
   <div id="paypal-button-container"></div>
 
-  <!-- Firebase + JS Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+    import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth();
 
-    let currentUserId = null;
-    let currentAmount = 0;
+    let currentUser = null;
 
-    // Listen for auth changes
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        currentUserId = user.uid;
-        document.getElementById("username").textContent = user.displayName || "N/A";
-        document.getElementById("email").textContent = user.email || "N/A";
+        currentUser = user;
+        renderPayPalButton();
       } else {
         alert("You must be logged in to deposit.");
-        window.location.href = "/login";
       }
     });
 
-    // Handle form submission
-    document.getElementById("deposit-form").addEventListener("submit", e => {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById("amount").value);
-
-      if (isNaN(amount) || amount < 0.001 || amount > 1000) {
-        alert("Enter a valid amount between $0.001 and $1000.");
-        return;
-      }
-
-      currentAmount = amount;
-      renderPayPalButton(amount);
-    });
-
-    // Render PayPal Button
-    function renderPayPalButton(amount) {
-      document.getElementById("paypal-button-container").innerHTML = ""; // clear previous buttons
-
+    function renderPayPalButton() {
       paypal.Buttons({
         createOrder: (data, actions) => {
+          const amount = parseFloat(document.getElementById('amount').value);
+          if (!amount || amount < 0.001 || amount > 1000) {
+            alert("Enter an amount between $0.001 and $1000.");
+            throw new Error("Invalid amount");
+          }
           return actions.order.create({
             purchase_units: [{
               amount: {
@@ -112,32 +61,24 @@
           });
         },
         onApprove: async (data, actions) => {
-          try {
-            const details = await actions.order.capture();
-            console.log("Payment Approved:", details);
+          const amount = parseFloat(document.getElementById('amount').value);
+          const details = await actions.order.capture();
 
-            const userDocRef = doc(db, "users", currentUserId);
-            const userSnap = await getDoc(userDocRef);
+          const userRef = doc(db, "users", currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          const currentBalance = userSnap.exists() && userSnap.data().balance ? userSnap.data().balance : 0;
 
-            if (userSnap.exists()) {
-              const currentBalance = userSnap.data().balance || 0;
-              await updateDoc(userDocRef, {
-                balance: currentBalance + amount
-              });
-              alert(`Deposit of $${amount} successful!`);
-            } else {
-              alert("User not found in Firestore.");
-            }
-          } catch (err) {
-            console.error("Payment error:", err);
-            alert("Something went wrong while processing payment.");
-          }
+          await updateDoc(userRef, {
+            balance: currentBalance + amount
+          });
+
+          alert(`$${amount.toFixed(3)} deposited successfully!`);
         },
-        onError: err => {
+        onError: (err) => {
           console.error("PayPal error:", err);
-          alert("PayPal error. Check console.");
+          alert("There was a problem with the payment. Check the console for more details.");
         }
-      }).render("#paypal-button-container");
+      }).render('#paypal-button-container');
     }
   </script>
 </body>
