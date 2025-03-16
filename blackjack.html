@@ -4,135 +4,173 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Modern Blackjack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body {
+    :root {
+      --bg: #0e0e10;
+      --primary: #00ffc8;
+      --glass: rgba(255, 255, 255, 0.08);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --card-border: rgba(255, 255, 255, 0.15);
+    }
+
+    * {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: #0f0f0f;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
+      min-height: 100vh;
       padding: 20px;
+    }
+
+    .container {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 0 25px rgba(0, 255, 200, 0.1);
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
-      max-width: 900px;
       margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--primary);
     }
 
     .balance {
       display: flex;
       align-items: center;
-      font-size: 1.2em;
     }
 
     .balance img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       margin-right: 10px;
-      width: 35px;
-      height: 35px;
+      border: 2px solid var(--primary);
     }
 
-    .game {
-      background: #1e1e1e;
-      border-radius: 10px;
-      padding: 20px;
-      width: 100%;
-      max-width: 700px;
-      box-shadow: 0 0 10px #000;
+    .balance span {
+      font-weight: 600;
+      color: #0f0;
     }
 
-    h2 {
-      margin: 0 0 10px;
-      font-size: 1.5em;
+    .zone {
+      margin: 20px 0;
+    }
+
+    .zone h2 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
     }
 
     .cards {
       display: flex;
       gap: 10px;
-      margin-bottom: 10px;
     }
 
     .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
       width: 60px;
       height: 90px;
-      background: #333;
-      border-radius: 5px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      font-size: 1.2em;
-      font-weight: bold;
-      border: 2px solid #555;
+      align-items: center;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 0 5px #000;
     }
 
     .controls {
-      margin-top: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      margin-top: 20px;
     }
 
     input[type="number"] {
-      padding: 8px;
-      width: 100%;
-      font-size: 1em;
+      padding: 10px;
+      border-radius: 8px;
       border: none;
-      border-radius: 5px;
-      background: #222;
+      font-size: 1rem;
+      background: #1b1b1e;
       color: #fff;
     }
 
     button {
-      padding: 10px;
-      font-size: 1em;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: 600;
       border: none;
-      border-radius: 5px;
-      background: #28a745;
-      color: #fff;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #000;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
 
     button:hover {
-      background: #218838;
+      background: #00cfa0;
     }
 
     #logMsg {
-      text-align: center;
       margin-top: 15px;
-      font-weight: bold;
-      font-size: 1.1em;
+      text-align: center;
+      font-weight: 600;
+      font-size: 1.1rem;
     }
 
-    @media(max-width: 600px) {
+    @media(max-width: 500px) {
       .card {
-        width: 40px;
-        height: 60px;
-        font-size: 1em;
+        width: 45px;
+        height: 70px;
+        font-size: 1rem;
+      }
+
+      h1 {
+        font-size: 1.5rem;
       }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Blackjack</h1>
-    <div class="balance">
-      <img id="profilePic" src="" alt="Profile" />
-      <span>$<span id="balance">0.00</span></span>
+  <div class="container">
+    <header>
+      <h1>Blackjack</h1>
+      <div class="balance">
+        <img id="profilePic" src="" alt="Avatar" />
+        <span>$<span id="balance">0.00</span></span>
+      </div>
+    </header>
+
+    <div class="zone">
+      <h2>Dealer (<span id="dealerSum">0</span>)</h2>
+      <div id="dealerCards" class="cards"></div>
     </div>
-  </header>
 
-  <div class="game">
-    <h2>Dealer (<span id="dealerSum">0</span>)</h2>
-    <div id="dealerCards" class="cards"></div>
-
-    <h2>You (<span id="playerSum">0</span>)</h2>
-    <div id="playerCards" class="cards"></div>
+    <div class="zone">
+      <h2>You (<span id="playerSum">0</span>)</h2>
+      <div id="playerCards" class="cards"></div>
+    </div>
 
     <div class="controls">
       <input type="number" id="betAmount" placeholder="Enter your bet ($0.10+)" min="0.10" step="0.10" />
@@ -179,8 +217,8 @@
     onAuthStateChanged(auth, (u) => {
       if (u) {
         user = u;
-        const defaultAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid.slice(0, 10)}`;
-        profilePic.src = user.photoURL || defaultAvatar;
+        const avatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid.slice(0, 10)}`;
+        profilePic.src = user.photoURL || avatar;
 
         const balanceRef = ref(db, "users/" + user.uid + "/balance");
         onValue(balanceRef, (snap) => {
@@ -214,17 +252,17 @@
     }
 
     window.startGame = function () {
-      if (gameOver === false && playerCards.length) return;
+      if (!user || (playerCards.length && !gameOver)) return;
       const bet = parseFloat(document.getElementById("betAmount").value);
       if (isNaN(bet) || bet < 0.1) return log("Min bet is $0.10");
-      if (bet > balance) return log("Insufficient balance");
+      if (bet > balance) return log("Not enough balance");
 
       updateBalance(balance - bet);
       playerCards = [drawCard(), drawCard()];
       dealerCards = [drawCard()];
       renderCards();
       gameOver = false;
-      log("Game started. Hit or Stay?");
+      log("Game started!");
     };
 
     window.hit = function () {
@@ -255,11 +293,12 @@
         log("You win!");
         updateBalance(balance + bet * 2);
       } else if (win === null) {
-        log("Tie. Bet returned.");
+        log("Draw. Bet returned.");
         updateBalance(balance + bet);
       } else {
-        log("You lost.");
+        log("You lose.");
       }
+
       setTimeout(() => {
         playerCards = [];
         dealerCards = [];
