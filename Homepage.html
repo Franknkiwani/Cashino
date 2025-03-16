@@ -91,40 +91,6 @@
       color: #00ff99;
     }
 
-    /* New Section: Ways to Earn */
-    .earn-container {
-      width: 100%;
-      padding: 20px;
-      margin-top: 30px;
-      background-color: #0a0a0a;
-      border: 2px solid #00ff99;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 0 8px #00ff9966;
-    }
-
-    .earn-text {
-      font-size: 18px;
-      font-weight: bold;
-      color: white;
-      margin-bottom: 20px;
-    }
-
-    .earn-btn {
-      font-size: 16px;
-      padding: 12px 20px;
-      background-color: #00ff99;
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    .earn-btn:hover {
-      background-color: #00cc7a;
-    }
-
     /* Overlay */
     .overlay {
       position: fixed;
@@ -300,12 +266,6 @@
     <div class="balance-text" id="balance">Balance: Loading...</div>
   </div>
 
-  <!-- Ways to Earn Section -->
-  <div class="earn-container">
-    <div class="earn-text">Ways to Earn</div>
-    <button class="earn-btn" id="earnBtn">Click to Earn $0.001</button>
-  </div>
-
   <!-- Sidebar & Clock Script -->
   <script>
     const sidebar = document.getElementById('sidebar');
@@ -379,64 +339,56 @@
       }, 1500);
     });
 
-    // Ways to Earn Button click event
-    document.getElementById('earnBtn').addEventListener('click', () => {
-      loadingOverlay.classList.add('active');
-      loadingText.textContent = 'Updating Balance...';
-
-      // Simulate adding $0.001 to the balance
-      setTimeout(() => {
-        // Get current user balance from Firebase
-        const userId = firebase.auth().currentUser.uid;
-        const userRef = firebase.database().ref(`users/${userId}`);
-        
-        userRef.once('value').then(snapshot => {
-          const currentBalance = snapshot.val().balance || 0;
-          const newBalance = currentBalance + 0.001;
-
-          // Update the balance in Firebase
-          userRef.update({ balance: newBalance });
-
-          // Update the balance on the page
-          document.getElementById('balance').textContent = `Balance: $${newBalance.toFixed(3)}`;
-
-          // Hide the loading overlay after the update
-          loadingOverlay.classList.remove('active');
-          loadingText.textContent = 'Loading...';  // Reset the loading text
-        }).catch(error => {
-          console.error('Error updating balance:', error);
-          loadingOverlay.classList.remove('active');
-        });
-      }, 1500);  // Simulate a delay for the loading
-    });
-
-    // Clock update every second
-    setInterval(() => {
+    // Clock update function
+    function updateClock() {
       const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds}`;
-    }, 1000);
-
-    // Fetch user data from Firebase on page load
-    window.onload = () => {
-      firebase.auth().onAuthStateChanged(user => {
-        if (user) {
-          const userId = user.uid;
-          const userRef = firebase.database().ref(`users/${userId}`);
-          
-          userRef.once('value').then(snapshot => {
-            const userData = snapshot.val();
-            document.getElementById('welcomeUser').textContent = `Welcome back, ${userData.username}`;
-            document.getElementById('balance').textContent = `Balance: $${userData.balance.toFixed(3)}`;
-          }).catch(error => {
-            console.error('Error fetching user data:', error);
-          });
-        }
-      });
-    };
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}.${m}.${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
   </script>
 
+  <!-- Firebase SDKs and Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const uid = user.uid;
+
+        // Get balance
+        get(ref(db, `users/${uid}/balance`)).then(snapshot => {
+          const bal = snapshot.exists() ? snapshot.val() : 0;
+          document.getElementById("balance").textContent = `Balance: $${parseFloat(bal).toFixed(2)}`;
+        });
+
+        // Get username
+        get(ref(db, `users/${uid}/username`)).then(snapshot => {
+          const name = snapshot.exists() ? snapshot.val() : "User";
+          document.getElementById("welcomeUser").textContent = `Welcome, ${name}`;
+        });
+      }
+    });
+  </script>
 </body>
 </html>
