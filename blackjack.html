@@ -1,9 +1,10 @@
+<!-- FULL CLEAN BLACKJACK HTML (MODERN + PROFILE POPUP + STYLED BUTTONS) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Modern Blackjack</title>
+  <title>Blackjack</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
@@ -12,6 +13,8 @@
       --glass: rgba(255, 255, 255, 0.08);
       --card-bg: rgba(255, 255, 255, 0.05);
       --card-border: rgba(255, 255, 255, 0.15);
+      --hit-color: #4ef58d;
+      --stay-color: #ff6b6b;
     }
 
     * {
@@ -39,6 +42,7 @@
       max-width: 600px;
       width: 100%;
       box-shadow: 0 0 25px rgba(0, 255, 200, 0.1);
+      position: relative;
     }
 
     header {
@@ -57,6 +61,7 @@
     .balance {
       display: flex;
       align-items: center;
+      cursor: pointer;
     }
 
     .balance img {
@@ -96,7 +101,6 @@
       justify-content: center;
       align-items: center;
       font-size: 1.2rem;
-      color: #fff;
       box-shadow: 0 0 5px #000;
     }
 
@@ -122,13 +126,22 @@
       font-weight: 600;
       border: none;
       border-radius: 8px;
-      background: var(--primary);
-      color: #000;
       cursor: pointer;
       transition: background 0.3s ease;
     }
 
-    button:hover {
+    #goBtn { background: var(--hit-color); color: #000; }
+    #goBtn:hover { background: #38df77; }
+
+    #stayBtn { background: var(--stay-color); color: #fff; }
+    #stayBtn:hover { background: #ff4d4d; }
+
+    #startBtn {
+      background: var(--primary);
+      color: #000;
+    }
+
+    #startBtn:hover {
       background: #00cfa0;
     }
 
@@ -137,6 +150,53 @@
       text-align: center;
       font-weight: 600;
       font-size: 1.1rem;
+    }
+
+    /* Profile Popup */
+    .popup {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      background: #1e1e22;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 15px;
+      z-index: 99;
+      display: none;
+      width: 250px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    }
+
+    .popup h3 {
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .popup p {
+      margin: 5px 0;
+      font-size: 0.9rem;
+    }
+
+    .popup a {
+      color: #00ffc8;
+      display: block;
+      margin: 10px 0;
+      text-decoration: underline;
+    }
+
+    .logout {
+      background: #ff4444;
+      color: #fff;
+      padding: 8px;
+      border: none;
+      border-radius: 6px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .logout:hover {
+      background: #dd3333;
     }
 
     @media(max-width: 500px) {
@@ -156,11 +216,20 @@
   <div class="container">
     <header>
       <h1>Blackjack</h1>
-      <div class="balance">
+      <div class="balance" onclick="togglePopup()">
         <img id="profilePic" src="" alt="Avatar" />
         <span>$<span id="balance">0.00</span></span>
       </div>
     </header>
+
+    <div class="popup" id="profilePopup">
+      <h3>User Info</h3>
+      <p><strong>Email:</strong> <span id="popupEmail">-</span></p>
+      <p><strong>Username:</strong> <span id="popupName">-</span></p>
+      <p><strong>Balance:</strong> $<span id="popupBal">0.00</span></p>
+      <a href="homepage.html">Go to Dashboard</a>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
 
     <div class="zone">
       <h2>Dealer (<span id="dealerSum">0</span>)</h2>
@@ -174,9 +243,9 @@
 
     <div class="controls">
       <input type="number" id="betAmount" placeholder="Enter your bet ($0.10+)" min="0.10" step="0.10" />
-      <button onclick="startGame()">Start Game</button>
-      <button onclick="hit()">Hit</button>
-      <button onclick="stay()">Stay</button>
+      <button id="startBtn" onclick="startGame()">Start Game</button>
+      <button id="goBtn" onclick="hit()">Go</button>
+      <button id="stayBtn" onclick="stay()">Stay</button>
     </div>
 
     <div id="logMsg"></div>
@@ -184,7 +253,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -194,8 +263,7 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -209,26 +277,28 @@
     const dealerCardsEl = document.getElementById("dealerCards");
     const playerCardsEl = document.getElementById("playerCards");
     const balanceEl = document.getElementById("balance");
-    const profilePic = document.getElementById("profilePic");
     const logMsg = document.getElementById("logMsg");
-
-    const cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
 
     onAuthStateChanged(auth, (u) => {
       if (u) {
         user = u;
         const avatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid.slice(0, 10)}`;
-        profilePic.src = user.photoURL || avatar;
+        document.getElementById("profilePic").src = user.photoURL || avatar;
+        document.getElementById("popupEmail").textContent = user.email;
+        document.getElementById("popupName").textContent = user.displayName || user.uid.slice(0, 8);
 
         const balanceRef = ref(db, "users/" + user.uid + "/balance");
         onValue(balanceRef, (snap) => {
           balance = parseFloat(snap.val()) || 0;
           balanceEl.textContent = balance.toFixed(2);
+          document.getElementById("popupBal").textContent = balance.toFixed(2);
         });
       } else {
         alert("You must be logged in!");
       }
     });
+
+    const cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
 
     function drawCard() {
       return cardValues[Math.floor(Math.random() * cardValues.length)];
@@ -237,10 +307,7 @@
     function calcSum(cards) {
       let sum = cards.reduce((a, b) => a + b, 0);
       let aces = cards.filter(c => c === 11).length;
-      while (sum > 21 && aces) {
-        sum -= 10;
-        aces--;
-      }
+      while (sum > 21 && aces--) sum -= 10;
       return sum;
     }
 
@@ -315,6 +382,15 @@
     function log(msg) {
       logMsg.textContent = msg;
     }
+
+    window.togglePopup = function () {
+      const popup = document.getElementById("profilePopup");
+      popup.style.display = popup.style.display === "block" ? "none" : "block";
+    };
+
+    window.logout = function () {
+      signOut(auth).then(() => location.reload());
+    };
   </script>
 </body>
 </html>
