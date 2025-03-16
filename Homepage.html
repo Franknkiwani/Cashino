@@ -190,81 +190,6 @@
       0% { opacity: 0; }
       100% { opacity: 1; }
     }
-
-    /* Earn Options */
-    .earn-section {
-      margin: 20px auto;
-      max-width: 400px;
-      padding: 0 20px;
-    }
-
-    .earn-option {
-      background-color: #111;
-      border: 1px solid #00ffff44;
-      color: white;
-      padding: 14px;
-      border-radius: 10px;
-      text-align: center;
-      margin-bottom: 15px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .earn-option:hover {
-      background-color: #00ffff11;
-    }
-
-    /* Spin & Win */
-    .spin-container {
-      margin-top: 30px;
-      background: #1a1a1a;
-      border: 2px solid #ff00ff66;
-      border-radius: 14px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 0 10px #ff00ff55;
-    }
-
-    .spin-title {
-      font-size: 20px;
-      font-weight: bold;
-      color: #ff00ff;
-      margin-bottom: 10px;
-    }
-
-    .spin-input {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-bottom: 10px;
-      width: 80%;
-      font-size: 16px;
-      text-align: center;
-    }
-
-    .spin-btn {
-      background-color: #ff00ff;
-      color: black;
-      padding: 10px 20px;
-      border: none;
-      font-weight: bold;
-      font-size: 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .spin-btn:hover {
-      background-color: #e600e6;
-    }
-
-    .spin-result {
-      margin-top: 15px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #00ff99;
-    }
   </style>
 </head>
 <body>
@@ -298,23 +223,11 @@
   <div class="balance-container">
     <div class="balance-text" id="balance">Balance: Loading...</div>
   </div>
- <!-- Earn Section -->
-  <div class="earn-section">
-    <div class="earn-option" onclick="addBalance(0.001)">Click to Earn $0.001</div>
-    <div class="earn-option" onclick="addBalance(0.01)">Visit Site & Earn $0.010</div>
 
-    <!-- Spin and Win -->
-    <div class="spin-container">
-      <div class="spin-title">Spin & Win</div>
-      <input type="number" min="1" step="0.01" class="spin-input" id="spinAmount" placeholder="Enter amount (min $1)">
-      <button class="spin-btn" onclick="spinAndWin()">SPIN</button>
-      <div class="spin-result" id="spinResult"></div>
-    </div>
-  </div>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -364,6 +277,16 @@
         }
       }
     });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      loadingOverlay.classList.add('active');
+      loadingText.textContent = 'Logging you out...';
+      signOut(auth).then(() => {
+        setTimeout(() => window.location.href = 'index.html', 1000);
+      }).catch(() => {
+        loadingText.textContent = 'Logout failed.';
+      });
+    });
   </script>
 
   <script>
@@ -371,10 +294,9 @@
     const overlay = document.getElementById('overlay');
     const sidebarMsg = document.getElementById('sidebarMessage');
     const messages = ["You're awesome!", "Good to see you!", "Let's win big!", "Ready to roll?", "Feeling lucky?", "Have fun!", "Keep it up!"];
-    const loadingMessages = ["Teleporting...", "Spinning the wheel...", "Loading your luck...", "Summoning servers...", "Just a sec...", "Getting things ready..."];
+    const loadingMessages = ["Teleporting...", "Loading your luck...", "Summoning servers...", "Just a sec...", "Getting things ready..."];
 
-    const avatar = document.getElementById('avatarClick');
-    avatar.addEventListener('click', () => {
+    document.getElementById('avatarClick').addEventListener('click', () => {
       sidebar.classList.add('active');
       overlay.classList.add('active');
       sidebarMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
@@ -407,12 +329,6 @@
         loadingText.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
         setTimeout(() => window.location.href = opt.url, 1500);
       });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      loadingOverlay.classList.add('active');
-      loadingText.textContent = 'Logging you out...';
-      setTimeout(() => window.location.href = 'index.html', 1500);
     });
 
     function updateClock() {
