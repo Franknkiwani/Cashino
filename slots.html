@@ -23,13 +23,28 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 0 20px #00ffc3;
-      max-width: 400px;
-      width: 90%;
+      max-width: 450px;
+      width: 95%;
+    }
+    .dashboard-btn {
+      background: #ff0066;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      margin-bottom: 10px;
+      box-shadow: 0 0 10px rgba(255, 0, 102, 0.5);
+    }
+    #balanceDisplay {
+      margin-bottom: 15px;
+      color: lightgreen;
+      font-size: 1.1rem;
     }
     .reels {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
       margin-bottom: 20px;
     }
     .reel {
@@ -38,12 +53,15 @@
       padding: 20px;
       font-size: 2rem;
       border-radius: 10px;
-      min-width: 50px;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       transition: all 0.3s ease-in-out;
-      animation: spin 0.3s linear infinite;
     }
-    .reel.stopped {
-      animation: none;
+    .reel.spinning {
+      animation: spin 0.3s linear infinite;
     }
     @keyframes spin {
       0% { transform: rotateX(0deg); }
@@ -58,16 +76,6 @@
     #message {
       margin-top: 10px;
       font-weight: bold;
-    }
-    .dashboard-btn {
-      background: #ff0066;
-      color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 10px;
-      box-shadow: 0 0 10px rgba(255, 0, 102, 0.5);
     }
     .payout-table {
       margin-top: 30px;
@@ -84,8 +92,16 @@
 
 <div class="slot-container">
   <a href="homepage.html" class="dashboard-btn">← DASHBOARD</a>
+  <div id="balanceDisplay">Balance: $0.00</div>
   <h2>Slot Machine</h2>
   <div class="reels" id="reels">
+    <!-- 9 reels in 3x3 -->
+    <div class="reel">❔</div>
+    <div class="reel">❔</div>
+    <div class="reel">❔</div>
+    <div class="reel">❔</div>
+    <div class="reel">❔</div>
+    <div class="reel">❔</div>
     <div class="reel">❔</div>
     <div class="reel">❔</div>
     <div class="reel">❔</div>
@@ -103,13 +119,13 @@
       <li><strong>7️⃣</strong> – 5×</li>
       <li><strong>💎</strong> – 10× (RARE)</li>
     </ul>
-    <p style="font-size: 0.85rem; color: #888;">* Must match all 3 in a line.</p>
+    <p style="font-size: 0.85rem; color: #888;">* Win if any **row** has 3 matching symbols.</p>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, set, child, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -138,50 +154,71 @@
   };
 
   let currentUser = null;
-  onAuthStateChanged(auth, (user) => {
+  const balanceDisplay = document.getElementById("balanceDisplay");
+
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
       currentUser = user;
+      const balanceRef = ref(db, "users/" + currentUser.uid + "/balance");
+      const snapshot = await get(balanceRef);
+      if (!snapshot.exists()) {
+        await set(balanceRef, 3.00);
+        balanceDisplay.textContent = "Balance: $3.00";
+      } else {
+        balanceDisplay.textContent = "Balance: $" + snapshot.val().toFixed(2);
+      }
     } else {
       alert("You must be logged in to play.");
     }
   });
 
-  function spinReels() {
-    return new Promise(resolve => {
-      const reels = document.querySelectorAll('.reel');
-      reels.forEach(r => {
-        r.classList.remove("stopped");
-        r.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-      });
+  function getRandomSymbol() {
+    return symbols[Math.floor(Math.random() * symbols.length)];
+  }
 
+  function spinReels() {
+    const reels = document.querySelectorAll('.reel');
+    reels.forEach(reel => {
+      reel.classList.add("spinning");
+    });
+
+    return new Promise(resolve => {
       setTimeout(() => {
-        const results = Array.from(reels).map(() => symbols[Math.floor(Math.random() * symbols.length)]);
-        reels.forEach((r, i) => {
-          r.classList.add("stopped");
-          r.textContent = results[i];
+        let results = [];
+        reels.forEach((reel, i) => {
+          const symbol = getRandomSymbol();
+          reel.textContent = symbol;
+          reel.classList.remove("spinning");
+          results.push(symbol);
         });
         resolve(results);
       }, 1000);
     });
   }
 
-  function calculateWinnings(results, bet) {
-    const [a, b, c] = results;
-    if (a === b && b === c) {
-      return bet * payouts[a];
+  function checkRows(results) {
+    const rows = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8]
+    ];
+    for (let row of rows) {
+      const [a, b, c] = row;
+      if (results[a] === results[b] && results[b] === results[c]) {
+        return { match: true, symbol: results[a] };
+      }
     }
-    return 0;
+    return { match: false };
   }
 
   document.getElementById("spinBtn").addEventListener("click", async () => {
-    const betAmount = parseFloat(document.getElementById("betAmount").value);
+    const bet = parseFloat(document.getElementById("betAmount").value);
     const message = document.getElementById("message");
 
-    if (isNaN(betAmount) || betAmount < 0.1 || betAmount > 10) {
+    if (isNaN(bet) || bet < 0.1 || bet > 10) {
       message.textContent = "Enter a valid bet ($0.10 - $10)";
       return;
     }
-
     if (!currentUser) {
       message.textContent = "Not logged in.";
       return;
@@ -191,23 +228,30 @@
     const snapshot = await get(balanceRef);
     let balance = snapshot.exists() ? snapshot.val() : 3.00;
 
-    if (betAmount > balance) {
+    if (bet > balance) {
       message.textContent = "Insufficient balance!";
       return;
     }
 
     const results = await spinReels();
-    const winnings = calculateWinnings(results, betAmount);
+    const rowCheck = checkRows(results);
+    let winnings = 0;
 
-    balance = balance - betAmount + winnings;
+    if (rowCheck.match) {
+      winnings = bet * payouts[rowCheck.symbol];
+    }
+
+    balance = balance - bet + winnings;
     await set(balanceRef, parseFloat(balance.toFixed(2)));
+    balanceDisplay.textContent = "Balance: $" + balance.toFixed(2);
 
     if (winnings > 0) {
-      message.innerHTML = `<span style="color:#00ffc3;">You won $${winnings.toFixed(2)}!</span>`;
+      message.innerHTML = `<span style="color:#00ffc3;">You won $${winnings.toFixed(2)} with ${rowCheck.symbol}!</span>`;
     } else {
-      message.innerHTML = `<span style="color:#ff3c3c;">You lost $${betAmount.toFixed(2)}. Try again!</span>`;
+      message.innerHTML = `<span style="color:#ff3c3c;">You lost $${bet.toFixed(2)}. Try again!</span>`;
     }
   });
 </script>
+
 </body>
 </html>
