@@ -1,148 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Blackjack – ITZ HYOO</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blackjack Premium</title>
   <style>
-    body {
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
       font-family: 'Segoe UI', sans-serif;
-      background: #0a0a0a;
+    }
+
+    body {
+      background: #121212;
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem;
+      padding: 20px;
     }
-    #balance {
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 20px;
+    }
+
+    .profile {
       display: flex;
       align-items: center;
-      background: #111;
-      padding: 0.6rem 1rem;
-      border-radius: 10px;
-      margin-bottom: 1rem;
-      font-size: 1.2rem;
+      cursor: pointer;
     }
-    #balance img {
-      width: 32px;
-      height: 32px;
+
+    .profile img {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       margin-right: 10px;
-      cursor: pointer;
     }
-    .card-area {
+
+    .balance {
+      background: #1f1f1f;
+      padding: 10px 15px;
+      border-radius: 10px;
+      color: lightgreen;
+    }
+
+    .game-container {
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 15px;
+      max-width: 900px;
+      width: 100%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    }
+
+    .cards, .actions {
       display: flex;
       justify-content: center;
-      gap: 1rem;
-      margin: 1rem 0;
+      gap: 15px;
+      margin: 15px 0;
     }
+
     .card {
-      background: #222;
+      background: #333;
+      padding: 10px 15px;
       border-radius: 8px;
-      padding: 0.6rem 1rem;
-      font-size: 1.5rem;
     }
-    #log {
-      margin-top: 1rem;
-      font-size: 1rem;
-      min-height: 1.5em;
-    }
-    #controls {
-      margin-top: 1rem;
-    }
-    #controls button {
-      margin: 0 0.5rem;
-      padding: 0.6rem 1rem;
+
+    .actions button {
+      padding: 10px 20px;
       border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 1rem;
+      border-radius: 10px;
       cursor: pointer;
-      transition: background 0.3s ease;
+      font-weight: bold;
     }
-    #goBtn {
-      background-color: #00ff80;
+
+    .hit {
+      background: #34d399;
       color: #000;
     }
-    #stayBtn {
-      background-color: #00c8ff;
+
+    .stay {
+      background: #f87171;
       color: #000;
     }
-    #betAmount {
-      padding: 0.4rem;
-      margin-top: 1rem;
-      border-radius: 5px;
-      border: none;
-      font-size: 1rem;
-    }
-    #popup {
-      display: none;
+
+    .popup {
       position: fixed;
-      top: 20%;
-      background: #111;
+      top: 60px;
+      right: 20px;
+      background: #222;
+      padding: 20px;
       border-radius: 12px;
-      padding: 1.2rem;
-      box-shadow: 0 0 10px #000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+      display: none;
       z-index: 999;
+      width: 250px;
     }
-    #popup p { margin: 0.5rem 0; }
-    #popup button {
-      margin-top: 1rem;
-      background: #ff4c4c;
-      color: white;
+
+    .popup h3 {
+      margin-bottom: 10px;
+      color: cyan;
+    }
+
+    .popup p {
+      margin: 6px 0;
+    }
+
+    .popup button {
+      margin-top: 10px;
+      background: red;
       border: none;
-      padding: 0.6rem 1rem;
-      border-radius: 8px;
-      font-weight: bold;
+      padding: 8px 15px;
+      border-radius: 6px;
+      color: white;
       cursor: pointer;
     }
-    #leaderboard {
-      margin-top: 40px;
-      width: 100%;
-      max-width: 600px;
-    }
-    #leaderboard ul {
-      list-style: none;
-      padding: 0;
+
+    .popup a {
+      display: inline-block;
       margin-top: 10px;
+      color: lightblue;
+      text-decoration: underline;
+    }
+
+    .leaderboard {
+      margin-top: 30px;
+      width: 100%;
+      max-width: 900px;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .leaderboard h2 {
+      margin-bottom: 15px;
+      color: gold;
+    }
+
+    .leaderboard ul {
+      list-style: none;
+    }
+
+    .leaderboard li {
+      padding: 10px;
+      background: #292929;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .fire {
+      color: orange;
+      margin-right: 5px;
     }
   </style>
 </head>
 <body>
-  <div id="balance"><img id="avatar" src="https://i.pravatar.cc/150?img=10"> $<span id="bal">0.00</span></div>
+  <header>
+    <div class="profile" onclick="togglePopup()">
+      <img src="https://i.pravatar.cc/150?img=11" id="profile-pic" />
+      <span id="username">User</span>
+    </div>
+    <div class="balance" id="balance-display">$0.00</div>
+  </header>
 
-  <div>
-    <input id="betAmount" type="number" min="0.1" step="0.1" placeholder="Enter Bet Amount ($)">
-  </div>
-
-  <div class="card-area" id="playerCards"></div>
-  <div class="card-area" id="dealerCards"></div>
-
-  <div id="log"></div>
-
-  <div id="controls">
-    <button id="goBtn">Go</button>
-    <button id="stayBtn">Stay</button>
-  </div>
-
-  <div id="leaderboard">
-    <h2 style="color:#00ffc8;">Top 5 Recent Bets</h2>
-    <ul id="leaderList"></ul>
-  </div>
-
-  <div id="popup">
-    <p><strong>Email:</strong> <span id="popupEmail"></span></p>
-    <p><strong>Username:</strong> <span id="popupName"></span></p>
-    <p><strong>Balance:</strong> $<span id="popupBal"></span></p>
-    <p><a href="homepage.html" style="color:#00ffc8;">Dashboard</a></p>
+  <div class="popup" id="profile-popup">
+    <h3>Profile</h3>
+    <p><strong>Email:</strong> <span id="user-email"></span></p>
+    <p><strong>Username:</strong> <span id="user-name"></span></p>
+    <p><strong>Balance:</strong> <span id="user-balance">$0.00</span></p>
+    <a href="homepage.html">Go to Dashboard</a><br />
     <button onclick="logout()">Logout</button>
   </div>
 
+  <div class="game-container">
+    <h1>Blackjack</h1>
+    <div class="cards" id="player-cards"></div>
+    <div class="actions">
+      <button class="hit" onclick="hit()">Go</button>
+      <button class="stay" onclick="stay()">Stay</button>
+    </div>
+    <div class="cards" id="dealer-cards"></div>
+    <div id="result"></div>
+  </div>
+
+  <div class="leaderboard" id="leaderboard">
+    <h2>Top Recent Bets</h2>
+    <ul id="bet-list"></ul>
+  </div>
+
+  <!-- Firebase Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -151,193 +210,91 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    const auth = getAuth();
     const db = getDatabase(app);
 
-    let user = null;
-    let balance = 0;
+    let currentUser = null;
 
-    const balEl = document.getElementById("bal");
-    const logEl = document.getElementById("log");
-    const playerCardsEl = document.getElementById("playerCards");
-    const dealerCardsEl = document.getElementById("dealerCards");
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("user-email").textContent = user.email;
+        document.getElementById("user-name").textContent = user.displayName || "Anonymous";
 
-    const avatar = document.getElementById("avatar");
-    const popup = document.getElementById("popup");
-    const popupEmail = document.getElementById("popupEmail");
-    const popupName = document.getElementById("popupName");
-    const popupBal = document.getElementById("popupBal");
-
-    avatar.onclick = () => popup.style.display = "block";
-    popup.onclick = () => popup.style.display = "none";
-
-    onAuthStateChanged(auth, u => {
-      if (u) {
-        user = u;
-        get(ref(db, "users/" + user.uid + "/balance")).then(snap => {
-          balance = snap.exists() ? snap.val() : 0;
-          updateBalance(balance);
+        const uid = user.uid;
+        const balanceRef = ref(db, "users/" + uid + "/balance");
+        onValue(balanceRef, (snapshot) => {
+          const balance = snapshot.val() || 0;
+          document.getElementById("balance-display").textContent = `$${balance.toFixed(2)}`;
+          document.getElementById("user-balance").textContent = `$${balance.toFixed(2)}`;
         });
-        popupEmail.textContent = maskEmail(user.email);
-        popupName.textContent = user.displayName || "Unknown";
-        loadLeaderboard();
-      } else {
-        location.href = "login.html";
       }
     });
 
-    function updateBalance(bal) {
-      balance = bal;
-      balEl.textContent = balance.toFixed(2);
-      popupBal.textContent = balance.toFixed(2);
-      set(ref(db, "users/" + user.uid + "/balance"), balance);
-    }
-
     function logout() {
-      signOut(auth).then(() => location.href = "login.html");
-    }
-
-    function maskEmail(email) {
-      const [name, domain] = email.split("@");
-      return name.slice(0, 3) + "***@" + domain;
-    }
-
-    let playerCards = [];
-    let dealerCards = [];
-    let gameOver = false;
-
-    function drawCard() {
-      return Math.floor(Math.random() * 11) + 1;
-    }
-
-    function getTotal(cards) {
-      return cards.reduce((a, b) => a + b, 0);
-    }
-
-    function renderCards() {
-      playerCardsEl.innerHTML = playerCards.map(v => `<div class="card">${v}</div>`).join("");
-      dealerCardsEl.innerHTML = dealerCards.map(v => `<div class="card">${v}</div>`).join("");
-    }
-
-    function log(msg) {
-      logEl.textContent = msg;
-    }
-
-    function saveBet(result, bet, before, after) {
-      push(ref(db, "bets"), {
-        uid: user.uid,
-        email: user.email,
-        amount: bet,
-        result,
-        balanceBefore: before,
-        balanceAfter: after,
-        timestamp: Date.now()
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
       });
     }
 
-    function endGame(win) {
-      gameOver = true;
-      const bet = parseFloat(document.getElementById("betAmount").value);
-      const before = balance;
-
-      if (win === true) {
-        log("You win!");
-        updateBalance(balance + bet * 2);
-        saveBet("win", bet, before, balance + bet * 2);
-      } else if (win === null) {
-        log("Draw!");
-        updateBalance(balance + bet);
-        saveBet("draw", bet, before, balance + bet);
-      } else {
-        log("You lost!");
-        saveBet("lose", bet, before, balance);
-      }
-
-      setTimeout(() => {
-        playerCards = [];
-        dealerCards = [];
-        renderCards();
-        loadLeaderboard();
-      }, 1500);
+    function togglePopup() {
+      const popup = document.getElementById("profile-popup");
+      popup.style.display = popup.style.display === "block" ? "none" : "block";
     }
 
-    document.getElementById("goBtn").onclick = () => {
-      if (gameOver) return;
+    // Dummy game logic for testing
+    function hit() {
+      document.getElementById("player-cards").innerHTML += `<div class="card">🂠</div>`;
+    }
 
-      const bet = parseFloat(document.getElementById("betAmount").value);
-      if (isNaN(bet) || bet <= 0 || bet > balance) return alert("Invalid bet!");
+    function stay() {
+      document.getElementById("dealer-cards").innerHTML += `<div class="card">🂠</div>`;
+      document.getElementById("result").textContent = "Game Ended. (Logic not implemented)";
+    }
 
-      playerCards.push(drawCard());
-      renderCards();
-      const total = getTotal(playerCards);
-      if (total > 21) endGame(false);
-    };
-
-    document.getElementById("stayBtn").onclick = () => {
-      if (gameOver) return;
-      const bet = parseFloat(document.getElementById("betAmount").value);
-      if (isNaN(bet) || bet <= 0 || bet > balance) return alert("Invalid bet!");
-
-      while (getTotal(dealerCards) < 17) dealerCards.push(drawCard());
-      renderCards();
-
-      const playerTotal = getTotal(playerCards);
-      const dealerTotal = getTotal(dealerCards);
-
-      endGame(playerTotal > dealerTotal || dealerTotal > 21 ? true : playerTotal === dealerTotal ? null : false);
-    };
-
-    document.getElementById("goBtn").addEventListener("click", () => {
-      if (playerCards.length === 0) {
-        const bet = parseFloat(document.getElementById("betAmount").value);
-        if (isNaN(bet) || bet <= 0 || bet > balance) return alert("Invalid bet!");
-        updateBalance(balance - bet);
-        dealerCards = [drawCard()];
-        playerCards = [drawCard(), drawCard()];
-        gameOver = false;
-        renderCards();
-      }
-    });
-
+    // Leaderboard Logic
     function loadLeaderboard() {
-      get(ref(db, "bets")).then(snapshot => {
-        const real = [];
-        if (snapshot.exists()) {
-          const bets = Object.values(snapshot.val()).sort((a, b) => b.timestamp - a.timestamp);
-          for (let b of bets) {
-            if (real.length < 5) {
-              real.push({
-                email: maskEmail(b.email),
-                amount: b.amount,
-                result: b.result,
-                emoji: b.balanceAfter > b.balanceBefore * 1.5 ? "🔥" : "💸"
-              });
+      const betList = document.getElementById("bet-list");
+      const betsRef = ref(db, "recentBets");
+
+      onValue(betsRef, (snapshot) => {
+        const data = snapshot.val();
+        const bets = [];
+
+        if (data) {
+          Object.entries(data).forEach(([key, value]) => {
+            if (value.amount && value.amount > 0) {
+              bets.push(value);
             }
+          });
+        }
+
+        if (bets.length === 0) {
+          for (let i = 0; i < 5; i++) {
+            bets.push({
+              user: "anonymous",
+              amount: (Math.random() * 5 + 1).toFixed(2)
+            });
           }
         }
 
-        const fake = [
-          { email: "luc***@vegas.com", amount: 1.5, result: "win", emoji: "🔥" },
-          { email: "ell***@crypto.gg", amount: 2.0, result: "win", emoji: "🔥" },
-          { email: "mik***@funny.biz", amount: 1.25, result: "win", emoji: "🔥" },
-          { email: "nin***@webmail.io", amount: 3.0, result: "win", emoji: "🔥" },
-          { email: "zan***@winnerz.net", amount: 2.75, result: "win", emoji: "🔥" }
-        ];
-
-        const combined = [...real, ...fake.slice(0, 5 - real.length)];
-        const list = document.getElementById("leaderList");
-        list.innerHTML = "";
-        for (let bet of combined) {
-          const li = document.createElement("li");
-          li.innerHTML = `<strong>${bet.email}</strong> bet $${bet.amount.toFixed(2)} — <span style="color:${bet.result === "win" ? "#0f0" : "#ccc"}">${bet.result.toUpperCase()}</span> ${bet.emoji}`;
-          list.appendChild(li);
-        }
+        const top5 = bets.slice(-5).reverse();
+        betList.innerHTML = top5.map(bet => `
+          <li>
+            <span>${bet.user !== "anonymous" ? "🔥 " : ""}${bet.user.slice(0, 3)}***</span>
+            <span>$${bet.amount}</span>
+          </li>
+        `).join("");
       });
     }
+
+    loadLeaderboard();
+    setInterval(loadLeaderboard, 3000);
   </script>
 </body>
 </html>
