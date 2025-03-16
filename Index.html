@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CASHINO</title>
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;}
+    body {
+      background: radial-gradient(circle at center, #000 20%, #1b1b1b 100%);
+      height: 100vh; display: flex; justify-content: center; align-items: center; color: white;
+    }
+    .container {width: 100%; display: flex; justify-content: center; align-items: center;}
+    .form-container {
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid gold; border-radius: 20px;
+      padding: 40px; width: 420px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+      animation: formEntrance 1s ease-out;
+      position: relative;
+    }
+    .logo {
+      font-size: 40px; font-weight: 900;
+      text-align: center; color: gold;
+      margin-bottom: 20px; letter-spacing: 4px;
+      text-shadow: 0 0 5px gold, 0 0 10px red, 0 0 15px orange;
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+    .form-switch {
+      display: flex; justify-content: space-between; margin-bottom: 20px;
+    }
+    .switch-btn {
+      background: transparent; border: 2px solid gold; border-radius: 30px;
+      padding: 10px 20px; font-size: 16px; font-weight: bold; color: gold;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .switch-btn.active, .switch-btn:hover {
+      background-color: gold; color: black;
+    }
+    .form-content {display: none; opacity: 0; transition: opacity 0.5s ease;}
+    .form-content.active {display: block; opacity: 1;}
+    .input-field {
+      width: 100%; padding: 12px; margin-bottom: 15px;
+      border: 2px solid #888; border-radius: 10px;
+      font-size: 16px; background-color: #222; color: gold;
+    }
+    .input-field::placeholder {color: #ccc;}
+    .input-field:focus {border-color: gold; outline: none;}
+    .submit-btn {
+      width: 100%; padding: 12px;
+      background-color: gold; border: none;
+      border-radius: 10px; color: black;
+      font-size: 18px; font-weight: bold; cursor: pointer;
+    }
+    .submit-btn:hover {background-color: red; color: white;}
+    .forgot {text-align: right; margin-top: -10px; margin-bottom: 15px;}
+    .forgot a {
+      color: #ffcc00; text-decoration: none; font-size: 14px; cursor: pointer;
+    }
+    .forgot a:hover {text-decoration: underline;}
+    .notification {
+      position: absolute; top: -60px; left: 0; right: 0;
+      margin: auto; width: 90%; background: #ff3333; color: white;
+      text-align: center; padding: 12px; border-radius: 10px; font-weight: bold;
+      box-shadow: 0 0 10px red; animation: fadeSlide 0.3s ease-in-out;
+      z-index: 10; display: none;
+    }
+    .notification.show {display: block;}
+    .notification.success {
+      background: #00cc66; box-shadow: 0 0 10px #00cc66;
+    }
+    .signup-bonus {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 18px;
+      color: gold;
+    }
+    @keyframes formEntrance {
+      0% {transform: translateY(-50px); opacity: 0;}
+      100% {transform: translateY(0); opacity: 1;}
+    }
+    @keyframes pulseGlow {
+      0% {text-shadow: 0 0 5px gold, 0 0 10px red, 0 0 15px orange; transform: scale(1);}
+      50% {text-shadow: 0 0 10px gold, 0 0 20px red, 0 0 30px orange; transform: scale(1.03);}
+      100% {text-shadow: 0 0 5px gold, 0 0 10px red, 0 0 15px orange; transform: scale(1);}
+    }
+    @keyframes fadeSlide {
+      0% {transform: translateY(-10px); opacity: 0;}
+      100% {transform: translateY(0); opacity: 1;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <div class="logo">CASHINO</div>
+      <div id="notification" class="notification"></div>
+
+      <div class="form-switch">
+        <button id="loginBtn" class="switch-btn active">Login</button>
+        <button id="registerBtn" class="switch-btn">Register</button>
+      </div>
+
+      <form id="loginForm" class="form-content active">
+        <input type="email" id="loginEmail" class="input-field" placeholder="Email" required>
+        <input type="password" id="loginPassword" class="input-field" placeholder="Password" required>
+        <div class="forgot"><a id="forgotLink">Forgot password?</a></div>
+        <button type="submit" class="submit-btn">Enter the Casino</button>
+      </form>
+
+      <form id="registerForm" class="form-content">
+        <input type="text" id="registerName" class="input-field" placeholder="Full Name" required>
+        <input type="email" id="registerEmail" class="input-field" placeholder="Email" required>
+        <input type="password" id="registerPassword" class="input-field" placeholder="Password" required>
+        <div class="signup-bonus">Signup Bonus: <span id="bonusAmount">$0.00</span></div>
+        <button type="submit" class="submit-btn">Join the Jackpot</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const showNotification = (msg, isSuccess = false) => {
+      const note = document.getElementById("notification");
+      note.textContent = msg;
+      note.classList.remove("success");
+      if (isSuccess) note.classList.add("success");
+      note.classList.add("show");
+      setTimeout(() => note.classList.remove("show", "success"), 3000);
+    };
+
+    // Toggle forms
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      document.getElementById('loginForm').classList.add('active');
+      document.getElementById('registerForm').classList.remove('active');
+      document.getElementById('loginBtn').classList.add('active');
+      document.getElementById('registerBtn').classList.remove('active');
+    });
+
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      document.getElementById('registerForm').classList.add('active');
+      document.getElementById('loginForm').classList.remove('active');
+      document.getElementById('registerBtn').classList.add('active');
+      document.getElementById('loginBtn').classList.remove('active');
+    });
+
+    // Login
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showNotification("Welcome back to CASHINO!", true);
+          setTimeout(() => window.location.href = "loading.html", 1500);
+        })
+        .catch((error) => showNotification("Login failed: " + error.message));
+    });
+
+    // Forgot password
+    document.getElementById("forgotLink").addEventListener("click", () => {
+      const email = document.getElementById("loginEmail").value;
+      if (!email) {
+        showNotification("Enter your email to reset password.");
+        return;
+      }
+      sendPasswordResetEmail(auth, email)
+        .then(() => showNotification("Password reset email sent!", true))
+        .catch((error) => showNotification("Error: " + error.message));
+    });
+
+    // Generate signup bonus
+    const randomBonus = parseFloat((Math.random() * (3 - 1.5) + 1.5).toFixed(2));
+    document.getElementById("bonusAmount").textContent = `$${randomBonus}`;
+
+    // Register
+    document.getElementById("registerForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const fullName = document.getElementById("registerName").value;
+      const email = document.getElementById("registerEmail").value;
+      const password = document.getElementById("registerPassword").value;
+
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          // Save full name as username in Firebase along with balance
+          set(ref(db, 'users/' + user.uid), {
+            name: fullName,       // Name field for user display
+            username: fullName,   // Save the full name as the username
+            email: email,         // User email
+            balance: randomBonus  // User's starting balance (random bonus)
+          }).then(() => {
+            showNotification("Welcome to CASHINO!", true);
+            setTimeout(() => window.location.href = "loading.html", 2000);
+          });
+        })
+        .catch((error) => showNotification("Registration failed: " + error.message));
+    });
+  </script>
+</body>
+</html>
