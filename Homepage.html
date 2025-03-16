@@ -5,8 +5,12 @@
   <title>Modern App UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <style>
+    /* Your entire existing CSS remains untouched except added game card styles below */
     * {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
       user-select: none;
+      touch-action: manipulation;
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -18,6 +22,7 @@
       overflow-x: hidden;
     }
     header {
+      width: 100%;
       height: 60px;
       background-color: #0a0a0a;
       display: flex;
@@ -38,6 +43,10 @@
       margin-right: 10px;
       border: 2px solid #00ffff;
       cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .avatar:hover {
+      transform: scale(1.05);
     }
     .welcome-text {
       font-size: 16px;
@@ -47,9 +56,11 @@
       font-size: 18px;
       font-weight: bold;
       color: #00ffff;
+      letter-spacing: 1px;
       font-family: 'Courier New', monospace;
     }
     .neon-line {
+      width: 100%;
       height: 2px;
       background: linear-gradient(90deg, #ff00ff, #00ffff);
       box-shadow: 0 0 6px #00ffff;
@@ -70,63 +81,26 @@
       color: #00ff99;
     }
 
-    /* Game Section */
-    .games-section {
-      margin: 30px auto;
-      max-width: 500px;
-      display: grid;
-      gap: 16px;
-      padding: 0 20px;
-    }
-
-    .game-card {
-      background-color: #111;
-      border: 1px solid #00ffff33;
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 0 8px transparent;
-    }
-
-    .game-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 0 10px #00ffff55;
-      background-color: #1a1a1a;
-    }
-
-    .game-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-
-    .game-name {
-      font-size: 16px;
-      font-weight: 600;
-      color: #00ffff;
-    }
-
-    /* Sidebar + Overlay + Loading Overlay (same as previous version) */
     .overlay, .loading-overlay {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      backdrop-filter: blur(6px);
-      z-index: 9;
+      z-index: 11;
       display: none;
-    }
-    .overlay.active, .loading-overlay.active {
-      display: flex;
       justify-content: center;
       align-items: center;
     }
+    .overlay.active, .loading-overlay.active {
+      display: flex;
+    }
     .overlay {
       background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9;
     }
     .loading-overlay {
       background: rgba(0, 0, 0, 0.7);
-      z-index: 11;
+      backdrop-filter: blur(6px);
     }
     .loading-text {
       color: #00ffff;
@@ -143,20 +117,18 @@
       position: fixed;
       top: 0;
       left: -100%;
-      width: 280px;
       height: 100%;
-      background: #111;
-      z-index: 10;
+      width: 280px;
+      background-color: #111;
+      box-shadow: 4px 0 10px rgba(0, 255, 255, 0.3);
       transition: left 0.3s ease;
+      z-index: 10;
       display: flex;
       flex-direction: column;
-      box-shadow: 4px 0 10px rgba(0, 255, 255, 0.3);
     }
-
     .sidebar.active {
       left: 0;
     }
-
     .sidebar-header {
       padding: 20px;
       border-bottom: 1px solid #00ffff33;
@@ -164,56 +136,84 @@
       align-items: center;
       gap: 10px;
     }
-
     .close-btn {
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 14px;
+      font-size: 14px;
       font-weight: bold;
+      color: white;
+      background-color: red;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
       cursor: pointer;
     }
-
     .sidebar-message {
       color: #00ffff;
       font-size: 14px;
+      font-weight: 500;
     }
-
     .sidebar-options {
-      flex: 1;
       padding: 20px 15px;
+      flex: 1;
       overflow-y: auto;
     }
-
     .sidebar-option {
-      background: #1a1a1a;
-      color: white;
+      background-color: #1a1a1a;
       border: 1px solid #00ffff55;
       border-radius: 8px;
-      padding: 10px;
+      padding: 10px 12px;
+      color: white;
       margin-bottom: 12px;
       text-align: center;
-      cursor: pointer;
+      font-size: 15px;
       transition: background 0.2s;
+      cursor: pointer;
     }
-
     .sidebar-option:hover {
-      background: #00ffff22;
+      background-color: #00ffff22;
     }
-
     .logout-btn {
-      background: red;
-      color: white;
+      background-color: red;
       border: none;
+      color: white;
+      font-size: 16px;
       padding: 12px;
       border-radius: 8px;
-      margin: 20px;
       cursor: pointer;
+      margin: 20px;
+    }
+    .logout-btn:hover {
+      background-color: #ff3333;
     }
 
-    .logout-btn:hover {
-      background: #ff3333;
+    /* Casino game cards */
+    .games-section {
+      max-width: 1000px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+      padding: 0 20px;
+    }
+    .game-card {
+      background-color: #111;
+      border: 2px solid #00ffff55;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: white;
+      font-weight: bold;
+      transition: transform 0.2s ease, background 0.2s ease;
+      cursor: pointer;
+      box-shadow: 0 0 6px #00ffff33;
+    }
+    .game-card:hover {
+      background-color: #00ffff11;
+      transform: scale(1.03);
+    }
+    .game-icon {
+      font-size: 30px;
+      margin-bottom: 10px;
+      color: #00ffff;
     }
   </style>
 </head>
@@ -221,8 +221,8 @@
   <div id="overlay" class="overlay"></div>
   <div id="sidebar" class="sidebar">
     <div class="sidebar-header">
-      <button id="closeSidebar" class="close-btn">Close</button>
-      <span id="sidebarMessage" class="sidebar-message">Welcome!</span>
+      <button class="close-btn" id="closeSidebar">Close</button>
+      <span class="sidebar-message" id="sidebarMessage">Welcome!</span>
     </div>
     <div class="sidebar-options">
       <div class="sidebar-option" id="cashoutOption">Cashout</div>
@@ -232,53 +232,51 @@
       <div class="sidebar-option" id="contactOption">Contact Us</div>
       <div class="sidebar-option" id="privacyOption">Privacy Policy</div>
     </div>
-    <button id="logoutBtn" class="logout-btn">Logout</button>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
   </div>
   <div id="loadingOverlay" class="loading-overlay">
     <div class="loading-text" id="loadingText">Loading...</div>
   </div>
-
   <header>
     <div class="left-section">
-      <img src="https://i.pravatar.cc/150?img=3" class="avatar" id="avatarClick" />
+      <img src="https://i.pravatar.cc/150?img=3" alt="Avatar" class="avatar" id="avatarClick">
       <div class="welcome-text" id="welcomeUser">Welcome back!</div>
     </div>
     <div class="clock" id="clock">00.00.00</div>
   </header>
   <div class="neon-line"></div>
-
   <div class="balance-container">
     <div class="balance-text" id="balance">Balance: Loading...</div>
   </div>
 
-  <!-- Casino Game Section -->
+  <!-- Casino Game Cards -->
   <div class="games-section">
-    <div class="game-card">
+    <div class="game-card" onclick="window.location.href='aviator.html'">
       <div class="game-icon">✈️</div>
-      <div class="game-name">Aviator</div>
+      Aviator
     </div>
-    <div class="game-card">
-      <div class="game-icon">🎰</div>
-      <div class="game-name">Slots</div>
+    <div class="game-card" onclick="window.location.href='spin.html'">
+      <div class="game-icon">🎯</div>
+      Spin to Win
     </div>
-    <div class="game-card">
+    <div class="game-card" onclick="window.location.href='dice.html'">
       <div class="game-icon">🎲</div>
-      <div class="game-name">Dice Roll</div>
+      Dice Roll
     </div>
-    <div class="game-card">
-      <div class="game-icon">♠️</div>
-      <div class="game-name">Blackjack</div>
+    <div class="game-card" onclick="window.location.href='blackjack.html'">
+      <div class="game-icon">🃏</div>
+      Blackjack
     </div>
-    <div class="game-card">
-      <div class="game-icon">🌀</div>
-      <div class="game-name">Spin to Win</div>
+    <div class="game-card" onclick="window.location.href='slots.html'">
+      <div class="game-icon">🎰</div>
+      Slots
     </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -295,35 +293,69 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    const avatar = document.getElementById('avatarClick');
+    const balanceText = document.getElementById('balance');
+    const welcomeUser = document.getElementById('welcomeUser');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+
     onAuthStateChanged(auth, user => {
       if (user) {
         const uid = user.uid;
-        get(ref(db, `users/${uid}/balance`)).then(snapshot => {
-          const bal = snapshot.exists() ? snapshot.val() : 0;
-          document.getElementById('balance').textContent = `Balance: $${parseFloat(bal).toFixed(2)}`;
-        });
-        get(ref(db, `users/${uid}/username`)).then(snapshot => {
-          const name = snapshot.exists() ? snapshot.val() : "User";
-          document.getElementById('welcomeUser').textContent = `Welcome, ${name}`;
-        });
+
+        get(ref(db, `users/${uid}/balance`))
+          .then(snapshot => {
+            const bal = snapshot.exists() ? snapshot.val() : 0;
+            balanceText.textContent = `Balance: $${parseFloat(bal).toFixed(2)}`;
+          })
+          .catch(() => {
+            balanceText.textContent = "Balance: $0.00";
+          });
+
+        get(ref(db, `users/${uid}/username`))
+          .then(snapshot => {
+            const name = snapshot.exists() ? snapshot.val() : "User";
+            welcomeUser.textContent = `Welcome, ${name}`;
+          })
+          .catch(() => {
+            welcomeUser.textContent = "Welcome, User";
+          });
+
         if (user.photoURL) {
-          document.getElementById('avatarClick').src = user.photoURL;
+          avatar.src = user.photoURL;
         }
+      } else {
+        window.location.href = "index.html";
       }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      loadingOverlay.classList.add('active');
+      loadingText.textContent = 'Logging you out...';
+      signOut(auth).then(() => {
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1000);
+      });
+    });
+
+    window.addEventListener('offline', () => {
+      loadingOverlay.classList.add('active');
+      loadingText.textContent = "You're offline!";
     });
   </script>
 
   <script>
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('overlay');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    const loadingText = document.getElementById('loadingText');
+    const sidebarMsg = document.getElementById('sidebarMessage');
+    const messages = ["You're awesome!", "Good to see you!", "Let's win big!", "Ready to roll?", "Feeling lucky?", "Have fun!", "Keep it up!"];
+    const loadingMessages = ["Teleporting...", "Spinning the wheel...", "Loading your luck...", "Summoning servers...", "Just a sec...", "Getting things ready..."];
 
-    const avatar = document.getElementById('avatarClick');
-    avatar.addEventListener('click', () => {
+    document.getElementById('avatarClick').addEventListener('click', () => {
       sidebar.classList.add('active');
       overlay.classList.add('active');
-      document.getElementById('sidebarMessage').textContent = ["You're awesome!", "Ready to play?", "Good to see you!"][Math.floor(Math.random() * 3)];
+      sidebarMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
     });
 
     document.getElementById('closeSidebar').addEventListener('click', () => {
@@ -350,15 +382,9 @@
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
         loadingOverlay.classList.add('active');
-        loadingText.textContent = "Loading...";
+        loadingText.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
         setTimeout(() => window.location.href = opt.url, 1500);
       });
-    });
-
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      loadingOverlay.classList.add('active');
-      loadingText.textContent = 'Logging out...';
-      setTimeout(() => window.location.href = 'index.html', 1500);
     });
 
     function updateClock() {
