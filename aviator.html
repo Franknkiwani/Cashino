@@ -58,7 +58,13 @@
       border: none;
       border-radius: 5px;
       margin: 5px 0;
-      width: 100%;
+      width: 80%;
+      box-sizing: border-box;
+    }
+
+    input[type="number"] {
+      margin: 5px auto;
+      display: block;
     }
 
     button {
@@ -84,7 +90,7 @@
 <div id="aviatorGame">
   <div id="aviatorStatus">Waiting for next round...</div>
   <div id="aviatorMultiplier">x1.00</div>
-  <input type="number" id="betAmount" placeholder="Enter bet ($1 min)" min="1" />
+  <input type="number" id="betAmount" placeholder="Enter bet ($0.10 min)" min="0.10" step="0.01" />
   <button id="startBtn">Start</button>
   <button id="cashoutBtn" style="display:none;">Cash Out</button>
   <div id="crashHistory">Last Crashes: </div>
@@ -160,8 +166,8 @@
   function startGame() {
     if (inGame) return;
     const bet = parseFloat(document.getElementById("betAmount").value);
-    if (isNaN(bet) || bet < 1 || bet > balance) {
-      alert("Invalid bet.");
+    if (isNaN(bet) || bet < 0.10 || bet > balance) {
+      alert("Invalid bet. Minimum is $0.10.");
       return;
     }
 
@@ -184,68 +190,85 @@
         endGame(bet);
       }
     }, 50);
-  }
+0cashoutBtn.onclick = () => {
+        if (!inGame || hasCashedOut) return;
+        hasCashedOut = true;
+        const payout = parseFloat(document.getElementById("betAmount").value) * multiplier;
+        balance += payout;
+        setBalance(balance);
+        updateBalanceDisplay();
+        statusEl.textContent = `You cashed out at x${multiplier.toFixed(2)}!`;
+        clearInterval(interval);
+        startBtn.style.display = "inline-block";
+        cashoutBtn.style.display = "none";
+        inGame = false;
+        logCrash(multiplier);
+        autoStartNextRound();
+      };
 
-  function generateCrashPoint() {
-    const r = Math.random();
-    if (r < 0.6) return +(Math.random() * 0.5 + 1).toFixed(2);
-    if (r < 0.9) return +(Math.random() * 4 + 1.5).toFixed(2);
-    if (r < 0.99) return +(Math.random() * 10 + 5).toFixed(2);
-    return +(Math.random() * 50 + 50).toFixed(2);
-  }
+      function endGame(bet) {
+        clearInterval(interval);
+        if (!hasCashedOut) {
+          statusEl.textContent = `Crashed at x${crashPoint.toFixed(2)}! You lost $${bet.toFixed(2)}`;
+        }
+        startBtn.style.display = "inline-block";
+        cashoutBtn.style.display = "none";
+        inGame = false;
+        logCrash(crashPoint);
+        autoStartNextRound();
+      }
 
-  function endGame(bet) {
-    clearInterval(interval);
-    statusEl.textContent = "Crashed at x" + crashPoint.toFixed(2);
-    updateCrashList(crashPoint);
-    inGame = false;
-    cashoutBtn.style.display = "none";
-    setTimeout(() => {
-      statusEl.textContent = "Waiting for next round...";
-      startBtn.style.display = "inline-block";
-    }, 3000);
-  }
+      function logCrash(point) {
+        crashHistory.unshift(point.toFixed(2));
+        if (crashHistory.length > 5) crashHistory.pop();
+        const historyHTML = crashHistory.map(p => {
+          const mult = parseFloat(p);
+          const className = mult < 2 ? 'crash-low' : mult < 5 ? 'crash-mid' : 'crash-high';
+          return `<span class="${className}">x${p}</span>`;
+        }).join(' ');
+        document.getElementById("crashHistory").innerHTML = `Last Crashes: ${historyHTML}`;
+      }
 
-  function cashOut() {
-    if (!inGame || hasCashedOut) return;
-    hasCashedOut = true;
-    const bet = parseFloat(document.getElementById("betAmount").value);
-    const won = bet * multiplier;
-    balance += won;
-    setBalance(balance);
-    updateBalanceDisplay();
-    alert(`Cashed out at x${multiplier.toFixed(2)}! You won $${won.toFixed(2)}`);
-  }
+      function autoStartNextRound() {
+        let countdown = 5;
+        statusEl.textContent = `Next round in ${countdown}s...`;
+        const timer = setInterval(() => {
+          countdown--;
+          if (countdown <= 0) {
+            clearInterval(timer);
+            if (!inGame) {
+              startBtn.click();
+            }
+          } else {
+            statusEl.textContent = `Next round in ${countdown}s...`;
+          }
+        }, 1000);
+      }
 
-  function updateCrashList(newCrash) {
-    crashHistory.unshift(newCrash);
-    if (crashHistory.length > 5) crashHistory.pop();
-    const histEl = document.getElementById("crashHistory");
-    histEl.innerHTML = "Last Crashes: ";
-    crashHistory.forEach(val => {
-      let cls = val < 1.5 ? 'crash-low' : val < 5 ? 'crash-mid' : 'crash-high';
-      histEl.innerHTML += `<span class="${cls}">x${val.toFixed(2)}</span> `;
-    });
-  }
+      function generateCrashPoint() {
+        const r = Math.random();
+        if (r < 0.5) return parseFloat((1.00 + Math.random()).toFixed(2)); // 1x–2x
+        if (r < 0.8) return parseFloat((2.0 + Math.random() * 3).toFixed(2)); // 2x–5x
+        if (r < 0.95) return parseFloat((5.0 + Math.random() * 5).toFixed(2)); // 5x–10x
+        return parseFloat((10.0 + Math.random() * 90).toFixed(2)); // 10x–100x
+      }
 
-  // Auth & Init
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      userUID = user.uid;
-      const userRef = ref(db, 'users/' + userUID);
-      onValue(userRef, snapshot => {
-        if (!snapshot.exists()) {
-          set(userRef, { balance: 3.00, email: user.email });
+      startBtn.onclick = startGame;
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          userUID = user.uid;
+          const userRef = ref(db, 'users/' + userUID);
+          onValue(userRef, snapshot => {
+            if (!snapshot.exists()) {
+              set(userRef, { balance: 3.00 }); // free $3 for new user
+            }
+          });
+          fetchBalance();
+        } else {
+          alert("Please log in to play Aviator.");
         }
       });
-      fetchBalance();
-    } else {
-      alert("Please log in to play.");
-    }
-  });
-
-  startBtn.onclick = startGame;
-  cashoutBtn.onclick = cashOut;
-</script>
-</body>
+    </script>
+  </body>
 </html>
