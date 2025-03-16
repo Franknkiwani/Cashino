@@ -2,256 +2,266 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Slot Machine</title>
+  <title>Modern Slots Game</title>
   <style>
     body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0c0c0c;
+      font-family: "Segoe UI", sans-serif;
+      background: #111;
       color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    .slot-container {
-      margin-top: 20px;
+      margin: 0;
+      padding: 0;
       text-align: center;
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px #00ffc3;
-      max-width: 450px;
-      width: 95%;
     }
+
     .dashboard-btn {
-      background: #ff0066;
+      background: #28a745;
       color: white;
-      padding: 8px 16px;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
-      margin-bottom: 10px;
-      box-shadow: 0 0 10px rgba(255, 0, 102, 0.5);
-    }
-    #balanceDisplay {
-      margin-bottom: 15px;
-      color: lightgreen;
-      font-size: 1.1rem;
-    }
-    .reels {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .reel {
-      background: #222;
-      border: 2px solid #00ffc3;
-      padding: 20px;
-      font-size: 2rem;
-      border-radius: 10px;
-      width: 70px;
-      height: 70px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.3s ease-in-out;
-    }
-    .reel.spinning {
-      animation: spin 0.3s linear infinite;
-    }
-    @keyframes spin {
-      0% { transform: rotateX(0deg); }
-      100% { transform: rotateX(360deg); }
-    }
-    input, button {
-      padding: 10px;
       border: none;
-      border-radius: 6px;
-      margin: 5px;
+      padding: 10px 20px;
+      margin: 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
     }
-    #message {
+
+    .balance {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #0f0;
+    }
+
+    .slot-container {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      grid-template-rows: repeat(3, 80px);
+      gap: 10px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .slot {
+      font-size: 2em;
+      background: #222;
+      border: 2px solid #444;
+      border-radius: 10px;
+      line-height: 80px;
+      transition: all 0.3s ease;
+    }
+
+    .slot.highlight {
+      background: #ffd700;
+      color: #000;
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    .controls {
+      margin: 20px;
+    }
+
+    input[type="number"] {
+      padding: 8px;
+      width: 100px;
+      margin-right: 10px;
+    }
+
+    button {
+      padding: 8px 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .result {
       margin-top: 10px;
       font-weight: bold;
     }
-    .payout-table {
-      margin-top: 30px;
-      background: #121212;
-      border: 1px solid #00ffc3;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: left;
-      font-size: 0.95rem;
+
+    .payouts {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      font-size: 0.9em;
+      flex-wrap: wrap;
+    }
+
+    .payouts div {
+      background: #333;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #555;
     }
   </style>
 </head>
 <body>
 
-<div class="slot-container">
-  <a href="homepage.html" class="dashboard-btn">← DASHBOARD</a>
-  <div id="balanceDisplay">Balance: $0.00</div>
-  <h2>Slot Machine</h2>
-  <div class="reels" id="reels">
-    <!-- 9 reels in 3x3 -->
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
-    <div class="reel">❔</div>
+  <button class="dashboard-btn" onclick="window.location.href='homepage.html'">Go to Dashboard</button>
+
+  <div class="balance">Balance: $<span id="balance">0.00</span></div>
+
+  <div class="slot-container" id="slots">
+    <!-- 9 boxes -->
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
+    <div class="slot">?</div>
   </div>
-  <input type="number" id="betAmount" placeholder="Enter bet amount ($0.10 - $10)" min="0.1" max="10" step="0.01">
-  <button id="spinBtn">SPIN</button>
-  <div id="message"></div>
 
-  <div class="payout-table">
-    <h3 style="color: #00ffc3;">Payout Table</h3>
-    <ul style="list-style:none; padding: 0;">
-      <li><strong>🍒 / 🍋</strong> – 1.2× / 1.5×</li>
-      <li><strong>🔔</strong> – 2×</li>
-      <li><strong>⭐</strong> – 3×</li>
-      <li><strong>7️⃣</strong> – 5×</li>
-      <li><strong>💎</strong> – 10× (RARE)</li>
-    </ul>
-    <p style="font-size: 0.85rem; color: #888;">* Win if any **row** has 3 matching symbols.</p>
+  <div class="controls">
+    <input type="number" step="0.01" min="0.1" max="10" id="betAmount" placeholder="Bet Amount" />
+    <button onclick="spin()">Spin</button>
+    <div class="result" id="resultMsg"></div>
   </div>
-</div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <div class="payouts">
+    <div>🍒 x3 = 2×</div>
+    <div>💎 x3 = 10×</div>
+    <div>⭐ x3 = 3×</div>
+    <div>7️⃣ x3 = 5×</div>
+  </div>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+  <!-- Sound -->
+  <audio id="spinSound" src="https://actions.google.com/sounds/v1/impacts/crash.ogg"></audio>
+  <audio id="winSound" src="https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"></audio>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase();
-  const auth = getAuth();
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  const symbols = ["🍒", "🍋", "🔔", "⭐", "7️⃣", "💎"];
-  const payouts = {
-    "🍒": 1.2,
-    "🍋": 1.5,
-    "🔔": 2,
-    "⭐": 3,
-    "7️⃣": 5,
-    "💎": 10
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  let currentUser = null;
-  const balanceDisplay = document.getElementById("balanceDisplay");
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+    const auth = getAuth(app);
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      const balanceRef = ref(db, "users/" + currentUser.uid + "/balance");
-      const snapshot = await get(balanceRef);
-      if (!snapshot.exists()) {
-        await set(balanceRef, 3.00);
-        balanceDisplay.textContent = "Balance: $3.00";
+    let currentUser = null;
+    let userBalance = 0;
+
+    const balanceEl = document.getElementById('balance');
+    const slots = Array.from(document.querySelectorAll('.slot'));
+    const resultMsg = document.getElementById('resultMsg');
+    const spinSound = document.getElementById('spinSound');
+    const winSound = document.getElementById('winSound');
+
+    const symbols = ['🍒', '💎', '⭐', '7️⃣', '🍋', '🔔'];
+
+    const payouts = {
+      '🍒': 2,
+      '💎': 10,
+      '⭐': 3,
+      '7️⃣': 5
+    };
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const balRef = ref(database, 'users/' + user.uid + '/balance');
+        const snap = await get(balRef);
+        if (!snap.exists()) {
+          await set(balRef, 3.00);
+          userBalance = 3.00;
+        } else {
+          userBalance = snap.val();
+        }
+        balanceEl.textContent = userBalance.toFixed(2);
       } else {
-        balanceDisplay.textContent = "Balance: $" + snapshot.val().toFixed(2);
+        alert("You must be logged in to play.");
+        window.location.href = "login.html";
       }
-    } else {
-      alert("You must be logged in to play.");
-    }
-  });
-
-  function getRandomSymbol() {
-    return symbols[Math.floor(Math.random() * symbols.length)];
-  }
-
-  function spinReels() {
-    const reels = document.querySelectorAll('.reel');
-    reels.forEach(reel => {
-      reel.classList.add("spinning");
     });
 
-    return new Promise(resolve => {
-      setTimeout(() => {
-        let results = [];
-        reels.forEach((reel, i) => {
-          const symbol = getRandomSymbol();
-          reel.textContent = symbol;
-          reel.classList.remove("spinning");
-          results.push(symbol);
-        });
-        resolve(results);
-      }, 1000);
-    });
-  }
+    function getRandomSymbol() {
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
 
-  function checkRows(results) {
-    const rows = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8]
-    ];
-    for (let row of rows) {
-      const [a, b, c] = row;
-      if (results[a] === results[b] && results[b] === results[c]) {
-        return { match: true, symbol: results[a] };
+    function spin() {
+      const bet = parseFloat(document.getElementById('betAmount').value);
+      if (isNaN(bet) || bet < 0.1 || bet > 10) {
+        alert("Bet must be between $0.10 and $10.00");
+        return;
       }
+
+      if (bet > userBalance) {
+        alert("Insufficient balance.");
+        return;
+      }
+
+      resultMsg.textContent = "";
+      spinSound.play();
+
+      // Reset slots
+      slots.forEach(slot => {
+        slot.textContent = '?';
+        slot.classList.remove("highlight");
+      });
+
+      // Spin animation
+      const spinSymbols = [];
+      for (let i = 0; i < 9; i++) {
+        let rand = getRandomSymbol();
+        slots[i].textContent = rand;
+        spinSymbols.push(rand);
+      }
+
+      // Count symbols
+      const counts = {};
+      spinSymbols.forEach(s => counts[s] = (counts[s] || 0) + 1);
+
+      let won = false;
+      let winAmount = 0;
+
+      for (const sym in counts) {
+        if (counts[sym] >= 3 && payouts[sym]) {
+          winAmount = bet * payouts[sym];
+          won = true;
+
+          // Highlight matching
+          spinSymbols.forEach((s, i) => {
+            if (s === sym) slots[i].classList.add("highlight");
+          });
+
+          break; // Only one win at a time for now
+        }
+      }
+
+      if (won) {
+        winSound.play();
+        userBalance += (winAmount - bet);
+        resultMsg.textContent = `You won $${(winAmount).toFixed(2)}!`;
+      } else {
+        userBalance -= bet;
+        resultMsg.textContent = `You lost $${bet.toFixed(2)}.`;
+      }
+
+      // Update balance
+      balanceEl.textContent = userBalance.toFixed(2);
+      const userRef = ref(database, 'users/' + currentUser.uid);
+      update(userRef, { balance: userBalance });
     }
-    return { match: false };
-  }
-
-  document.getElementById("spinBtn").addEventListener("click", async () => {
-    const bet = parseFloat(document.getElementById("betAmount").value);
-    const message = document.getElementById("message");
-
-    if (isNaN(bet) || bet < 0.1 || bet > 10) {
-      message.textContent = "Enter a valid bet ($0.10 - $10)";
-      return;
-    }
-    if (!currentUser) {
-      message.textContent = "Not logged in.";
-      return;
-    }
-
-    const balanceRef = ref(db, "users/" + currentUser.uid + "/balance");
-    const snapshot = await get(balanceRef);
-    let balance = snapshot.exists() ? snapshot.val() : 3.00;
-
-    if (bet > balance) {
-      message.textContent = "Insufficient balance!";
-      return;
-    }
-
-    const results = await spinReels();
-    const rowCheck = checkRows(results);
-    let winnings = 0;
-
-    if (rowCheck.match) {
-      winnings = bet * payouts[rowCheck.symbol];
-    }
-
-    balance = balance - bet + winnings;
-    await set(balanceRef, parseFloat(balance.toFixed(2)));
-    balanceDisplay.textContent = "Balance: $" + balance.toFixed(2);
-
-    if (winnings > 0) {
-      message.innerHTML = `<span style="color:#00ffc3;">You won $${winnings.toFixed(2)} with ${rowCheck.symbol}!</span>`;
-    } else {
-      message.innerHTML = `<span style="color:#ff3c3c;">You lost $${bet.toFixed(2)}. Try again!</span>`;
-    }
-  });
-</script>
-
+  </script>
 </body>
 </html>
