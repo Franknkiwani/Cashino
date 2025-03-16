@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Modern App UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <style>
+    * {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+      touch-action: manipulation;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    header {
+      width: 100%;
+      height: 60px;
+      background-color: #0a0a0a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .left-section {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 2px solid #00ffff;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .avatar:hover {
+      transform: scale(1.05);
+    }
+
+    .welcome-text {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .clock {
+      font-size: 18px;
+      font-weight: bold;
+      color: #00ffff;
+      letter-spacing: 1px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .neon-line {
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, #ff00ff, #00ffff);
+      box-shadow: 0 0 6px #00ffff;
+    }
+
+    .balance-container {
+      margin: 20px auto 0;
+      padding: 12px 24px;
+      background-color: #0a0a0a;
+      border: 2px solid #00ff99;
+      border-radius: 12px;
+      width: fit-content;
+      text-align: center;
+      box-shadow: 0 0 8px #00ff9966;
+    }
+
+    .balance-text {
+      font-size: 20px;
+      font-weight: bold;
+      color: #00ff99;
+    }
+
+    /* Overlay */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 9;
+      display: none;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      height: 100%;
+      width: 280px;
+      background-color: #111;
+      box-shadow: 4px 0 10px rgba(0, 255, 255, 0.3);
+      transition: left 0.3s ease;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid #00ffff33;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .close-btn {
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      background-color: red;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .sidebar-message {
+      color: #00ffff;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .sidebar-options {
+      padding: 20px 15px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-option {
+      background-color: #1a1a1a;
+      border: 1px solid #00ffff55;
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: white;
+      margin-bottom: 12px;
+      text-align: center;
+      font-size: 15px;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    .sidebar-option:hover {
+      background-color: #00ffff22;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay -->
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Sidebar -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <button class="close-btn" id="closeSidebar">Close</button>
+      <span class="sidebar-message" id="sidebarMessage">Welcome!</span>
+    </div>
+    <div class="sidebar-options">
+      <div class="sidebar-option">Cashout</div>
+      <div class="sidebar-option">Deposit</div>
+      <div class="sidebar-option">Redeem Codes</div>
+      <div class="sidebar-option">History</div>
+      <div class="sidebar-option">Contact Us</div>
+      <div class="sidebar-option">Privacy Policy</div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="left-section">
+      <img src="https://i.pravatar.cc/150?img=3" alt="Avatar" class="avatar" id="avatarClick">
+      <div class="welcome-text" id="welcomeUser">Welcome back!</div>
+    </div>
+    <div class="clock" id="clock">00.00.00</div>
+  </header>
+
+  <!-- Neon Glow -->
+  <div class="neon-line"></div>
+
+  <!-- Balance -->
+  <div class="balance-container">
+    <div class="balance-text" id="balance">Balance: Loading...</div>
+  </div>
+
+  <!-- Sidebar & Clock Script -->
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const sidebarMsg = document.getElementById('sidebarMessage');
+
+    const messages = [
+      "You're awesome!",
+      "Good to see you!",
+      "Let's win big!",
+      "Ready to roll?",
+      "Feeling lucky?",
+      "Have fun!",
+      "Keep it up!"
+    ];
+
+    function randomMessage() {
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    document.getElementById('avatarClick').addEventListener('click', () => {
+      sidebar.classList.add('active');
+      overlay.classList.add('active');
+      sidebarMsg.textContent = randomMessage();
+    });
+
+    document.getElementById('closeSidebar').addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      sidebarMsg.textContent = randomMessage();
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      sidebarMsg.textContent = randomMessage();
+    });
+
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}.${m}.${s}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+
+  <!-- Firebase SDKs and Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const uid = user.uid;
+
+        // Get balance
+        get(ref(db, `users/${uid}/balance`)).then(snapshot => {
+          const bal = snapshot.exists() ? snapshot.val() : 0;
+          document.getElementById("balance").textContent = `Balance: $${parseFloat(bal).toFixed(2)}`;
+        });
+
+        // Get username
+        get(ref(db, `users/${uid}/username`)).then(snapshot => {
+          const name = snapshot.exists() ? snapshot.val() : "User";
+          document.getElementById("welcomeUser").textContent = `Welcome, ${name}!`;
+        });
+      }
+    });
+  </script>
+
+</body>
+  </html>
