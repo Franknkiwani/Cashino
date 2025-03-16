@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Modern Blackjack</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 20px;
+    }
+
+    .balance {
+      display: flex;
+      align-items: center;
+      font-size: 1.2em;
+    }
+
+    .balance img {
+      border-radius: 50%;
+      margin-right: 10px;
+      width: 35px;
+      height: 35px;
+    }
+
+    .game {
+      background: #1e1e1e;
+      border-radius: 10px;
+      padding: 20px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: 0 0 10px #000;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1.5em;
+    }
+
+    .cards {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      width: 60px;
+      height: 90px;
+      background: #333;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      border: 2px solid #555;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input[type="number"] {
+      padding: 8px;
+      width: 100%;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: #222;
+      color: #fff;
+    }
+
+    button {
+      padding: 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 5px;
+      background: #28a745;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #218838;
+    }
+
+    #logMsg {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 1.1em;
+    }
+
+    @media(max-width: 600px) {
+      .card {
+        width: 40px;
+        height: 60px;
+        font-size: 1em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Blackjack</h1>
+    <div class="balance">
+      <img id="profilePic" src="" alt="Profile" />
+      <span>$<span id="balance">0.00</span></span>
+    </div>
+  </header>
+
+  <div class="game">
+    <h2>Dealer (<span id="dealerSum">0</span>)</h2>
+    <div id="dealerCards" class="cards"></div>
+
+    <h2>You (<span id="playerSum">0</span>)</h2>
+    <div id="playerCards" class="cards"></div>
+
+    <div class="controls">
+      <input type="number" id="betAmount" placeholder="Enter your bet ($0.10+)" min="0.10" step="0.10" />
+      <button onclick="startGame()">Start Game</button>
+      <button onclick="hit()">Hit</button>
+      <button onclick="stay()">Stay</button>
+    </div>
+
+    <div id="logMsg"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase(app);
+
+    let user, balance = 0, playerCards = [], dealerCards = [], gameOver = false;
+
+    const dealerSumEl = document.getElementById("dealerSum");
+    const playerSumEl = document.getElementById("playerSum");
+    const dealerCardsEl = document.getElementById("dealerCards");
+    const playerCardsEl = document.getElementById("playerCards");
+    const balanceEl = document.getElementById("balance");
+    const profilePic = document.getElementById("profilePic");
+    const logMsg = document.getElementById("logMsg");
+
+    const cardValues = [2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 11];
+
+    onAuthStateChanged(auth, (u) => {
+      if (u) {
+        user = u;
+        const defaultAvatar = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${user.uid.slice(0, 10)}`;
+        profilePic.src = user.photoURL || defaultAvatar;
+
+        const balanceRef = ref(db, "users/" + user.uid + "/balance");
+        onValue(balanceRef, (snap) => {
+          balance = parseFloat(snap.val()) || 0;
+          balanceEl.textContent = balance.toFixed(2);
+        });
+      } else {
+        alert("You must be logged in!");
+      }
+    });
+
+    function drawCard() {
+      return cardValues[Math.floor(Math.random() * cardValues.length)];
+    }
+
+    function calcSum(cards) {
+      let sum = cards.reduce((a, b) => a + b, 0);
+      let aces = cards.filter(c => c === 11).length;
+      while (sum > 21 && aces) {
+        sum -= 10;
+        aces--;
+      }
+      return sum;
+    }
+
+    function renderCards() {
+      dealerCardsEl.innerHTML = dealerCards.map(c => `<div class="card">${c}</div>`).join("");
+      playerCardsEl.innerHTML = playerCards.map(c => `<div class="card">${c}</div>`).join("");
+      dealerSumEl.textContent = calcSum(dealerCards);
+      playerSumEl.textContent = calcSum(playerCards);
+    }
+
+    window.startGame = function () {
+      if (gameOver === false && playerCards.length) return;
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      if (isNaN(bet) || bet < 0.1) return log("Min bet is $0.10");
+      if (bet > balance) return log("Insufficient balance");
+
+      updateBalance(balance - bet);
+      playerCards = [drawCard(), drawCard()];
+      dealerCards = [drawCard()];
+      renderCards();
+      gameOver = false;
+      log("Game started. Hit or Stay?");
+    };
+
+    window.hit = function () {
+      if (gameOver || !playerCards.length) return;
+      playerCards.push(drawCard());
+      renderCards();
+      const sum = calcSum(playerCards);
+      if (sum > 21) endGame(false);
+    };
+
+    window.stay = function () {
+      if (gameOver || !playerCards.length) return;
+      while (calcSum(dealerCards) < 17) dealerCards.push(drawCard());
+      renderCards();
+
+      const playerSum = calcSum(playerCards);
+      const dealerSum = calcSum(dealerCards);
+
+      if (dealerSum > 21 || playerSum > dealerSum) endGame(true);
+      else if (dealerSum === playerSum) endGame(null);
+      else endGame(false);
+    };
+
+    function endGame(win) {
+      gameOver = true;
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      if (win === true) {
+        log("You win!");
+        updateBalance(balance + bet * 2);
+      } else if (win === null) {
+        log("Tie. Bet returned.");
+        updateBalance(balance + bet);
+      } else {
+        log("You lost.");
+      }
+      setTimeout(() => {
+        playerCards = [];
+        dealerCards = [];
+        renderCards();
+      }, 1500);
+    }
+
+    function updateBalance(newBal) {
+      if (!user) return;
+      balance = parseFloat(newBal.toFixed(2));
+      set(ref(db, "users/" + user.uid + "/balance"), balance);
+    }
+
+    function log(msg) {
+      logMsg.textContent = msg;
+    }
+  </script>
+</body>
+</html>
