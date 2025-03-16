@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyberpunk Spin to Win</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .wheel {
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      border: 8px solid #00ffe1;
+      box-shadow: 0 0 25px #00ffe1, 0 0 50px #ff00ff inset;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: bold;
+      text-shadow: 0 0 10px #fff;
+      transition: background 0.1s ease-in-out;
+      user-select: none;
+    }
+
+    #spinBtn {
+      margin-top: 30px;
+      padding: 14px 28px;
+      font-size: 18px;
+      background: #ff00ff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff00ff, 0 0 25px #00ffe1;
+      transition: all 0.2s ease;
+    }
+
+    #spinBtn:active {
+      transform: scale(0.96);
+      box-shadow: 0 0 5px #ff00ff;
+    }
+
+    #resultText {
+      margin-top: 20px;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    #balance {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 16px;
+      background: #111;
+      color: #0f0;
+      padding: 8px 14px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px #00ffcc;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="balance">Balance: $0.000</div>
+  <div class="wheel" id="wheel">SPIN</div>
+  <button id="spinBtn">SPIN for $0.100</button>
+  <div id="resultText"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+
+    const wheel = document.getElementById("wheel");
+    const spinBtn = document.getElementById("spinBtn");
+    const resultText = document.getElementById("resultText");
+    const balanceEl = document.getElementById("balance");
+
+    let uid = null;
+    let currentBalance = 0;
+    let spinning = false;
+
+    const prizePool = [
+      0.000, 0.010, 0.020, 0.030, 0.050, 0.070, 0.090,
+      0.100, 0.150, 0.200, 0.250, 0.300,
+      0.750, 0.900, 1.000
+    ];
+    const weights = [
+      20, 15, 15, 10, 8, 6, 5,
+      4, 3, 2, 1.5, 1,
+      0.5, 0.2, 0.1
+    ];
+
+    const colors = ['#ff00ff', '#00ffe1', '#0f0', '#ff6600', '#00f', '#ff0000'];
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        uid = user.uid;
+        const balanceRef = ref(db, 'users/' + uid + '/balance');
+        onValue(balanceRef, snapshot => {
+          currentBalance = parseFloat(snapshot.val()) || 0;
+          balanceEl.textContent = `Balance: $${currentBalance.toFixed(3)}`;
+        });
+      } else {
+        alert("You must be logged in to play.");
+      }
+    });
+
+    function updateBalance(amount) {
+      const newBal = parseFloat(amount.toFixed(3));
+      set(ref(db, 'users/' + uid + '/balance'), newBal);
+    }
+
+    function getRandomPrize() {
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+      let rnd = Math.random() * totalWeight;
+      for (let i = 0; i < prizePool.length; i++) {
+        if (rnd < weights[i]) return prizePool[i];
+        rnd -= weights[i];
+      }
+      return 0;
+    }
+
+    spinBtn.onclick = () => {
+      if (spinning) return;
+      if (currentBalance < 0.100) {
+        resultText.textContent = "Not enough balance to spin.";
+        return;
+      }
+
+      spinning = true;
+      resultText.textContent = '';
+      wheel.textContent = '';
+
+      updateBalance(currentBalance - 0.100);
+
+      let flashes = 0;
+      const spinInterval = setInterval(() => {
+        wheel.style.background = colors[Math.floor(Math.random() * colors.length)];
+        flashes++;
+      }, 80);
+
+      setTimeout(() => {
+        clearInterval(spinInterval);
+        const prize = getRandomPrize();
+        wheel.style.background = prize === 0 ? '#111' : '#00ff99';
+        wheel.textContent = `$${prize.toFixed(3)}`;
+
+        if (prize > 0) {
+          updateBalance(currentBalance - 0.100 + prize);
+          resultText.textContent = `You won $${prize.toFixed(3)}!`;
+        } else {
+          resultText.textContent = "You lost. Better luck next spin!";
+        }
+
+        spinning = false;
+      }, 2500);
+    };
+  </script>
+</body>
+</html>
