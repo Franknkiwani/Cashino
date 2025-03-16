@@ -1,186 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CASHINO Loading</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Arial', sans-serif;
-      background: #0d0d0d;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-      flex-direction: column;
-      gap: 20px;
-    }
-    .loader-container {
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .cashino-logo {
-      font-size: 48px;
-      font-weight: bold;
-      color: #ff006e;
-      text-transform: uppercase;
-      letter-spacing: 5px;
-      animation: flicker 1.5s infinite alternate;
-    }
-    .loader {
-      margin-top: 20px;
-      width: 60px;
-      height: 60px;
-      border: 10px solid #ff006e;
-      border-top: 10px solid #fff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    .status {
-      font-size: 18px;
-      color: #00d9ff;
-      width: 100%;
-      max-width: 300px;
-    }
-    .step {
-      margin: 10px 0;
-      padding: 15px;
-      border-radius: 10px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      backdrop-filter: blur(10px);
-      background-color: rgba(0, 0, 0, 0.6);
-      transition: all 0.3s ease-in-out;
-    }
-    .step.success {
-      border-color: #00ff00;
-      background-color: rgba(0, 255, 0, 0.1);
-    }
-    .step.error {
-      border-color: #ff006e;
-      background-color: rgba(255, 0, 110, 0.1);
-    }
-    .error-message {
-      display: none;
-      color: #ff006e;
-      background-color: rgba(255, 0, 110, 0.2);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 16px;
-      text-align: center;
-      margin-top: 20px;
-      width: 80%;
-      max-width: 400px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes flicker {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASHINO Loading</title>
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Step elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        const errorMessage = document.getElementById('error-message');
+
+        // Check user state and progress steps
+        const checkUser = () => {
+            step1.textContent = 'Checking Account...';
+            errorMessage.style.display = 'none';  // Hide any previous error messages
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    // Step 1: Account Verified
+                    step1.textContent = 'Account Verified';
+                    step1.classList.add('success');
+
+                    try {
+                        // Step 2: Show User Email
+                        step2.textContent = `Email: ${user.email}`;
+                        step2.classList.add('success');
+
+                        // Step 3: Show Username
+                        step3.textContent = 'Checking Username...';
+                        const userRef = doc(db, 'users', user.uid);
+                        const userDoc = await getDoc(userRef);
+
+                        if (userDoc.exists() && userDoc.data().username) {
+                            step3.textContent = `Username: ${userDoc.data().username}`;
+                            step3.classList.add('success');
+
+                            // Redirect after everything is correct
+                            setTimeout(() => {
+                                window.location.href = 'homepage.html';
+                            }, 2000); // 2-second delay before redirect
+                        } else {
+                            step3.textContent = 'Username not found';
+                            step3.classList.add('error');
+                        }
+
+                    } catch (error) {
+                        console.error('Error checking user data:', error);
+                        step2.textContent = 'Error checking data';
+                        step2.classList.add('error');
+                        step3.textContent = '';
+                    }
+                } else {
+                    // No user found
+                    step1.textContent = 'No Account Found';
+                    step1.classList.add('error');
+                    step2.textContent = '';
+                    step3.textContent = '';
+                    errorMessage.style.display = 'block';
+                    errorMessage.textContent = 'No user is logged in. Please log in again.';
+                }
+            });
+        };
+
+        // Start checking
+        checkUser();
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0f0f0f;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .loader-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cashino-logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ff006e;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            animation: flicker 1.5s infinite alternate;
+        }
+        .loader {
+            margin-top: 20px;
+            display: inline-block;
+            width: 60px;
+            height: 60px;
+            border: 10px solid #ff006e;
+            border-top: 10px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        .status {
+            font-size: 18px;
+            color: #00d9ff;
+            width: 100%;
+            max-width: 300px;
+        }
+        .status .step {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            background-color: rgba(0, 0, 0, 0.6);
+            transition: all 0.3s ease-in-out;
+        }
+        .step.success {
+            border-color: #00ff00;
+            background-color: rgba(0, 255, 0, 0.1);
+        }
+        .step.error {
+            border-color: #ff006e;
+            background-color: rgba(255, 0, 110, 0.1);
+        }
+        .error-message {
+            display: none;
+            color: #ff006e;
+            background-color: rgba(255, 0, 110, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+            width: 80%;
+            max-width: 400px;
+        }
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        @keyframes flicker {
+            0% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.7;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="loader-container">
-    <div class="cashino-logo">CASHINO</div>
-    <div class="loader"></div>
-    <div class="status">
-      <div class="step" id="step1">Checking Account...</div>
-      <div class="step" id="step2">Checking Email...</div>
-      <div class="step" id="step3">Checking Username...</div>
-      <div class="step" id="step4">Checking Balance...</div>
+    <div class="loader-container">
+        <div class="cashino-logo">CASHINO</div>
+        <div class="loader"></div>
+        <div class="status">
+            <div class="step" id="step1">Checking Account...</div>
+            <div class="step" id="step2">Checking Email...</div>
+            <div class="step" id="step3">Checking Username...</div>
+        </div>
+        <div id="error-message" class="error-message"></div>
     </div>
-    <div id="error-message" class="error-message"></div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const step1 = document.getElementById('step1');
-    const step2 = document.getElementById('step2');
-    const step3 = document.getElementById('step3');
-    const step4 = document.getElementById('step4');
-    const errorMessage = document.getElementById('error-message');
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        // Step 1: Account check
-        step1.textContent = 'Account Verified';
-        step1.classList.add('success');
-
-        // Step 2: Email display
-        step2.textContent = `Email: ${user.email}`;
-        step2.classList.add('success');
-
-        try {
-          // Step 3: Username from Firestore
-          const userRef = doc(db, 'users', user.uid);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            if (userData.username) {
-              step3.textContent = `Username: ${userData.username}`;
-              step3.classList.add('success');
-            } else {
-              step3.textContent = 'Username not found';
-              step3.classList.add('error');
-              return;
-            }
-
-            // Step 4: Balance
-            const balance = userData.balance !== undefined ? parseFloat(userData.balance).toFixed(3) : '0.000';
-            step4.textContent = `Balance: $${balance}`;
-            step4.classList.add('success');
-
-            // Redirect
-            setTimeout(() => {
-              window.location.href = 'homepage.html';
-            }, 2000);
-          } else {
-            step3.textContent = 'User data not found';
-            step3.classList.add('error');
-            errorMessage.style.display = 'block';
-            errorMessage.textContent = 'Your account data is missing. Contact support.';
-          }
-        } catch (err) {
-          console.error(err);
-          step3.textContent = 'Error fetching data';
-          step3.classList.add('error');
-          errorMessage.style.display = 'block';
-          errorMessage.textContent = 'Something went wrong. Try again later.';
-        }
-      } else {
-        step1.textContent = 'No Account Found';
-        step1.classList.add('error');
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = 'No user is logged in. Please log in again.';
-      }
-    });
-  </script>
 </body>
 </html>
