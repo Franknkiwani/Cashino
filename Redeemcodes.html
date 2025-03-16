@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promo Code Redemption - Cashino Style</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+    const analytics = getAnalytics(app);
+
+    // Function to get user details
+    async function getUserDetails(userId) {
+      const userRef = ref(db, 'users/' + userId);  // Assuming the user data is under the 'users' node
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        return snapshot.val();  // Returns user data (profile pic, email, balance)
+      } else {
+        return null;  // User not found
+      }
+    }
+
+    // Function to validate code
+    async function validateCode(code) {
+      const promoCodeRef = ref(db, 'promoCodes/' + code);  // Replace 'promoCodes' with your Firebase path
+      const snapshot = await get(promoCodeRef);
+
+      if (snapshot.exists()) {
+        const promoDetails = snapshot.val();
+        return promoDetails;  // Returns promo code data (amount, validity status)
+      } else {
+        return null;  // Code not found
+      }
+    }
+
+    // Handle user login state
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDetails = await getUserDetails(user.uid);
+        if (userDetails) {
+          document.querySelector("#email").textContent = user.email;
+          document.querySelector("#balance").textContent = `Balance: $${userDetails.balance}`;
+        }
+      }
+    });
+
+    // Handle form submission
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("#promo-form");
+      const codeInput = document.querySelector("#promo-code");
+      const resultDiv = document.querySelector("#result");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const code = codeInput.value.trim();
+
+        if (code.length === 16) {  // Check if the code is 16 characters long
+          const promoData = await validateCode(code);
+
+          if (promoData) {
+            if (promoData.isValid) {
+              resultDiv.innerHTML = `<p class="valid">Code is valid! You get ${promoData.amount} off.</p>`;
+            } else {
+              resultDiv.innerHTML = "<p class='invalid'>Sorry, this promo code is no longer valid.</p>";
+            }
+          } else {
+            resultDiv.innerHTML = "<p class='invalid'>Invalid code. Please check and try again.</p>";
+          }
+        } else {
+          resultDiv.innerHTML = "<p class='invalid'>Please enter a valid 16-digit promo code.</p>";
+        }
+      });
+
+      // Ad click event
+      document.querySelector("#promo-ad").addEventListener("click", () => {
+        window.location.href = "promo.html";  // Redirect to promo.html
+      });
+    });
+  </script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .container {
+      background: linear-gradient(45deg, #FF0080, #FF8000, #8000FF);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      width: 350px;
+    }
+
+    .neon-text {
+      color: #FFF;
+      font-size: 24px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #FF00FF, 0 0 20px #FF00FF, 0 0 30px #FF00FF, 0 0 40px #FF00FF;
+    }
+
+    .profile-info {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      justify-content: center;
+      text-align: left;
+    }
+
+    .profile-info img {
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      margin-right: 15px;
+      border: 2px solid #fff;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+
+    .profile-info span {
+      font-size: 16px;
+    }
+
+    .balance {
+      font-size: 18px;
+      font-weight: bold;
+      color: #000; /* Balance color changed to black */
+    }
+
+    input[type="text"] {
+      padding: 12px;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 15px;
+      width: 100%;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    button {
+      padding: 12px 25px;
+      background-color: #FF00FF;
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 100%;
+    }
+
+    button:hover {
+      background-color: #FF0080;
+    }
+
+    #result {
+      margin-top: 20px;
+    }
+
+    .valid {
+      color: #00FF00;
+    }
+
+    .invalid {
+      color: #000; /* Error message color changed to black */
+    }
+
+    /* Ad styling */
+    .promo-ad {
+      margin-top: 20px;
+      padding: 15px;
+      color: #fff;
+      font-size: 18px;
+      text-align: center;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      animation: colorChange 1s infinite alternate;  /* Animation for color change */
+    }
+
+    .promo-ad:hover {
+      opacity: 0.8;
+    }
+
+    /* Keyframe animation to change colors every second */
+    @keyframes colorChange {
+      0% {
+        background-color: #FF8000;
+      }
+      25% {
+        background-color: #FF00FF;
+      }
+      50% {
+        background-color: #00FF00;
+      }
+      75% {
+        background-color: #0080FF;
+      }
+      100% {
+        background-color: #FFFF00;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2 class="neon-text">Cashino Promo Code</h2>
+
+    <!-- Profile Section -->
+    <div class="profile-info">
+      <img id="profile-pic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ488I2W5podpAG1q9DxpewdXIQitLQ36fnjLasMt6Qlq2YRGb3F_SLU3I&s=10" alt="Profile Picture" />
+      <div>
+        <span id="email">user@example.com</span>
+        <div id="balance" class="balance">$0.00</div>
+      </div>
+    </div>
+
+    <!-- Promo Code Form -->
+    <form id="promo-form">
+      <input type="text" id="promo-code" placeholder="Enter 16-digit code" maxlength="16" />
+      <button type="submit">Redeem</button>
+    </form>
+
+    <div id="result"></div>
+
+    <!-- Ad Section -->
+    <div id="promo-ad" class="promo-ad">
+      Get Promo Codes Now!
+    </div>
+  </div>
+</body>
+</html>
