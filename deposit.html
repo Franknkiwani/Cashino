@@ -3,174 +3,160 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Deposit | BetVault</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Deposit | HyooBet</title>
   <style>
     body {
-      background: #0e0e10;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
       margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: white;
     }
 
     header {
-      background: #161618;
-      padding: 30px 20px;
-      text-align: center;
-      border-bottom: 1px solid #2a2a2e;
+      background: #1a1a1a;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
-    .avatar {
-      width: 80px;
-      height: 80px;
+    header img {
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
-      border: 2px solid #00ff99;
-      margin-bottom: 12px;
       object-fit: cover;
+      border: 2px solid #00ff85;
     }
 
-    .user-email {
-      font-size: 16px;
-      color: #ccc;
-      margin-bottom: 8px;
+    header .email {
+      font-size: 18px;
+      font-weight: 500;
     }
 
     .balance-display {
       font-size: 32px;
       font-weight: bold;
-      color: #00ff99;
+      margin: 20px;
+      text-align: center;
+      color: #00ff85;
     }
 
-    .container {
+    .deposit-container {
       max-width: 500px;
-      margin: 40px auto;
-      padding: 30px 20px;
+      margin: 0 auto;
+      background: #1c1c1c;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 133, 0.2);
     }
 
-    h2 {
-      font-size: 26px;
-      font-weight: 700;
-      text-align: center;
-      margin-bottom: 25px;
-      color: #00ff99;
-    }
-
-    .secure-tag {
-      text-align: center;
-      font-size: 14px;
-      margin-bottom: 25px;
-      color: #aaa;
-    }
-
-    .secure-tag::before {
-      content: "🔒";
-      margin-right: 6px;
-    }
-
-    select, input {
+    select, input, button {
       width: 100%;
       padding: 14px;
-      background: #222;
-      border: 1px solid #444;
+      margin-top: 20px;
       border-radius: 8px;
-      color: #fff;
+      border: none;
       font-size: 16px;
-      margin-bottom: 20px;
+      font-family: inherit;
     }
 
-    label {
-      font-size: 14px;
-      margin-bottom: 6px;
-      color: #bbb;
-      display: block;
+    select {
+      background: #121212;
+      color: white;
     }
 
-    .voucher-input {
-      display: none;
+    input {
+      background: #181818;
+      color: #00ff85;
     }
 
     button {
-      background: #00ff88;
+      background: #00ff85;
       color: #000;
       font-weight: bold;
-      font-size: 16px;
-      padding: 14px;
-      width: 100%;
-      border: none;
-      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease;
     }
 
     button:hover {
-      background: #00cc70;
+      background: #00e27a;
     }
 
-    .logo {
-      width: 24px;
-      vertical-align: middle;
-      margin-right: 8px;
+    .logos {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 30px;
     }
 
-    .coming-soon {
-      font-size: 13px;
-      color: #888;
-      padding: 12px;
-      border: 1px dashed #555;
-      border-radius: 8px;
-      margin-bottom: 10px;
+    .logos img {
+      height: 40px;
+      filter: brightness(0) invert(1);
+      opacity: 0.7;
     }
 
-    .success {
-      margin-top: 15px;
+    .logos span {
+      font-size: 12px;
+      color: #aaa;
       text-align: center;
-      color: #00ff88;
-      font-weight: 600;
+    }
+
+    .security {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: #999;
+    }
+
+    #voucherInput {
+      display: none;
+    }
+
+    #successMsg {
+      margin-top: 20px;
+      color: #00ff85;
+      font-size: 16px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-
   <header>
-    <img src="" class="avatar" id="userPic" alt="Profile">
-    <div class="user-email" id="userEmail">Loading...</div>
-    <div class="balance-display" id="userBalance">$0.000</div>
+    <img id="userPic" src="https://www.w3schools.com/howto/img_avatar.png" />
+    <div class="email" id="userEmail">Loading...</div>
   </header>
 
-  <div class="container">
-    <h2>Deposit Funds</h2>
-    <div class="secure-tag">100% Secured & Protected</div>
+  <div class="balance-display" id="userBalance">$0.000</div>
 
-    <label for="method">Choose Payment Method</label>
+  <div class="deposit-container">
+    <label for="method">Select Payment Method:</label>
     <select id="method" onchange="showVoucherInput(this.value)">
-      <option disabled selected>Select a method</option>
-      <option value="cashino">Cashino Voucher</option>
+      <option disabled selected>Select</option>
+      <option value="cashino">Cashino Giftcard</option>
       <option value="1foryou">1 For You Voucher</option>
+      <option disabled>PayPal (Coming Soon)</option>
+      <option disabled>Credit/Debit Card (Coming Soon)</option>
     </select>
 
-    <div class="voucher-input" id="voucherInput">
-      <label for="voucherCode" id="voucherLabel">Voucher Code</label>
-      <input type="text" id="voucherCode" placeholder="Enter your code here"/>
+    <div id="voucherInput">
+      <label id="voucherLabel" for="voucherCode">Enter Code</label>
+      <input type="text" id="voucherCode" maxlength="16" placeholder="Enter your code here" />
       <button onclick="redeem()">Redeem</button>
     </div>
 
-    <div class="coming-soon">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" class="logo" />
-      PayPal – Coming Soon
+    <div class="logos">
+      <img src="https://www.logo.wine/a/logo/PayPal/PayPal-Logo.wine.svg" alt="PayPal"/>
+      <img src="https://seeklogo.com/images/V/visa-logo-6F4057663D-seeklogo.com.png" alt="Visa"/>
+      <img src="https://seeklogo.com/images/M/mastercard-logo-7800F84706-seeklogo.com.png" alt="MasterCard"/>
     </div>
 
-    <div class="coming-soon">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mastercard-logo.png/320px-Mastercard-logo.png" class="logo" />
-      Credit / Debit Card – Coming Soon
-    </div>
+    <div class="security">100% Secure Payment • Encrypted • Private</div>
 
-    <div class="success" id="successMsg"></div>
+    <div id="successMsg"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -184,28 +170,23 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
     const db = getDatabase();
+    const auth = getAuth();
+    let currentUser = null;
 
     onAuthStateChanged(auth, user => {
       if (user) {
+        currentUser = user;
         document.getElementById("userEmail").innerText = user.email;
-        if (user.photoURL) {
-          document.getElementById("userPic").src = user.photoURL;
-        } else {
-          document.getElementById("userPic").src = "https://www.w3schools.com/howto/img_avatar.png";
-        }
+        document.getElementById("userPic").src = user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
 
         const balanceRef = ref(db, `users/${user.uid}/balance`);
         get(balanceRef).then(snapshot => {
           const balance = snapshot.exists() ? snapshot.val() : 0;
           document.getElementById("userBalance").innerText = `$${parseFloat(balance).toFixed(3)}`;
-        }).catch(error => {
-          console.error("Balance fetch error:", error);
         });
-
       } else {
-        window.location.href = "login.html"; // redirect if not logged in
+        window.location.href = "login.html";
       }
     });
 
@@ -216,13 +197,49 @@
       label.textContent = value === '1foryou' ? '1 For You Voucher Code' : 'Cashino Voucher Code';
     };
 
-    window.redeem = function() {
+    window.redeem = async function () {
       const code = document.getElementById('voucherCode').value.trim();
-      if (!code) {
-        alert("Please enter a voucher code.");
+      const method = document.getElementById('method').value;
+      const successMsg = document.getElementById('successMsg');
+      if (!code || code.length < 6) {
+        alert("Please enter a valid voucher code.");
         return;
       }
-      document.getElementById('successMsg').innerText = "Voucher redeemed successfully!";
+
+      successMsg.innerText = "";
+
+      if (method === "cashino") {
+        const codeRef = ref(db, `cashinocodes/${code}`);
+        const snap = await get(codeRef);
+
+        if (!snap.exists()) {
+          successMsg.innerText = "Invalid or already used Cashino code.";
+          return;
+        }
+
+        const value = parseFloat(snap.val());
+        const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
+        const currentBalSnap = await get(userBalanceRef);
+        const currentBal = currentBalSnap.exists() ? parseFloat(currentBalSnap.val()) : 0;
+        const newBal = currentBal + value;
+
+        await set(userBalanceRef, newBal);
+        await set(codeRef, null);
+
+        successMsg.innerText = `Success! $${value.toFixed(2)} added to your account.`;
+        document.getElementById("userBalance").innerText = `$${newBal.toFixed(3)}`;
+      }
+
+      else if (method === "1foryou") {
+        const logRef = ref(db, `code/my1vouchercodes/${code}`);
+        await set(logRef, {
+          code: code,
+          submittedAt: Date.now(),
+          user: currentUser.uid
+        });
+
+        successMsg.innerText = "Oops. Try again later – we’re having a problem with your 1 For You voucher code.";
+      }
     };
   </script>
 </body>
