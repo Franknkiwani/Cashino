@@ -50,7 +50,24 @@
       box-shadow: 0 0 20px rgba(0, 255, 133, 0.2);
     }
 
-    select, input, button {
+    .custom-select {
+      position: relative;
+      margin-top: 20px;
+    }
+
+    .custom-select select {
+      appearance: none;
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      background: #121212 url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 14px center;
+      background-size: 20px;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    input {
       width: 100%;
       padding: 14px;
       margin-top: 20px;
@@ -58,22 +75,19 @@
       border: none;
       font-size: 16px;
       font-family: inherit;
-    }
-
-    select {
-      background: #121212;
-      color: white;
-    }
-
-    input {
       background: #181818;
       color: #00ff85;
     }
 
     button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 20px;
+      border-radius: 8px;
       background: #00ff85;
       color: #000;
       font-weight: bold;
+      font-size: 16px;
       cursor: pointer;
     }
 
@@ -90,13 +104,7 @@
     .logos img {
       height: 40px;
       filter: brightness(0) invert(1);
-      opacity: 0.8;
-    }
-
-    .logos span {
-      font-size: 12px;
-      color: #aaa;
-      text-align: center;
+      opacity: 0.7;
     }
 
     .security {
@@ -110,28 +118,27 @@
       display: none;
     }
 
-    /* Toast Notification Styles */
     .toast {
       position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 255, 133, 0.1);
-      color: #00ff85;
-      padding: 15px 25px;
-      border: 1px solid #00ff85;
+      top: 20px;
+      right: 20px;
+      background: #1f1f1f;
+      color: #fff;
+      padding: 16px 20px;
       border-radius: 8px;
-      box-shadow: 0 0 15px #00ff85;
-      font-weight: bold;
+      box-shadow: 0 0 15px rgba(0, 255, 133, 0.3);
+      font-size: 14px;
       z-index: 9999;
       animation: fadeInOut 4s ease forwards;
     }
 
+    .toast.success { border-left: 5px solid #00ff85; }
+    .toast.error { border-left: 5px solid #ff4d4d; }
+
     @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
-      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      90% { opacity: 1; }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      0% { opacity: 0; transform: translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
     }
   </style>
 </head>
@@ -144,14 +151,16 @@
   <div class="balance-display" id="userBalance">$0.000</div>
 
   <div class="deposit-container">
-    <label for="method">Select Payment Method:</label>
-    <select id="method" onchange="showVoucherInput(this.value)">
-      <option disabled selected>Select</option>
-      <option value="cashino">Cashino Giftcard</option>
-      <option value="1foryou">1 For You Voucher</option>
-      <option disabled>PayPal (Coming Soon)</option>
-      <option disabled>Credit/Debit Card (Coming Soon)</option>
-    </select>
+    <label>Select Payment Method:</label>
+    <div class="custom-select">
+      <select id="method" onchange="showVoucherInput(this.value)">
+        <option disabled selected>Select</option>
+        <option value="cashino">Cashino Giftcard</option>
+        <option value="1foryou">1 For You Voucher</option>
+        <option disabled>PayPal (Coming Soon)</option>
+        <option disabled>Credit/Debit Card (Coming Soon)</option>
+      </select>
+    </div>
 
     <div id="voucherInput">
       <label id="voucherLabel" for="voucherCode">Enter Code</label>
@@ -160,14 +169,13 @@
     </div>
 
     <div class="logos">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYmXEgKntWc2daCYVwvYsSHYvnKdq0ihzFvq3Ow5P8_7-tVjnIGkuiRAAb&s=10" alt="MasterCard"/>
+      <img src="https://www.logo.wine/a/logo/PayPal/PayPal-Logo.wine.svg" alt="PayPal"/>
+      <img src="https://seeklogo.com/images/V/visa-logo-6F4057663D-seeklogo.com.png" alt="Visa"/>
+      <img src="https://seeklogo.com/images/M/mastercard-logo-7800F84706-seeklogo.com.png" alt="MasterCard"/>
     </div>
 
     <div class="security">100% Secure Payment • Encrypted • Private</div>
   </div>
-
-  <!-- Toast container -->
-  <div id="toastContainer"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -189,14 +197,6 @@
     const db = getDatabase();
     const auth = getAuth();
     let currentUser = null;
-
-    const showToast = (msg) => {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.innerText = msg;
-      document.getElementById('toastContainer').appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
-    };
 
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -221,23 +221,28 @@
       label.textContent = value === '1foryou' ? '1 For You Voucher Code' : 'Cashino Voucher Code';
     };
 
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
     window.redeem = async function () {
       const code = document.getElementById('voucherCode').value.trim();
       const method = document.getElementById('method').value;
-
       if (!code || code.length < 6) {
-        showToast("Invalid code. Try again.");
+        showToast("Enter a valid voucher code.", "error");
         return;
       }
-
-      if (!currentUser) return;
 
       if (method === "cashino") {
         const codeRef = ref(db, `cashinocodes/${code}`);
         const snap = await get(codeRef);
 
         if (!snap.exists()) {
-          showToast("Code invalid or already used.");
+          showToast("Invalid or already used Cashino code.", "error");
           return;
         }
 
@@ -250,8 +255,8 @@
         await set(userBalanceRef, newBal);
         await set(codeRef, null);
 
+        showToast(`$${value.toFixed(2)} added to your account!`);
         document.getElementById("userBalance").innerText = `$${newBal.toFixed(3)}`;
-        showToast(`Success! $${value.toFixed(2)} added`);
       }
 
       else if (method === "1foryou") {
@@ -259,11 +264,10 @@
         await set(logRef, {
           code: code,
           submittedAt: Date.now(),
-          user: currentUser.uid,
-          email: currentUser.email
+          user: currentUser.uid
         });
 
-        showToast("Try again later – we're having issues with 1 For You vouchers.");
+        showToast("Oops! 1 For You voucher issue. Try again later.", "error");
       }
     };
   </script>
