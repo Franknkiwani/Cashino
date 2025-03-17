@@ -1,3 +1,316 @@
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <title>Modern App UI</title>  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />  
+  <style>  
+    /* Your entire existing CSS remains untouched except added game card styles below */  
+    * {  
+      -webkit-user-select: none;  
+      -webkit-touch-callout: none;  
+      user-select: none;  
+      touch-action: manipulation;  
+      margin: 0;  
+      padding: 0;  
+      box-sizing: border-box;  
+    }  
+    body {  
+      background-color: #000;  
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+      color: white;  
+      overflow-x: hidden;  
+    }  
+    header {  
+      width: 100%;  
+      height: 60px;  
+      background-color: #0a0a0a;  
+      display: flex;  
+      align-items: center;  
+      justify-content: space-between;  
+      padding: 0 20px;  
+      position: relative;  
+      z-index: 2;  
+    }  
+    .left-section {  
+      display: flex;  
+      align-items: center;  
+    }  
+    .avatar {  
+      width: 40px;  
+      height: 40px;  
+      border-radius: 50%;  
+      margin-right: 10px;  
+      border: 2px solid #00ffff;  
+      cursor: pointer;  
+      transition: transform 0.2s ease;  
+    }  
+    .avatar:hover {  
+      transform: scale(1.05);  
+    }  
+    .welcome-text {  
+      font-size: 16px;  
+      font-weight: 500;  
+    }  
+    .clock {  
+      font-size: 18px;  
+      font-weight: bold;  
+      color: #00ffff;  
+      letter-spacing: 1px;  
+      font-family: 'Courier New', monospace;  
+    }  
+    .neon-line {  
+      width: 100%;  
+      height: 2px;  
+      background: linear-gradient(90deg, #ff00ff, #00ffff);  
+      box-shadow: 0 0 6px #00ffff;  
+    }  
+    .balance-container {  
+      margin: 20px auto 0;  
+      padding: 12px 24px;  
+      background-color: #0a0a0a;  
+      border: 2px solid #00ff99;  
+      border-radius: 12px;  
+      width: fit-content;  
+      text-align: center;  
+      box-shadow: 0 0 8px #00ff9966;  
+    }  
+    .balance-text {  
+      font-size: 20px;  
+      font-weight: bold;  
+      color: #00ff99;  
+    }  .overlay, .loading-overlay {  
+  position: fixed;  
+  top: 0; left: 0;  
+  width: 100vw; height: 100vh;  
+  z-index: 11;  
+  display: none;  
+  justify-content: center;  
+  align-items: center;  
+}  
+.overlay.active, .loading-overlay.active {  
+  display: flex;  
+}  
+.overlay {  
+  background: rgba(0, 0, 0, 0.6);  
+  backdrop-filter: blur(4px);  
+  z-index: 9;  
+}  
+.loading-overlay {  
+  background: rgba(0, 0, 0, 0.7);  
+  backdrop-filter: blur(6px);  
+}  
+.loading-text {  
+  color: #00ffff;  
+  font-size: 24px;  
+  font-weight: bold;  
+  animation: fadeInOut 1s infinite alternate;  
+}  
+@keyframes fadeInOut {  
+  0% { opacity: 0; }  
+  100% { opacity: 1; }  
+}  
+
+.sidebar {  
+  position: fixed;  
+  top: 0;  
+  left: -100%;  
+  height: 100%;  
+  width: 280px;  
+  background-color: #111;  
+  box-shadow: 4px 0 10px rgba(0, 255, 255, 0.3);  
+  transition: left 0.3s ease;  
+  z-index: 10;  
+  display: flex;  
+  flex-direction: column;  
+}  
+.sidebar.active {  
+  left: 0;  
+}  
+.sidebar-header {  
+  padding: 20px;  
+  border-bottom: 1px solid #00ffff33;  
+  display: flex;  
+  align-items: center;  
+  gap: 10px;  
+}  
+.close-btn {  
+  font-size: 14px;  
+  font-weight: bold;  
+  color: white;  
+  background-color: red;  
+  border: none;  
+  padding: 8px 14px;  
+  border-radius: 6px;  
+  cursor: pointer;  
+}  
+.sidebar-message {  
+  color: #00ffff;  
+  font-size: 14px;  
+  font-weight: 500;  
+}  
+.sidebar-options {  
+  padding: 20px 15px;  
+  flex: 1;  
+  overflow-y: auto;  
+}  
+.sidebar-option {  
+  background-color: #1a1a1a;  
+  border: 1px solid #00ffff55;  
+  border-radius: 8px;  
+  padding: 10px 12px;  
+  color: white;  
+  margin-bottom: 12px;  
+  text-align: center;  
+  font-size: 15px;  
+  transition: background 0.2s;  
+  cursor: pointer;  
+}  
+.sidebar-option:hover {  
+  background-color: #00ffff22;  
+}  
+.logout-btn {  
+  background-color: red;  
+  border: none;  
+  color: white;  
+  font-size: 16px;  
+  padding: 12px;  
+  border-radius: 8px;  
+  cursor: pointer;  
+  margin: 20px;  
+}  
+.logout-btn:hover {  
+  background-color: #ff3333;  
+}  
+
+/* Casino game cards */  
+.games-section {  
+  max-width: 1000px;  
+  margin: 40px auto;  
+  display: grid;  
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));  
+  gap: 16px;  
+  padding: 0 20px;  
+}  
+.game-card {  
+  background-color: #111;  
+  border: 2px solid #00ffff55;  
+  border-radius: 12px;  
+  padding: 20px;  
+  text-align: center;  
+  color: white;  
+  font-weight: bold;  
+  transition: transform 0.2s ease, background 0.2s ease;  
+  cursor: pointer;  
+  box-shadow: 0 0 6px #00ffff33;  
+}  
+.game-card:hover {  
+  background-color: #00ffff11;  
+  transform: scale(1.03);  
+}  
+.game-icon {  
+  font-size: 30px;  
+  margin-bottom: 10px;  
+  color: #00ffff;  
+}  
+.games-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.game-card {
+  width: 100px;
+  height: 150px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 10px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.game-card:hover {
+  transform: scale(1.05);
+}
+
+.game-title {
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-align: center;
+  font-size: 14px;
+  width: 100%;
+}
+</style>
+
+</head>  
+<body>  
+  <div id="overlay" class="overlay"></div>  
+  <div id="sidebar" class="sidebar">  
+    <div class="sidebar-header">  
+      <button class="close-btn" id="closeSidebar">Close</button>  
+      <span class="sidebar-message" id="sidebarMessage">Welcome!</span>  
+    </div>  
+    <div class="sidebar-options">  
+      <div class="sidebar-option" id="cashoutOption">Cashout</div>  
+      <div class="sidebar-option" id="depositOption">Deposit</div>  
+      <div class="sidebar-option" id="redeemOption">Redeem Codes</div>  
+      <div class="sidebar-option" id="historyOption">History</div>  
+      <div class="sidebar-option" id="contactOption">Contact Us</div>  
+      <div class="sidebar-option" id="privacyOption">Privacy Policy</div>  
+    </div>  
+    <button class="logout-btn" id="logoutBtn">Logout</button>  
+  </div>  
+  <div id="loadingOverlay" class="loading-overlay">  
+    <div class="loading-text" id="loadingText">Loading...</div>  
+  </div>  
+  <header>  
+    <div class="left-section">  
+      <img src="https://i.pravatar.cc/150?img=3" alt="Avatar" class="avatar" id="avatarClick">  
+      <div class="welcome-text" id="welcomeUser">Welcome back!</div>  
+    </div>  
+    <div class="clock" id="clock">00.00.00</div>  
+  </header>  
+  <div class="neon-line"></div>  
+  <div class="balance-container">  
+    <div class="balance-text" id="balance">Balance: Loading...</div>  
+  </div>
+<!-- Casino Game Cards -->
+<div class="games-section">
+  <div class="game-card" onclick="window.location.href='aviator.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1BbkL1eVtGXaK_ck_qPiqyBLbG9-Mm2mAf6ruBYrcVhGkkr-q4VX7i4E&s=10');">
+    <div class="game-title">Aviator</div>
+  </div>
+  <div class="game-card" onclick="window.location.href='spin.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_TH6ewDETKB-d6xQpXYPyB2C-ME8FPhiYL0ZUpoFQ5qShnF9dwCZrcAl9&s=10');">
+    <div class="game-title">Spin to Win</div>
+  </div>
+  <div class="game-card" onclick="window.location.href='dice.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLBn8R0kj7UQCGgUcYDVVn5L_-0EsXnGrnzhmsDhGYeZ4QGHRznSXfUUNF&s=10');">
+    <div class="game-title">Dice Roll</div>
+  </div>
+  <div class="game-card" onclick="window.location.href='blackjack.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqo5VqIznOk3DTv0H_B4KY0naKsdfBN0xgZhPNX4u0rmbHzWOb9YW1knbS&s=10');">
+    <div class="game-title">Blackjack</div>
+  </div>
+  <div class="game-card" onclick="window.location.href='slots.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkZNInwLifd50lXJPJEp5WA3nj2KBWkxD_uLsG-w5JuQ-L8Sy7IGpkiwnl&s=10');">
+    <div class="game-title">Slots</div>
+  </div>
+  <div class="game-card" onclick="window.location.href='tictactoe.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZc3rzi35FeA0bt7gcVugYweSn98YTwuniYkok36lXpsIxgmTHrivkNA&s=10');">
+    <div class="game-title">X vs O</div>
+  </div>
+</div>
+<div class="leaderboard" style="max-width: 600px; margin: 40px auto; text-align: center;">
+  <h2 style="color: #00ffff; margin-bottom: 20px;">Top Players Today</h2>
+  <div id="leaderboardList" style="display: flex; flex-direction: column; gap: 10px;">
+    <!-- Top 3 users will be injected here -->
+  </div>
+</div>
+  </div>
+</div>
+</div>  
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
@@ -161,3 +474,5 @@
   setInterval(updateClock, 1000);
   updateClock();
 </script>
+</body>
+</html>
