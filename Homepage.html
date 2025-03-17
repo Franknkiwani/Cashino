@@ -364,6 +364,46 @@ onAuthStateChanged(auth, user => {
     window.location.href = "index.html";  
   }  
 });  
+function loadLeaderboard() {
+  const leaderboardList = document.getElementById('leaderboardList');
+  get(ref(db, 'users')).then(snapshot => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const usersArray = Object.entries(data).map(([uid, userData]) => ({
+        uid,
+        username: userData.username || "Unknown",
+        balance: parseFloat(userData.balance) || 0
+      }));
+
+      // Sort by balance descending and take top 3
+      const topUsers = usersArray
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 3);
+
+      // Clear leaderboard before populating
+      leaderboardList.innerHTML = "";
+
+      topUsers.forEach((user, index) => {
+        const place = ["1st", "2nd", "3rd"][index];
+        const item = document.createElement('div');
+        item.style.background = '#111';
+        item.style.border = '1px solid #00ffff88';
+        item.style.borderRadius = '10px';
+        item.style.padding = '10px';
+        item.style.color = '#fff';
+        item.style.boxShadow = '0 0 6px #00ffff22';
+
+        item.innerHTML = `<strong>${place}</strong>: ${user.username} - $${user.balance.toFixed(2)}`;
+        leaderboardList.appendChild(item);
+      });
+    } else {
+      leaderboardList.innerHTML = "<div style='color: gray;'>No data found.</div>";
+    }
+  }).catch(error => {
+    console.error("Error loading leaderboard:", error);
+    leaderboardList.innerHTML = "<div style='color: red;'>Failed to load leaderboard.</div>";
+  });
+}
 
 document.getElementById('logoutBtn').addEventListener('click', () => {  
   loadingOverlay.classList.add('active');  
@@ -459,6 +499,11 @@ async function loadTopPlayersToday() {
 }
 
 loadTopPlayersToday();
+// Load leaderboard on page load
+    loadLeaderboard();
+  </script>
+</body>
+</html>
   </script>  
   </body>  
 </html>
