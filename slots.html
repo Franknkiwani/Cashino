@@ -2,247 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Online Tic-Tac-Toe</title>
+  <title>Online Tic Tac Toe</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 50px;
-      margin: 0;
-    }
-    h1 { margin-bottom: 20px; }
-    .board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      gap: 5px;
-      margin-bottom: 20px;
-    }
-    .cell {
-      width: 100px;
-      height: 100px;
-      background: white;
-      border: 2px solid #ccc;
-      font-size: 2.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-    #status { margin: 10px; font-size: 1.2rem; }
-    #createRoom, #joinRoom, #reset {
-      padding: 10px 20px;
-      margin: 5px;
-      font-size: 1rem;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    input {
-      padding: 5px;
-      font-size: 1rem;
-    }
+    body { font-family: sans-serif; padding: 20px; }
+    #online-users div { margin: 10px 0; }
+    img { vertical-align: middle; }
+    .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin-top: 20px; }
+    .cell { width: 100px; height: 100px; font-size: 2em; text-align: center; line-height: 100px; border: 1px solid #ccc; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Online Tic-Tac-Toe</h1>
-
-  <div id="createSection">
-    <button id="createRoom">Create Room</button>
+  <h2>Tic Tac Toe Lobby</h2>
+  <div id="login-section">
+    <button id="login-btn">Login with Google</button>
   </div>
 
-  <div id="joinSection" style="display:none;">
-    <input type="text" id="roomCode" placeholder="Enter Room Code" />
-    <button id="joinRoom">Join Room</button>
+  <h3>Online Users</h3>
+  <div id="online-users"></div>
+
+  <div id="game-board" style="display:none;">
+    <h3 id="status"></h3>
+    <div class="board" id="board"></div>
   </div>
 
-  <div id="status">Waiting to start...</div>
-  <div class="board" id="board" style="display:none;"></div>
-  <button id="reset" style="display:none;">Reset</button>
-
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, remove, update, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onDisconnect, set, remove, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    const app = initializeApp({
+    const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    let currentUser = null;
+    let currentGameRef = null;
+
+    const loginBtn = document.getElementById("login-btn");
+    loginBtn.onclick = () => {
+      signInWithPopup(auth, new GoogleAuthProvider());
+    };
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById("login-section").style.display = "none";
+        setupPresence(user);
+        listenForUsers();
+        listenForRequests();
+      }
     });
 
-    const db = getDatabase(app);
-
-    const createRoomBtn = document.getElementById("createRoom");
-    const joinRoomBtn = document.getElementById("joinRoom");
-    const roomCodeInput = document.getElementById("roomCode");
-    const statusEl = document.getElementById("status");
-    const boardEl = document.getElementById("board");
-    const resetBtn = document.getElementById("reset");
-
-    let gameId = null;
-    let playerSymbol = null;
-    let isMyTurn = false;
-    let gameState = Array(9).fill("");
-    const cells = [];
-
-    function renderBoard() {
-      boardEl.innerHTML = '';
-      for (let i = 0; i < 9; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        cell.dataset.index = i;
-        cell.textContent = gameState[i];
-        cell.onclick = () => handleMove(i);
-        boardEl.appendChild(cell);
-        cells.push(cell);
-      }
-    }
-
-    async function createRoom() {
-      const roomCode = push(ref(db, 'games')).key;  // Unique code for the room
-      const gameRef = ref(db, `games/${roomCode}`);
-
-      await set(gameRef, {
-        board: Array(9).fill(""),
-        currentTurn: 'X',
-        winner: null,
-        players: { X: true }
+    function setupPresence(user) {
+      const userRef = ref(db, '/onlineUsers/' + user.uid);
+      const connRef = ref(db, '.info/connected');
+      onValue(connRef, snap => {
+        if (snap.val()) {
+          set(userRef, {
+            username: user.displayName || "Anon",
+            profilePic: user.photoURL || "",
+            uid: user.uid
+          });
+          onDisconnect(userRef).remove();
+        }
       });
-
-      gameId = roomCode;
-      playerSymbol = 'X';
-
-      showWaitingForPlayer();
-      listenForPlayerJoin(roomCode);
     }
 
-    function showWaitingForPlayer() {
-      statusEl.textContent = "Waiting for Player 2 to join...";
-      createRoomBtn.style.display = "none";
-      joinRoomBtn.style.display = "none";
-      document.getElementById("roomCode").style.display = "none";
-      boardEl.style.display = "none";
-      resetBtn.style.display = "none";
+    function listenForUsers() {
+      const container = document.getElementById("online-users");
+      onValue(ref(db, "/onlineUsers"), snapshot => {
+        container.innerHTML = "";
+        snapshot.forEach(child => {
+          const user = child.val();
+          if (user.uid !== currentUser.uid) {
+            const div = document.createElement("div");
+            div.innerHTML = `
+              <img src="${user.profilePic}" width="30" height="30" />
+              <b>${user.username}</b>
+              <button onclick="invite('${user.uid}', '${user.username}')">Invite</button>
+            `;
+            container.appendChild(div);
+          }
+        });
+      });
     }
 
-    async function listenForPlayerJoin(roomCode) {
-      const gameRef = ref(db, `games/${roomCode}`);
+    window.invite = (uid, name) => {
+      const requestRef = ref(db, `/gameRequests/${uid}`);
+      set(requestRef, {
+        from: currentUser.uid,
+        name: currentUser.displayName
+      });
+      alert(`Invitation sent to ${name}`);
+    };
 
-      onValue(gameRef, (snap) => {
-        const gameData = snap.val();
-
-        if (gameData && gameData.players.O) {
-          playerSymbol = 'X';
-          statusEl.textContent = "Game started! You are X";
-          startGame();
-        } else {
-          if (!gameData || !gameData.players.O) {
-            update(gameRef, {
-              "players/O": true
+    function listenForRequests() {
+      const requestRef = ref(db, `/gameRequests/${currentUser.uid}`);
+      onValue(requestRef, snap => {
+        if (snap.exists()) {
+          const req = snap.val();
+          const accept = confirm(`${req.name} invited you to play. Accept?`);
+          if (accept) {
+            const gameId = `${req.from}_${currentUser.uid}`;
+            set(ref(db, `/games/${gameId}`), {
+              players: {
+                x: req.from,
+                o: currentUser.uid
+              },
+              board: Array(9).fill(""),
+              turn: "x"
             });
+            remove(requestRef);
+            joinGame(gameId, "o");
+          } else {
+            remove(requestRef);
           }
         }
       });
     }
 
-    async function joinRoom() {
-      const roomCode = roomCodeInput.value;
-      const gameRef = ref(db, `games/${roomCode}`);
-      const gameDataSnap = await get(gameRef);
+    function joinGame(gameId, role) {
+      document.getElementById("game-board").style.display = "block";
+      const boardDiv = document.getElementById("board");
+      const statusDiv = document.getElementById("status");
+      currentGameRef = ref(db, `/games/${gameId}`);
 
-      if (!gameDataSnap.exists()) {
-        statusEl.textContent = "Invalid room code!";
-        return;
-      }
+      onValue(currentGameRef, snap => {
+        const game = snap.val();
+        boardDiv.innerHTML = "";
+        statusDiv.textContent = `You are ${role.toUpperCase()}, ${game.turn.toUpperCase()}'s turn`;
 
-      gameId = roomCode;
-      playerSymbol = 'O';
-
-      statusEl.textContent = "Game started! You are O";
-      startGame();
-      listenForGameUpdates(roomCode);
-    }
-
-    async function listenForGameUpdates(roomCode) {
-      const gameRef = ref(db, `games/${roomCode}`);
-
-      onValue(gameRef, (snap) => {
-        const gameData = snap.val();
-        if (!gameData) return;
-
-        gameState = gameData.board;
-        isMyTurn = gameData.currentTurn === playerSymbol;
-        renderBoard();
-
-        if (gameData.winner) {
-          isMyTurn = false;
-          statusEl.textContent = gameData.winner === 'draw' ? "It's a draw!" : `${gameData.winner} wins!`;
-        } else {
-          statusEl.textContent = isMyTurn ? "Your move!" : "Waiting for opponent's move";
-        }
-      });
-    }
-
-    function startGame() {
-      createRoomBtn.style.display = "none";
-      joinRoomBtn.style.display = "none";
-      roomCodeInput.style.display = "none";
-      boardEl.style.display = "grid";
-      resetBtn.style.display = "inline-block";
-      renderBoard();
-    }
-
-    async function handleMove(index) {
-      if (!isMyTurn || gameState[index]) return;
-
-      gameState[index] = playerSymbol;
-      await update(ref(db, `games/${gameId}`), {
-        board: gameState,
-        currentTurn: playerSymbol === 'X' ? 'O' : 'X'
-      });
-
-      const winner = checkWinner();
-      if (winner) {
-        await update(ref(db, `games/${gameId}`), {
-          winner
+        game.board.forEach((cell, idx) => {
+          const div = document.createElement("div");
+          div.className = "cell";
+          div.textContent = cell;
+          div.onclick = () => {
+            if (cell === "" && game.turn === role) {
+              game.board[idx] = role;
+              update(currentGameRef, {
+                board: game.board,
+                turn: role === "x" ? "o" : "x"
+              });
+            }
+          };
+          boardDiv.appendChild(div);
         });
-      }
-    }
-
-    function checkWinner() {
-      const winCombos = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-      ];
-      for (let [a, b, c] of winCombos) {
-        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
-          return gameState[a];
-        }
-      }
-      return gameState.includes("") ? null : "draw";
-    }
-
-    resetBtn.onclick = () => {
-      set(ref(db, `games/${gameId}`), {
-        board: Array(9).fill(""),
-        currentTurn: 'X',
-        winner: null
       });
-    };
-
-    createRoomBtn.onclick = createRoom;
-    joinRoomBtn.onclick = joinRoom;
+    }
   </script>
 </body>
 </html>
