@@ -2,272 +2,207 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Deposit | HyooBet</title>
+  <title>Deposit | Cashino</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0f0f0f;
+      background: #0a0a0a;
       color: white;
+      font-family: 'Segoe UI', sans-serif;
     }
-
-    header {
-      background: #1a1a1a;
-      padding: 20px;
+    .container {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 30px;
+      background: #111;
+      border-radius: 16px;
+      box-shadow: 0 0 20px #00ffb3aa;
+    }
+    .profile {
       display: flex;
       align-items: center;
-      gap: 15px;
+      margin-bottom: 20px;
     }
-
-    header img {
-      width: 48px;
-      height: 48px;
+    .profile img {
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #00ff85;
+      margin-right: 16px;
     }
-
-    header .email {
-      font-size: 18px;
-      font-weight: 500;
-    }
-
-    .balance-display {
-      font-size: 32px;
+    .balance {
+      font-size: 26px;
       font-weight: bold;
-      margin: 20px;
-      text-align: center;
-      color: #00ff85;
+      color: #00ff99;
+      margin: 10px 0;
     }
-
-    .deposit-container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: #1c1c1c;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 255, 133, 0.2);
-    }
-
-    .custom-select {
-      position: relative;
-      margin-top: 20px;
-    }
-
-    .custom-select select {
-      appearance: none;
+    select, input {
       width: 100%;
-      padding: 14px;
-      border-radius: 8px;
-      background: #121212 url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 14px center;
-      background-size: 20px;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
       border: none;
+      background: #222;
       color: white;
       font-size: 16px;
     }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin-top: 20px;
-      border-radius: 8px;
-      border: none;
-      font-size: 16px;
-      font-family: inherit;
-      background: #181818;
-      color: #00ff85;
-    }
-
     button {
       width: 100%;
       padding: 14px;
-      margin-top: 20px;
-      border-radius: 8px;
-      background: #00ff85;
+      background: #00ff99;
       color: #000;
       font-weight: bold;
-      font-size: 16px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
     }
-
-    button:hover {
-      background: #00e27a;
+    .note {
+      font-size: 12px;
+      color: #ccc;
+      margin-top: 5px;
     }
-
-    .logos {
-      display: flex;
-      justify-content: space-around;
-      margin-top: 30px;
-    }
-
-    .logos img {
-      height: 40px;
-      filter: brightness(0) invert(1);
-      opacity: 0.7;
-    }
-
-    .security {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 14px;
-      color: #999;
-    }
-
-    #voucherInput {
-      display: none;
-    }
-
-    .toast {
+    .popup {
       position: fixed;
       top: 20px;
       right: 20px;
       background: #1f1f1f;
-      color: #fff;
-      padding: 16px 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px rgba(0, 255, 133, 0.3);
-      font-size: 14px;
-      z-index: 9999;
-      animation: fadeInOut 4s ease forwards;
+      color: #00ffcc;
+      padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #00ffcc55;
+      display: none;
+      z-index: 999;
     }
-
-    .toast.success { border-left: 5px solid #00ff85; }
-    .toast.error { border-left: 5px solid #ff4d4d; }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(-20px); }
-      10%, 90% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-20px); }
+    .logos {
+      display: flex;
+      gap: 15px;
+      margin: 10px 0;
+    }
+    .logos img {
+      height: 30px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <img id="userPic" src="https://www.w3schools.com/howto/img_avatar.png" />
-    <div class="email" id="userEmail">Loading...</div>
-  </header>
 
-  <div class="balance-display" id="userBalance">$0.000</div>
-
-  <div class="deposit-container">
-    <label>Select Payment Method:</label>
-    <div class="custom-select">
-      <select id="method" onchange="showVoucherInput(this.value)">
-        <option disabled selected>Select</option>
-        <option value="cashino">Cashino Giftcard</option>
-        <option value="1foryou">1 For You Voucher</option>
-        <option disabled>PayPal (Coming Soon)</option>
-        <option disabled>Credit/Debit Card (Coming Soon)</option>
-      </select>
+<div class="container">
+  <div class="profile">
+    <img id="profilePic" src="" alt="Profile" />
+    <div>
+      <div id="userEmail">Loading...</div>
+      <div class="balance" id="userBalance">$0.000</div>
     </div>
-
-    <div id="voucherInput">
-      <label id="voucherLabel" for="voucherCode">Enter Code</label>
-      <input type="text" id="voucherCode" maxlength="16" placeholder="Enter your code here" />
-      <button onclick="redeem()">Redeem</button>
-    </div>
-
-    <div class="logos">
-      <img src="https://www.logo.wine/a/logo/PayPal/PayPal-Logo.wine.svg" alt="PayPal"/>
-      </div>
-
-    <div class="security">100% Secure Payment • Encrypted • Private</div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <label>Payment Method</label>
+  <select id="paymentSelect">
+    <option value="cashino">Cashino Voucher</option>
+    <option value="1foryou">1 For You Voucher</option>
+    <option disabled>PayPal (Coming Soon)</option>
+    <option disabled>Card (Coming Soon)</option>
+  </select>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+  <div class="logos">
+    <img src="https://seeklogo.com/images/P/paypal-logo-151213FE43-seeklogo.com.png" alt="PayPal">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/1ForYou_Logo.png" alt="1ForYou">
+  </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase();
-    const auth = getAuth();
-    let currentUser = null;
+  <input type="text" maxlength="16" placeholder="Enter your 16-digit code" id="voucherInput" />
+  <button id="redeemBtn">Redeem</button>
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById("userEmail").innerText = user.email;
-        document.getElementById("userPic").src = user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
+  <div class="note">100% Protection Guarantee. Safe & Secure Payments.</div>
+</div>
 
-        const balanceRef = ref(db, `users/${user.uid}/balance`);
-        get(balanceRef).then(snapshot => {
-          const balance = snapshot.exists() ? snapshot.val() : 0;
-          document.getElementById("userBalance").innerText = `$${parseFloat(balance).toFixed(3)}`;
-        });
-      } else {
-        window.location.href = "login.html";
-      }
-    });
+<div class="popup" id="popup"></div>
 
-    window.showVoucherInput = function(value) {
-      const inputBox = document.getElementById('voucherInput');
-      const label = document.getElementById('voucherLabel');
-      inputBox.style.display = 'block';
-      label.textContent = value === '1foryou' ? '1 For You Voucher Code' : 'Cashino Voucher Code';
-    };
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, get, update, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getDatabase();
+
+  const profilePic = document.getElementById("profilePic");
+  const userEmail = document.getElementById("userEmail");
+  const userBalance = document.getElementById("userBalance");
+  const redeemBtn = document.getElementById("redeemBtn");
+  const voucherInput = document.getElementById("voucherInput");
+  const paymentSelect = document.getElementById("paymentSelect");
+  const popup = document.getElementById("popup");
+
+  function showPopup(msg) {
+    popup.textContent = msg;
+    popup.style.display = "block";
+    setTimeout(() => {
+      popup.style.display = "none";
+    }, 3000);
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userEmail.textContent = user.email;
+      const pfpRef = ref(db, 'users/' + user.uid + '/pfp');
+      get(pfpRef).then(snap => {
+        profilePic.src = snap.exists() ? snap.val() : "https://via.placeholder.com/60";
+      });
+
+      const balanceRef = ref(db, 'users/' + user.uid + '/balance');
+      get(balanceRef).then(snap => {
+        let bal = parseFloat(snap.val() || 0).toFixed(3);
+        userBalance.textContent = "$" + bal;
+      });
     }
+  });
 
-    window.redeem = async function () {
-      const code = document.getElementById('voucherCode').value.trim();
-      const method = document.getElementById('method').value;
-      if (!code || code.length < 6) {
-        showToast("Enter a valid voucher code.", "error");
-        return;
+  redeemBtn.addEventListener("click", () => {
+    const code = voucherInput.value.trim();
+    const method = paymentSelect.value;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user || code.length !== 16) {
+        return showPopup("Invalid code or not signed in.");
       }
 
       if (method === "cashino") {
-        const codeRef = ref(db, `cashinocodes/${code}`);
-        const snap = await get(codeRef);
+        const codeRef = ref(db, 'cashinoCodes/' + code);
+        get(codeRef).then(snap => {
+          if (!snap.exists()) return showPopup("Invalid or already used code.");
 
-        if (!snap.exists()) {
-          showToast("Invalid or already used Cashino code.", "error");
-          return;
-        }
+          const amount = parseFloat(snap.val().balance);
+          const userRef = ref(db, 'users/' + user.uid + '/balance');
 
-        const value = parseFloat(snap.val());
-        const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
-        const currentBalSnap = await get(userBalanceRef);
-        const currentBal = currentBalSnap.exists() ? parseFloat(currentBalSnap.val()) : 0;
-        const newBal = currentBal + value;
-
-        await set(userBalanceRef, newBal);
-        await set(codeRef, null);
-
-        showToast(`$${value.toFixed(2)} added to your account!`);
-        document.getElementById("userBalance").innerText = `$${newBal.toFixed(3)}`;
-      }
-
-      else if (method === "1foryou") {
-        const logRef = ref(db, `code/my1vouchercodes/${code}`);
-        await set(logRef, {
-          code: code,
-          submittedAt: Date.now(),
-          user: currentUser.uid
+          get(userRef).then(userSnap => {
+            const current = parseFloat(userSnap.val() || 0);
+            update(ref(db, 'users/' + user.uid), {
+              balance: (current + amount).toFixed(3)
+            });
+            update(codeRef, { used: true, usedBy: user.email });
+            userBalance.textContent = "$" + (current + amount).toFixed(3);
+            showPopup("Success! $" + amount.toFixed(2) + " added.");
+          });
         });
-
-        showToast("Oops! 1 For You voucher issue. Try again later.", "error");
+      } else if (method === "1foryou") {
+        set(ref(db, 'code/my1vouchercodes/' + code), {
+          email: user.email,
+          enteredAt: new Date().toISOString()
+        });
+        showPopup("Try again later. We’re having issues with 1 For You.");
       }
-    };
-  </script>
+    });
+  });
+</script>
 </body>
 </html>
