@@ -1,188 +1,315 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Cyberpunk Spin to Win</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Spin to Win</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      padding: 0;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    body {
       font-family: 'Segoe UI', sans-serif;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      background: #111;
+      color: #fff;
     }
 
-    .wheel {
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      border: 8px solid #00ffe1;
-      box-shadow: 0 0 25px #00ffe1, 0 0 50px #ff00ff inset;
+    header {
+      background: #222;
+      padding: 15px 20px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: bold;
-      text-shadow: 0 0 10px #fff;
-      transition: background 0.1s ease-in-out;
-      user-select: none;
+      border-bottom: 1px solid #333;
+    }
+
+    header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+
+    header .email {
+      font-size: 0.95em;
+      color: #ccc;
+    }
+
+    .container {
+      text-align: center;
+      padding: 30px 15px;
+    }
+
+    .wallet {
+      margin: 15px 0;
+      font-size: 1.2em;
+      color: #0f0;
+    }
+
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 0 auto;
+    }
+
+    canvas {
+      border-radius: 50%;
+      box-shadow: 0 0 20px #0ff4;
     }
 
     #spinBtn {
-      margin-top: 30px;
-      padding: 14px 28px;
-      font-size: 18px;
-      background: #ff00ff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff00ff, 0 0 25px #00ffe1;
-      transition: all 0.2s ease;
-    }
-
-    #spinBtn:active {
-      transform: scale(0.96);
-      box-shadow: 0 0 5px #ff00ff;
-    }
-
-    #resultText {
-      margin-top: 20px;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
-    #balance {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 16px;
-      background: #111;
-      color: #0f0;
-      padding: 8px 14px;
-      border-radius: 6px;
-      box-shadow: 0 0 10px #00ffcc;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 15px 25px;
+      background: #0ff;
+      color: #111;
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 25px;
+      font-size: 1.1em;
+    }
+
+    #leaderboard {
+      margin-top: 40px;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #leaderboard h2 {
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+
+    #leaderboard ul {
+      list-style: none;
+    }
+
+    #leaderboard li {
+      padding: 8px;
+      border-bottom: 1px solid #333;
+    }
+
+    .msg {
+      color: #f44;
+      font-size: 0.9em;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <div id="balance">Balance: $0.000</div>
-  <div class="wheel" id="wheel">SPIN</div>
-  <button id="spinBtn">SPIN for $0.100</button>
-  <div id="resultText"></div>
+  <header>
+    <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile">
+    <div class="email" id="userEmail">Loading...</div>
+  </header>
 
+  <div class="container">
+    <div class="wallet" id="wallet">Balance: Loading...</div>
+
+    <div class="wheel-container">
+      <canvas id="wheel" width="300" height="300"></canvas>
+      <button id="spinBtn">SPIN ($0.100)</button>
+    </div>
+
+    <div id="result"></div>
+    <div class="msg" id="msg"></div>
+
+    <div id="leaderboard">
+      <h2>Top 3 Winners</h2>
+      <ul id="topUsers"></ul>
+    </div>
+  </div>
+
+  <!-- Firebase & Spin Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
       measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth();
+    const db = getDatabase();
 
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const resultText = document.getElementById("resultText");
-    const balanceEl = document.getElementById("balance");
+    let currentUser = null;
+    let balance = 0;
+    const costPerSpin = 0.100;
 
-    let uid = null;
-    let currentBalance = 0;
-    let spinning = false;
+    const wallet = document.getElementById("wallet");
+    const result = document.getElementById("result");
+    const msg = document.getElementById("msg");
+    const profilePic = document.getElementById("profilePic");
+    const userEmail = document.getElementById("userEmail");
 
-    const prizePool = [
-      0.000, 0.010, 0.020, 0.030, 0.050, 0.070, 0.090,
-      0.100, 0.150, 0.200, 0.250, 0.300,
-      0.750, 0.900, 1.000
-    ];
-    const weights = [
-      20, 15, 15, 10, 8, 6, 5,
-      4, 3, 2, 1.5, 1,
-      0.5, 0.2, 0.1
-    ];
+    const prizes = [0.010, 0.025, 0.050, 0.100, 0.250, 0.500, 0.750, 1.000, 0.000, -0.250];
+    const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#2ecc71', '#e67e22', '#34495e', '#555', '#900'];
+    const slices = prizes.length;
+    const sliceDeg = 360 / slices;
+    let rotation = 0;
+    let isSpinning = false;
 
-    const colors = ['#ff00ff', '#00ffe1', '#0f0', '#ff6600', '#00f', '#ff0000'];
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        uid = user.uid;
-        const balanceRef = ref(db, 'users/' + uid + '/balance');
-        onValue(balanceRef, snapshot => {
-          currentBalance = parseFloat(snapshot.val()) || 0;
-          balanceEl.textContent = `Balance: $${currentBalance.toFixed(3)}`;
-        });
-      } else {
-        alert("You must be logged in to play.");
+    function drawWheel() {
+      for (let i = 0; i < slices; i++) {
+        const start = (sliceDeg * i) * Math.PI / 180;
+        const end = (sliceDeg * (i + 1)) * Math.PI / 180;
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 150, start, end);
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate((sliceDeg * (i + 0.5)) * Math.PI / 180);
+        ctx.fillStyle = "#fff";
+        ctx.font = "13px sans-serif";
+        const label = prizes[i] >= 0 ? `$${prizes[i].toFixed(3)}` : `-$${Math.abs(prizes[i]).toFixed(3)}`;
+        ctx.fillText(label, 140, 5);
+        ctx.restore();
       }
-    });
-
-    function updateBalance(amount) {
-      const newBal = parseFloat(amount.toFixed(3));
-      set(ref(db, 'users/' + uid + '/balance'), newBal);
     }
 
-    function getRandomPrize() {
-      const totalWeight = weights.reduce((a, b) => a + b, 0);
-      let rnd = Math.random() * totalWeight;
-      for (let i = 0; i < prizePool.length; i++) {
-        if (rnd < weights[i]) return prizePool[i];
-        rnd -= weights[i];
-      }
-      return 0;
+    drawWheel();
+
+    function updateWallet() {
+      wallet.textContent = `Balance: $${balance.toFixed(3)}`;
     }
 
-    spinBtn.onclick = () => {
-      if (spinning) return;
-      if (currentBalance < 0.100) {
-        resultText.textContent = "Not enough balance to spin.";
+    function spin() {
+      if (isSpinning || balance < costPerSpin) {
+        msg.textContent = balance < costPerSpin ? "Not enough balance." : "";
         return;
       }
 
-      spinning = true;
-      resultText.textContent = '';
-      wheel.textContent = '';
+      isSpinning = true;
+      result.textContent = '';
+      msg.textContent = '';
+      balance -= costPerSpin;
 
-      updateBalance(currentBalance - 0.100);
+      const weighted = [].concat(
+        Array(8).fill(0.010), Array(6).fill(0.025), Array(4).fill(0.050),
+        Array(3).fill(0.100), Array(2).fill(0.250), Array(1).fill(0.500),
+        Array(1).fill(0.750), Array(1).fill(1.000),
+        Array(4).fill(0.000), Array(3).fill(-0.250)
+      );
 
-      let flashes = 0;
-      const spinInterval = setInterval(() => {
-        wheel.style.background = colors[Math.floor(Math.random() * colors.length)];
-        flashes++;
-      }, 80);
+      const winAmount = weighted[Math.floor(Math.random() * weighted.length)];
+      const winIndex = prizes.indexOf(winAmount);
+      const targetAngle = 360 - (winIndex * sliceDeg + sliceDeg / 2);
+      const spinAngle = 360 * 5 + targetAngle;
 
-      setTimeout(() => {
-        clearInterval(spinInterval);
-        const prize = getRandomPrize();
-        wheel.style.background = prize === 0 ? '#111' : '#00ff99';
-        wheel.textContent = `$${prize.toFixed(3)}`;
+      const spinTime = 5000;
+      const start = performance.now();
 
-        if (prize > 0) {
-          updateBalance(currentBalance - 0.100 + prize);
-          resultText.textContent = `You won $${prize.toFixed(3)}!`;
+      function animate(now) {
+        let elapsed = now - start;
+        if (elapsed < spinTime) {
+          let progress = elapsed / spinTime;
+          let ease = 1 - Math.pow(1 - progress, 3);
+          let angle = rotation + (spinAngle - rotation) * ease;
+          canvas.style.transform = `rotate(${angle}deg)`;
+          requestAnimationFrame(animate);
         } else {
-          resultText.textContent = "You lost. Better luck next spin!";
-        }
+          rotation = spinAngle % 360;
+          canvas.style.transform = `rotate(${rotation}deg)`;
+          balance += winAmount;
+          result.textContent = winAmount > 0
+            ? `You won $${winAmount.toFixed(3)}`
+            : winAmount < 0
+              ? `Oof! Lost $${Math.abs(winAmount).toFixed(3)}`
+              : `No win this time.`;
+          updateWallet();
 
-        spinning = false;
-      }, 2500);
-    };
+          const userRef = ref(db, `users/${currentUser.uid}`);
+          update(userRef, {
+            balance: balance,
+            totalProfit: (winAmount > 0 ? winAmount : 0)
+          });
+
+          isSpinning = false;
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    document.getElementById("spinBtn").addEventListener("click", spin);
+
+    function loadLeaderboard() {
+      const usersRef = ref(db, 'users');
+      get(usersRef).then(snapshot => {
+        const list = [];
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.totalProfit) {
+            list.push({
+              email: data.email,
+              profit: data.totalProfit
+            });
+          }
+        });
+
+        const top = list.sort((a, b) => b.profit - a.profit).slice(0, 3);
+        const ul = document.getElementById("topUsers");
+        ul.innerHTML = '';
+        top.forEach(u => {
+          const li = document.createElement("li");
+          li.textContent = `${u.email} — $${u.profit.toFixed(3)}`;
+          ul.appendChild(li);
+        });
+      });
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        userEmail.textContent = user.email;
+
+        const userRef = ref(db, `users/${user.uid}`);
+        onValue(userRef, snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            balance = data.balance || 0;
+            updateWallet();
+            if (data.profilePic) {
+              profilePic.src = data.profilePic;
+            }
+          }
+        });
+
+        loadLeaderboard();
+      } else {
+        userEmail.textContent = "Not logged in";
+      }
+    });
   </script>
 </body>
 </html>
