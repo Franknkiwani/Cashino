@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tic-Tac-Toe Multiplayer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyberpunk Tic-Tac-Toe</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
-
     body {
       margin: 0;
       font-family: 'Orbitron', sans-serif;
@@ -28,12 +27,6 @@
       justify-content: space-between;
     }
 
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
     header img {
       width: 40px;
       height: 40px;
@@ -41,10 +34,16 @@
       border: 2px solid #0ff;
     }
 
-    .username, .balance {
+    header .user-info {
       color: #0ff;
       font-size: 1.2rem;
       text-shadow: 0 0 5px #0ff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #00f;
+      margin: 20px 0;
     }
 
     #game {
@@ -52,7 +51,6 @@
       grid-template-columns: repeat(3, 100px);
       grid-template-rows: repeat(3, 100px);
       gap: 8px;
-      margin-top: 20px;
     }
 
     .cell {
@@ -98,72 +96,25 @@
       color: #fff;
     }
 
-    #online-users {
-      display: flex;
-      gap: 15px;
-      margin-top: 20px;
-      overflow-x: auto;
-      padding: 10px;
-      background: #111;
-      box-shadow: 0 0 10px #0ff;
-    }
-
     .user-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-      background: #222;
-      border-radius: 10px;
+      display: inline-block;
+      margin: 15px;
+      text-align: center;
+      color: #fff;
+      font-size: 1rem;
       cursor: pointer;
-      transition: 0.2s;
-      box-shadow: 0 0 8px #0ff;
-    }
-
-    .user-card:hover {
-      background: #333;
     }
 
     .user-card img {
-      width: 60px;
-      height: 60px;
+      width: 80px;
+      height: 80px;
       border-radius: 50%;
+      margin-bottom: 10px;
       border: 2px solid #0ff;
     }
 
-    .user-card .username {
-      margin-top: 10px;
-      font-size: 1rem;
-      color: #0ff;
-    }
-
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #0ff;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .notification button {
-      padding: 5px 10px;
-      border: none;
-      background: #0ff;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .notification button:hover {
-      background: #00f;
-      color: #fff;
+    .user-card:hover {
+      color: #00f;
     }
   </style>
 </head>
@@ -171,37 +122,31 @@
 
   <!-- Header -->
   <header>
-    <div class="user-info">
+    <div class="user-info" id="user-info">
       <img id="avatar" src="https://api.dicebear.com/6.x/pixel-art/svg?seed=Cyber" alt="Avatar">
-      <div class="username" id="username">Loading...</div>
+      <span id="username">Loading...</span> - <span id="balance">0</span> Coins
     </div>
-    <div class="balance" id="balance">$0.000</div>
   </header>
+
+  <h1>CYBER TIC-TAC-TOE</h1>
 
   <!-- Game Grid -->
   <div id="game"></div>
 
   <!-- Status Message -->
-  <div id="status">Waiting for opponent...</div>
+  <div id="status">Player X's turn</div>
 
   <!-- Reset Button -->
   <button id="reset">Reset</button>
 
-  <!-- Online Users List -->
-  <div id="online-users"></div>
+  <h2>Online Players</h2>
+  <div id="users-list"></div>
 
-  <!-- Game Request Notification -->
-  <div class="notification" id="game-request">
-    <div id="request-text">Someone invited you to play!</div>
-    <button id="accept">Accept</button>
-    <button id="decline">Decline</button>
-  </div>
-
-  <!-- Firebase Integration -->
+  <!-- Firebase Auth + Game Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -214,140 +159,82 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     const avatar = document.getElementById("avatar");
-    const usernameEl = document.getElementById("username");
-    const balanceEl = document.getElementById("balance");
-    const onlineUsersEl = document.getElementById("online-users");
-    const requestBox = document.getElementById("game-request");
-    const requestText = document.getElementById("request-text");
-    const acceptBtn = document.getElementById("accept");
-    const declineBtn = document.getElementById("decline");
+    const usernameElement = document.getElementById("username");
+    const balanceElement = document.getElementById("balance");
+    const usersList = document.getElementById("users-list");
+    const gameEl = document.getElementById('game');
+    const statusEl = document.getElementById('status');
+    const resetBtn = document.getElementById('reset');
 
-    let currentUser = null;
-    let currentSessionId = null;
-    let isInGame = false;
-    let playerSymbol = "X";
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let isGameActive = true;
 
-    onAuthStateChanged(auth, async (user) => {
+    // Listen for auth state changes
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        currentUser = user;
-        usernameEl.textContent = user.displayName || "No Name";
-        avatar.src = user.photoURL || `https://api.dicebear.com/6.x/pixel-art/svg?seed=${user.uid}`;
-        
-        const userRef = ref(db, "users/" + user.uid);
-        await update(userRef, {
-          name: user.displayName || "No Name",
-          avatar: user.photoURL || `https://api.dicebear.com/6.x/pixel-art/svg?seed=${user.uid}`,
-          balance: 0,
-          online: true,
-          uid: user.uid
+        usernameElement.textContent = user.displayName || "User";
+        avatar.src = user.photoURL || "https://api.dicebear.com/6.x/pixel-art/svg?seed=Cyber";
+        balanceElement.textContent = user.balance || 0;
+
+        // Update user presence
+        set(ref(db, 'presence/' + user.uid), {
+          username: user.displayName,
+          photoURL: user.photoURL,
+          online: true
         });
 
-        onValue(ref(db, "users"), (snapshot) => {
-          const data = snapshot.val();
-          onlineUsersEl.innerHTML = "";
-          for (const id in data) {
-            if (id !== user.uid && data[id].online) {
-              const userDiv = document.createElement("div");
-              userDiv.className = "user-card";
-              userDiv.innerHTML = `
-                <img src="${data[id].avatar}">
-                <div class="username">${data[id].name}</div>
+        // Listen for online users
+        onValue(ref(db, 'presence'), (snapshot) => {
+          usersList.innerHTML = '';
+          snapshot.forEach((childSnapshot) => {
+            const user = childSnapshot.val();
+            if (user.username !== user.displayName) {
+              const userCard = document.createElement('div');
+              userCard.classList.add('user-card');
+              userCard.onclick = () => sendGameRequest(childSnapshot.key);
+              userCard.innerHTML = `
+                <img src="${user.photoURL || 'https://api.dicebear.com/6.x/pixel-art/svg?seed=Cyber'}" alt="User Avatar">
+                <p>${user.username}</p>
               `;
-              userDiv.onclick = () => sendGameRequest(data[id].uid, data[id].name);
-              onlineUsersEl.appendChild(userDiv);
+              usersList.appendChild(userCard);
             }
-          }
+          });
         });
 
-        onValue(ref(db, "users/" + user.uid + "/incomingRequest"), (snapshot) => {
-          const inviterId = snapshot.val();
-          if (inviterId && !isInGame) {
-            requestBox.style.display = "flex";
-            get(ref(db, "users/" + inviterId)).then((snap) => {
-              const inviterName = snap.val().name || "Someone";
-              requestText.textContent = `${inviterName} invited you to play!`;
-              acceptBtn.onclick = () => acceptRequest(inviterId);
-              declineBtn.onclick = () => declineRequest(user.uid);
-            });
-          }
-        });
-
-        onValue(ref(db, "users/" + user.uid + "/balance"), (snapshot) => {
-          const balance = snapshot.val() || 0;
-          balanceEl.textContent = `$${balance.toFixed(3)}`;
-        });
+      } else {
+        usernameElement.textContent = "Guest";
+        avatar.src = "https://api.dicebear.com/6.x/pixel-art/svg?seed=Cyber";
+        balanceElement.textContent = 0;
       }
     });
 
-    function sendGameRequest(targetUid, targetName) {
-      if (isInGame) return alert("Finish your current game first.");
-      const updates = {};
-      updates[`users/${targetUid}/incomingRequest`] = currentUser.uid;
-      update(ref(db), updates);
+    function sendGameRequest(opponentUid) {
+      const user = auth.currentUser;
+      if (!user) return alert("Please sign in first!");
+
+      // Create a new game request
+      set(ref(db, 'gameRequests/' + opponentUid + '/' + user.uid), {
+        username: user.displayName,
+        photoURL: user.photoURL
+      });
+
+      alert("Game request sent!");
     }
 
-    async function acceptRequest(inviterId) {
-      const sessionId = `${inviterId}_${currentUser.uid}_${Date.now()}`;
-      await set(ref(db, `games/${sessionId}`), {
-        board: Array(9).fill(""),
-        turn: "X",
-        players: {
-          X: inviterId,
-          O: currentUser.uid
-        }
-      });
-
-      await update(ref(db, `users/${inviterId}`), {
-        currentGame: sessionId
-      });
-      await update(ref(db, `users/${currentUser.uid}`), {
-        currentGame: sessionId,
-        incomingRequest: null
-      });
-
-      isInGame = true;
-      currentSessionId = sessionId;
-      playerSymbol = "O";
-      requestBox.style.display = "none";
-      startGame(sessionId);
-    }
-
-    async function declineRequest(uid) {
-      await update(ref(db, `users/${uid}`), {
-        incomingRequest: null
-      });
-      requestBox.style.display = "none";
-    }
-
-    function startGame(sessionId) {
-      const gameRef = ref(db, `games/${sessionId}`);
-      onValue(gameRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data || !data.board) return;
-        board = data.board;
-        currentPlayer = data.turn;
-        isGameActive = true;
-        render();
-        if (currentPlayer === playerSymbol) {
-          statusEl.textContent = "Your turn";
-        } else {
-          statusEl.textContent = "Opponent's turn";
-        }
-      });
-    }
-
-    const gameEl = document.getElementById("game");
-    const statusEl = document.getElementById("status");
-    const resetBtn = document.getElementById("reset");
-
-    let board = Array(9).fill("");
-    let currentPlayer = "X";
-    let isGameActive = false;
+    resetBtn.onclick = () => {
+      board = ["", "", "", "", "", "", "", "", ""];
+      currentPlayer = "X";
+      isGameActive = true;
+      statusEl.textContent = "Player X's turn";
+      render();
+    };
 
     function render() {
       gameEl.innerHTML = "";
@@ -355,30 +242,46 @@
         const div = document.createElement("div");
         div.className = "cell";
         div.textContent = cell;
-        if (isGameActive && currentPlayer === playerSymbol && cell === "") {
-          div.onclick = () => handleClick(i);
-        }
+        div.onclick = () => handleClick(i);
         gameEl.appendChild(div);
       });
     }
 
     function handleClick(i) {
-      if (board[i] || !isGameActive) return;
-      board[i] = playerSymbol;
-      const newTurn = playerSymbol === "X" ? "O" : "X";
-      update(ref(db, `games/${currentSessionId}`), {
-        board: board,
-        turn: newTurn
-      });
+      if (!isGameActive || board[i]) return;
+      board[i] = currentPlayer;
+      render();
+      checkWinner();
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      if (isGameActive) {
+        statusEl.textContent = `Player ${currentPlayer}'s turn`;
+      }
     }
 
-    resetBtn.onclick = () => {
-      if (!currentSessionId) return;
-      update(ref(db, `games/${currentSessionId}`), {
-        board: Array(9).fill(""),
-        turn: "X"
-      });
-    };
+    function checkWinner() {
+      const winConditions = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+
+      for (const condition of winConditions) {
+        const [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          statusEl.textContent = `Player ${board[a]} wins!`;
+          isGameActive = false;
+          return;
+        }
+      }
+
+      if (!board.includes("")) {
+        statusEl.textContent = "It's a tie!";
+        isGameActive = false;
+      }
+    }
+
+    render(); // Initial render of the game grid
+
   </script>
 </body>
 </html>
