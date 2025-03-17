@@ -6,19 +6,38 @@
   <style>
     body { font-family: sans-serif; padding: 20px; }
     #online-users div { margin: 10px 0; }
-    img { vertical-align: middle; }
-    .board { display: grid; grid-template-columns: repeat(3, 100px); gap: 5px; margin-top: 20px; }
-    .cell { width: 100px; height: 100px; font-size: 2em; text-align: center; line-height: 100px; border: 1px solid #ccc; cursor: pointer; }
+    img { vertical-align: middle; border-radius: 50%; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 2em;
+      text-align: center;
+      line-height: 100px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      background: #f0f0f0;
+    }
+    .cell:hover {
+      background: #ddd;
+    }
   </style>
 </head>
 <body>
-  <h2>Tic Tac Toe Lobby</h2>
+  <h2>Multiplayer Tic Tac Toe</h2>
   <div id="login-section">
     <button id="login-btn">Login with Google</button>
   </div>
 
-  <h3>Online Users</h3>
-  <div id="online-users"></div>
+  <div id="online-users-section" style="display:none;">
+    <h3>Online Users</h3>
+    <div id="online-users"></div>
+  </div>
 
   <div id="game-board" style="display:none;">
     <h3 id="status"></h3>
@@ -29,7 +48,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onDisconnect, set, remove, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, onDisconnect, set, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -45,21 +64,21 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+
     let currentUser = null;
     let currentGameRef = null;
 
     const loginBtn = document.getElementById("login-btn");
-    loginBtn.onclick = () => {
-      signInWithPopup(auth, new GoogleAuthProvider());
-    };
+    loginBtn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
     onAuthStateChanged(auth, user => {
       if (user) {
         currentUser = user;
         document.getElementById("login-section").style.display = "none";
+        document.getElementById("online-users-section").style.display = "block";
         setupPresence(user);
-        listenForUsers();
-        listenForRequests();
+        loadOnlineUsers();
+        listenForGameRequests();
       }
     });
 
@@ -69,8 +88,8 @@
       onValue(connRef, snap => {
         if (snap.val()) {
           set(userRef, {
-            username: user.displayName || "Anon",
-            profilePic: user.photoURL || "",
+            username: user.displayName,
+            profilePic: user.photoURL,
             uid: user.uid
           });
           onDisconnect(userRef).remove();
@@ -78,7 +97,7 @@
       });
     }
 
-    function listenForUsers() {
+    function loadOnlineUsers() {
       const container = document.getElementById("online-users");
       onValue(ref(db, "/onlineUsers"), snapshot => {
         container.innerHTML = "";
@@ -99,21 +118,34 @@
 
     window.invite = (uid, name) => {
       const requestRef = ref(db, `/gameRequests/${uid}`);
+      const gameId = `${currentUser.uid}_${uid}`;
+
       set(requestRef, {
         from: currentUser.uid,
-        name: currentUser.displayName
+        name: currentUser.displayName,
+        gameId: gameId
       });
+
       alert(`Invitation sent to ${name}`);
+
+      // Listen for game creation and auto-join as X
+      const newGameRef = ref(db, `/games/${gameId}`);
+      onValue(newGameRef, (snapshot) => {
+        if (snapshot.exists()) {
+          joinGame(gameId, "x");
+          off(newGameRef);
+        }
+      });
     };
 
-    function listenForRequests() {
+    function listenForGameRequests() {
       const requestRef = ref(db, `/gameRequests/${currentUser.uid}`);
       onValue(requestRef, snap => {
         if (snap.exists()) {
           const req = snap.val();
           const accept = confirm(`${req.name} invited you to play. Accept?`);
           if (accept) {
-            const gameId = `${req.from}_${currentUser.uid}`;
+            const gameId = req.gameId;
             set(ref(db, `/games/${gameId}`), {
               players: {
                 x: req.from,
@@ -139,8 +171,10 @@
 
       onValue(currentGameRef, snap => {
         const game = snap.val();
+        if (!game) return;
+
         boardDiv.innerHTML = "";
-        statusDiv.textContent = `You are ${role.toUpperCase()}, ${game.turn.toUpperCase()}'s turn`;
+        statusDiv.textContent = `You are '${role.toUpperCase()}'. It’s ${game.turn.toUpperCase()}'s turn`;
 
         game.board.forEach((cell, idx) => {
           const div = document.createElement("div");
