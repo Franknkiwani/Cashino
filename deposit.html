@@ -2,83 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deposit Money</title>
-  <script src="https://www.paypal.com/sdk/js?client-id=AQlRInnmKjWmwHMNBE-z6za2NcSqhfaj3vD9x_AoQEoeVVtOxqvfjtGN9ixSVARi0IT9vhPeLo3AxwC5&currency=USD"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Deposit | BetVault</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #0e0e10;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 60px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: #161618;
+      border-radius: 16px;
+      padding: 40px 30px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: 0 0 24px rgba(0,0,0,0.3);
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 25px;
+      color: #00ff99;
+    }
+
+    .secure-tag {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 25px;
+      color: #aaa;
+    }
+
+    .secure-tag::before {
+      content: "🔒";
+      margin-right: 6px;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px;
+      background: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 16px;
+      margin-bottom: 20px;
+      appearance: none;
+    }
+
+    .voucher-input {
+      display: none;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 14px;
+      margin-bottom: 8px;
+      color: #bbb;
+    }
+
+    input {
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      background: #2c2c2e;
+      color: #fff;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background: #00ff88;
+      color: #000;
+      font-weight: bold;
+      font-size: 16px;
+      padding: 14px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #00cc70;
+    }
+
+    .logo {
+      display: inline-block;
+      vertical-align: middle;
+      width: 24px;
+      margin-right: 10px;
+    }
+
+    .coming-soon {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #888;
+      padding: 10px;
+      border: 1px dashed #555;
+      border-radius: 8px;
+    }
+
+    .coming-soon img {
+      vertical-align: middle;
+      width: 24px;
+      margin-right: 8px;
+    }
+
+    .success {
+      margin-top: 15px;
+      text-align: center;
+      color: #00ff88;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body>
-  <h2>Deposit to Your Account</h2>
-  <div>
-    <label>Amount (USD):</label>
-    <input type="number" id="amount" min="0.001" max="1000" step="0.001">
+  <div class="container">
+    <h2>Deposit Funds</h2>
+    <div class="secure-tag">100% Secured & Protected</div>
+
+    <label for="method">Choose Payment Method</label>
+    <select id="method" onchange="showVoucherInput(this.value)">
+      <option disabled selected>Select a method</option>
+      <option value="cashino">Cashino Voucher</option>
+      <option value="1foryou">1 For You Voucher</option>
+    </select>
+
+    <div class="voucher-input" id="voucherInput">
+      <label for="voucherCode" id="voucherLabel">Voucher Code</label>
+      <input type="text" id="voucherCode" placeholder="Enter your code here"/>
+      <button onclick="redeem()">Redeem</button>
+    </div>
+
+    <div class="coming-soon">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" class="logo" />
+      PayPal – Coming Soon
+    </div>
+
+    <div class="coming-soon">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Mastercard-logo.png/320px-Mastercard-logo.png" class="logo" />
+      Credit / Debit Card – Coming Soon
+    </div>
+
+    <div class="success" id="successMsg"></div>
   </div>
-  <br>
-  <div id="paypal-button-container"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getFirestore, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <script>
+    function showVoucherInput(value) {
+      const inputBox = document.getElementById('voucherInput');
+      const label = document.getElementById('voucherLabel');
+      inputBox.style.display = 'flex';
+      label.textContent = value === '1foryou' ? '1 For You Voucher Code' : 'Cashino Voucher Code';
+    }
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth();
-
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        renderPayPalButton();
-      } else {
-        alert("You must be logged in to deposit.");
+    function redeem() {
+      const code = document.getElementById('voucherCode').value.trim();
+      if (!code) {
+        alert("Please enter a voucher code.");
+        return;
       }
-    });
-
-    function renderPayPalButton() {
-      paypal.Buttons({
-        createOrder: (data, actions) => {
-          const amount = parseFloat(document.getElementById('amount').value);
-          if (!amount || amount < 0.001 || amount > 1000) {
-            alert("Enter an amount between $0.001 and $1000.");
-            throw new Error("Invalid amount");
-          }
-          return actions.order.create({
-            purchase_units: [{
-              amount: {
-                value: amount.toFixed(3)
-              }
-            }]
-          });
-        },
-        onApprove: async (data, actions) => {
-          const amount = parseFloat(document.getElementById('amount').value);
-          const details = await actions.order.capture();
-
-          const userRef = doc(db, "users", currentUser.uid);
-          const userSnap = await getDoc(userRef);
-          const currentBalance = userSnap.exists() && userSnap.data().balance ? userSnap.data().balance : 0;
-
-          await updateDoc(userRef, {
-            balance: currentBalance + amount
-          });
-
-          alert(`$${amount.toFixed(3)} deposited successfully!`);
-        },
-        onError: (err) => {
-          console.error("PayPal error:", err);
-          alert("There was a problem with the payment. Check the console for more details.");
-        }
-      }).render('#paypal-button-container');
+      document.getElementById('successMsg').innerText = "Voucher redeemed successfully!";
     }
   </script>
 </body>
