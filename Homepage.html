@@ -302,6 +302,14 @@
     <div class="game-title">X vs O</div>
   </div>
 </div>
+<div class="leaderboard" style="max-width: 600px; margin: 40px auto; text-align: center;">
+  <h2 style="color: #00ffff; margin-bottom: 20px;">Top Players Today</h2>
+  <div id="leaderboardList" style="display: flex; flex-direction: column; gap: 10px;">
+    <!-- Top 3 users will be injected here -->
+  </div>
+</div>
+  </div>
+</div>
 </div>  
   <script type="module">  
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";  
@@ -423,6 +431,34 @@ window.addEventListener('offline', () => {
     }  
     setInterval(updateClock, 1000);  
     updateClock();  
+const db = getDatabase(); // uses your already initialized Firebase app
+
+async function loadTopPlayersToday() {
+  const leaderboardEl = document.getElementById("leaderboardList");
+
+  try {
+    const snapshot = await get(ref(db, "users"));
+    if (!snapshot.exists()) return;
+
+    const users = snapshot.val();
+    const sorted = Object.values(users)
+      .filter(u => u.todayEarnings > 0)
+      .sort((a, b) => b.todayEarnings - a.todayEarnings)
+      .slice(0, 3);
+
+    leaderboardEl.innerHTML = sorted.map((user, i) => `
+      <div style="background: #111; padding: 10px 20px; border-radius: 8px; border: 1px solid #00ffff${(8 - i * 2).toString(16)};">
+        ${i + 1}. ${user.username} — $${user.todayEarnings}
+      </div>
+    `).join('');
+
+  } catch (err) {
+    leaderboardEl.innerHTML = `<div style="color: red;">Failed to load leaderboard</div>`;
+    console.error("Leaderboard error:", err);
+  }
+}
+
+loadTopPlayersToday();
   </script>  
   </body>  
 </html>
