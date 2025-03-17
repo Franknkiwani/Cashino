@@ -34,7 +34,7 @@
       user-select: none;
     }
     #status { margin: 10px; font-size: 1.2rem; }
-    #findMatch, #reset {
+    #createRoom, #joinRoom, #reset {
       padding: 10px 20px;
       margin: 5px;
       font-size: 1rem;
@@ -44,18 +44,31 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    input {
+      padding: 5px;
+      font-size: 1rem;
+    }
   </style>
 </head>
 <body>
   <h1>Online Tic-Tac-Toe</h1>
-  <button id="findMatch">Find Players</button>
+
+  <div id="createSection">
+    <button id="createRoom">Create Room</button>
+  </div>
+
+  <div id="joinSection" style="display:none;">
+    <input type="text" id="roomCode" placeholder="Enter Room Code" />
+    <button id="joinRoom">Join Room</button>
+  </div>
+
   <div id="status">Waiting to start...</div>
   <div class="board" id="board" style="display:none;"></div>
   <button id="reset" style="display:none;">Reset</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, onValue, remove, update, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, remove, update, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const app = initializeApp({
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -69,13 +82,15 @@
 
     const db = getDatabase(app);
 
-    const findBtn = document.getElementById("findMatch");
+    const createRoomBtn = document.getElementById("createRoom");
+    const joinRoomBtn = document.getElementById("joinRoom");
+    const roomCodeInput = document.getElementById("roomCode");
     const statusEl = document.getElementById("status");
     const boardEl = document.getElementById("board");
     const resetBtn = document.getElementById("reset");
 
-    let playerSymbol = null;
     let gameId = null;
+    let playerSymbol = null;
     let isMyTurn = false;
     let gameState = Array(9).fill("");
     const cells = [];
@@ -93,108 +108,112 @@
       }
     }
 
-    async function findMatch() {
-      statusEl.textContent = "Searching for a player...";
-      findBtn.disabled = true;
+    async function createRoom() {
+      const roomCode = push(ref(db, 'games')).key;  // Unique code for the room
+      const gameRef = ref(db, `games/${roomCode}`);
 
-      const queueRef = ref(db, 'queue');
-      const queueSnap = await get(queueRef);
+      await set(gameRef, {
+        board: Array(9).fill(""),
+        currentTurn: 'X',
+        winner: null,
+        players: { X: true }
+      });
 
-      if (!queueSnap.exists()) {
-        const matchKey = push(queueRef).key;
-        await set(ref(db, `queue/${matchKey}`), {
-          timestamp: Date.now()
-        });
+      gameId = roomCode;
+      playerSymbol = 'X';
 
-        let timeout = setTimeout(async () => {
-          await remove(ref(db, `queue/${matchKey}`));
-          statusEl.textContent = "No players available.";
-          findBtn.disabled = false;
-        }, 10000); // 10 sec
-
-        const unsub = onValue(queueRef, async (snap) => {
-          const queueData = snap.val();
-          if (!queueData) return;
-
-          for (let key in queueData) {
-            if (key !== matchKey) {
-              clearTimeout(timeout);
-              unsub();
-
-              gameId = `game_${Date.now()}`;
-              await set(ref(db, `games/${gameId}`), {
-                board: Array(9).fill(""),
-                currentTurn: 'X',
-                winner: null
-              });
-
-              await remove(ref(db, `queue/${matchKey}`));
-              await remove(ref(db, `queue/${key}`));
-
-              playerSymbol = 'X';
-              isMyTurn = true;
-              startGame();
-              return;
-            }
-          }
-        });
-
-      } else {
-        const opponentKey = Object.keys(queueSnap.val())[0];
-        gameId = `game_${Date.now()}`;
-        await set(ref(db, `games/${gameId}`), {
-          board: Array(9).fill(""),
-          currentTurn: 'X',
-          winner: null
-        });
-        await remove(ref(db, `queue/${opponentKey}`));
-
-        playerSymbol = 'O';
-        isMyTurn = false;
-        startGame();
-      }
+      showWaitingForPlayer();
+      listenForPlayerJoin(roomCode);
     }
 
-    function startGame() {
-      statusEl.textContent = `Game started. You are ${playerSymbol}`;
-      boardEl.style.display = "grid";
-      resetBtn.style.display = "inline-block";
-      findBtn.style.display = "none";
-      renderBoard();
+    function showWaitingForPlayer() {
+      statusEl.textContent = "Waiting for Player 2 to join...";
+      createRoomBtn.style.display = "none";
+      joinRoomBtn.style.display = "none";
+      document.getElementById("roomCode").style.display = "none";
+      boardEl.style.display = "none";
+      resetBtn.style.display = "none";
+    }
 
-      const gameRef = ref(db, `games/${gameId}`);
-      onValue(child(gameRef, 'board'), (snap) => {
-        gameState = snap.val();
-        renderBoard();
-      });
+    async function listenForPlayerJoin(roomCode) {
+      const gameRef = ref(db, `games/${roomCode}`);
 
-      onValue(child(gameRef, 'currentTurn'), (snap) => {
-        const turn = snap.val();
-        isMyTurn = turn === playerSymbol;
-        statusEl.textContent = isMyTurn ? "Your move" : "Opponent's move";
-      });
+      onValue(gameRef, (snap) => {
+        const gameData = snap.val();
 
-      onValue(child(gameRef, 'winner'), (snap) => {
-        const winner = snap.val();
-        if (winner) {
-          isMyTurn = false;
-          statusEl.textContent = winner === 'draw' ? "It's a draw!" : `${winner} wins!`;
+        if (gameData && gameData.players.O) {
+          playerSymbol = 'X';
+          statusEl.textContent = "Game started! You are X";
+          startGame();
+        } else {
+          if (!gameData || !gameData.players.O) {
+            update(gameRef, {
+              "players/O": true
+            });
+          }
         }
       });
     }
 
-    function handleMove(index) {
+    async function joinRoom() {
+      const roomCode = roomCodeInput.value;
+      const gameRef = ref(db, `games/${roomCode}`);
+      const gameDataSnap = await get(gameRef);
+
+      if (!gameDataSnap.exists()) {
+        statusEl.textContent = "Invalid room code!";
+        return;
+      }
+
+      gameId = roomCode;
+      playerSymbol = 'O';
+
+      statusEl.textContent = "Game started! You are O";
+      startGame();
+      listenForGameUpdates(roomCode);
+    }
+
+    async function listenForGameUpdates(roomCode) {
+      const gameRef = ref(db, `games/${roomCode}`);
+
+      onValue(gameRef, (snap) => {
+        const gameData = snap.val();
+        if (!gameData) return;
+
+        gameState = gameData.board;
+        isMyTurn = gameData.currentTurn === playerSymbol;
+        renderBoard();
+
+        if (gameData.winner) {
+          isMyTurn = false;
+          statusEl.textContent = gameData.winner === 'draw' ? "It's a draw!" : `${gameData.winner} wins!`;
+        } else {
+          statusEl.textContent = isMyTurn ? "Your move!" : "Waiting for opponent's move";
+        }
+      });
+    }
+
+    function startGame() {
+      createRoomBtn.style.display = "none";
+      joinRoomBtn.style.display = "none";
+      roomCodeInput.style.display = "none";
+      boardEl.style.display = "grid";
+      resetBtn.style.display = "inline-block";
+      renderBoard();
+    }
+
+    async function handleMove(index) {
       if (!isMyTurn || gameState[index]) return;
 
       gameState[index] = playerSymbol;
-      update(ref(db, `games/${gameId}`), {
+      await update(ref(db, `games/${gameId}`), {
         board: gameState,
         currentTurn: playerSymbol === 'X' ? 'O' : 'X'
       });
 
       const winner = checkWinner();
       if (winner) {
-        update(ref(db, `games/${gameId}`), {
+        await update(ref(db, `games/${gameId}`), {
           winner
         });
       }
@@ -202,9 +221,9 @@
 
     function checkWinner() {
       const winCombos = [
-        [0,1,2], [3,4,5], [6,7,8],
-        [0,3,6], [1,4,7], [2,5,8],
-        [0,4,8], [2,4,6]
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
       ];
       for (let [a, b, c] of winCombos) {
         if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
@@ -215,7 +234,6 @@
     }
 
     resetBtn.onclick = () => {
-      if (!gameId) return;
       set(ref(db, `games/${gameId}`), {
         board: Array(9).fill(""),
         currentTurn: 'X',
@@ -223,7 +241,8 @@
       });
     };
 
-    findBtn.onclick = findMatch;
+    createRoomBtn.onclick = createRoom;
+    joinRoomBtn.onclick = joinRoom;
   </script>
 </body>
 </html>
