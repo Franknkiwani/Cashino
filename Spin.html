@@ -1,315 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>Spin to Win</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-user-select: none;
       user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Segoe UI', sans-serif;
     }
     body {
-      font-family: 'Segoe UI', sans-serif;
       background: #111;
       color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
     }
-
     header {
-      background: #222;
-      padding: 15px 20px;
       display: flex;
       align-items: center;
+      justify-content: flex-start;
+      padding: 10px 20px;
+      background: #1e1e1e;
       border-bottom: 1px solid #333;
     }
-
     header img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      object-fit: cover;
       margin-right: 10px;
     }
-
-    header .email {
-      font-size: 0.95em;
+    .email {
+      font-size: 14px;
       color: #ccc;
     }
-
-    .container {
-      text-align: center;
-      padding: 30px 15px;
-    }
-
     .wallet {
-      margin: 15px 0;
-      font-size: 1.2em;
-      color: #0f0;
+      margin: 20px 0;
+      font-size: 18px;
+      font-weight: bold;
     }
-
     .wheel-container {
       position: relative;
       width: 300px;
       height: 300px;
       margin: 0 auto;
+      padding-top: 20px;
     }
-
-    canvas {
-      border-radius: 50%;
-      box-shadow: 0 0 20px #0ff4;
-    }
-
-    #spinBtn {
+    .pointer {
+      width: 0;
+      height: 0;
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 25px solid #fff;
       position: absolute;
-      top: 50%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
-      padding: 15px 25px;
-      background: #0ff;
-      color: #111;
-      font-weight: bold;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    #rotatingWheel {
+      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    #wheel {
+      border-radius: 50%;
+      background: #222;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #0f0;
       border: none;
-      border-radius: 50px;
+      border-radius: 5px;
+      font-size: 16px;
       cursor: pointer;
     }
-
-    #result {
-      margin-top: 25px;
-      font-size: 1.1em;
-    }
-
-    #leaderboard {
-      margin-top: 40px;
-      background: #1a1a1a;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 320px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #leaderboard h2 {
-      margin-bottom: 10px;
-      font-size: 1.2em;
-    }
-
-    #leaderboard ul {
-      list-style: none;
-    }
-
-    #leaderboard li {
-      padding: 8px;
-      border-bottom: 1px solid #333;
-    }
-
-    .msg {
-      color: #f44;
-      font-size: 0.9em;
+    .result {
       margin-top: 10px;
+      font-size: 16px;
+    }
+    .leaderboard {
+      margin-top: 40px;
+    }
+    .leaderboard h2 {
+      font-size: 20px;
+      color: #0f0;
+    }
+    .leaderboard ul {
+      list-style: none;
+      padding: 0;
+      margin: 10px auto;
+      max-width: 300px;
+    }
+    .leaderboard li {
+      background: #1e1e1e;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile">
-    <div class="email" id="userEmail">Loading...</div>
-  </header>
+<header>
+  <img id="profile-pic" src="" alt="Profile">
+  <div class="email" id="user-email"></div>
+</header>
 
-  <div class="container">
-    <div class="wallet" id="wallet">Balance: Loading...</div>
+<div class="wallet" id="wallet">Balance: $0.000</div>
 
-    <div class="wheel-container">
-      <canvas id="wheel" width="300" height="300"></canvas>
-      <button id="spinBtn">SPIN ($0.100)</button>
-    </div>
-
-    <div id="result"></div>
-    <div class="msg" id="msg"></div>
-
-    <div id="leaderboard">
-      <h2>Top 3 Winners</h2>
-      <ul id="topUsers"></ul>
-    </div>
+<div class="wheel-container">
+  <div class="pointer"></div>
+  <div id="rotatingWheel">
+    <canvas id="wheel" width="300" height="300"></canvas>
   </div>
+  <button id="spinBtn">SPIN ($0.100)</button>
+  <div class="result" id="result"></div>
+</div>
 
-  <!-- Firebase & Spin Logic -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, update, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+<div class="leaderboard">
+  <h2>Top Winners</h2>
+  <ul id="leaderboard-list"></ul>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, set, get, update, child, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getDatabase();
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+  };
 
-    let currentUser = null;
-    let balance = 0;
-    const costPerSpin = 0.100;
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getDatabase();
 
-    const wallet = document.getElementById("wallet");
-    const result = document.getElementById("result");
-    const msg = document.getElementById("msg");
-    const profilePic = document.getElementById("profilePic");
-    const userEmail = document.getElementById("userEmail");
+  let currentUser, balance = 0;
+  const wallet = document.getElementById("wallet");
+  const result = document.getElementById("result");
+  const spinBtn = document.getElementById("spinBtn");
+  const userEmail = document.getElementById("user-email");
+  const profilePic = document.getElementById("profile-pic");
 
-    const prizes = [0.010, 0.025, 0.050, 0.100, 0.250, 0.500, 0.750, 1.000, 0.000, -0.250];
-    const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#2ecc71', '#e67e22', '#34495e', '#555', '#900'];
-    const slices = prizes.length;
-    const sliceDeg = 360 / slices;
-    let rotation = 0;
-    let isSpinning = false;
+  const canvas = document.getElementById("wheel");
+  const ctx = canvas.getContext("2d");
+  const rotatingWheel = document.getElementById("rotatingWheel");
 
-    const canvas = document.getElementById("wheel");
-    const ctx = canvas.getContext("2d");
+  const prizes = [0.010, 0.025, 0.050, 0.100, 0.250, 0.500, 0.750, 1.000, 0.000, -0.250];
+  const sliceDeg = 360 / prizes.length;
+  const costPerSpin = 0.100;
+  let isSpinning = false;
 
-    function drawWheel() {
-      for (let i = 0; i < slices; i++) {
-        const start = (sliceDeg * i) * Math.PI / 180;
-        const end = (sliceDeg * (i + 1)) * Math.PI / 180;
-        ctx.beginPath();
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 150, start, end);
-        ctx.fillStyle = colors[i];
-        ctx.fill();
-        ctx.save();
-        ctx.translate(150, 150);
-        ctx.rotate((sliceDeg * (i + 0.5)) * Math.PI / 180);
-        ctx.fillStyle = "#fff";
-        ctx.font = "13px sans-serif";
-        const label = prizes[i] >= 0 ? `$${prizes[i].toFixed(3)}` : `-$${Math.abs(prizes[i]).toFixed(3)}`;
-        ctx.fillText(label, 140, 5);
-        ctx.restore();
-      }
+  function drawWheel() {
+    for (let i = 0; i < prizes.length; i++) {
+      const angle = sliceDeg * i * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(150, 150);
+      ctx.arc(150, 150, 150, angle, angle + sliceDeg * Math.PI / 180);
+      ctx.fillStyle = i % 2 === 0 ? '#444' : '#666';
+      ctx.fill();
+      ctx.save();
+      ctx.translate(150, 150);
+      ctx.rotate(angle + sliceDeg * Math.PI / 360);
+      ctx.textAlign = "right";
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText(`${prizes[i] >= 0 ? "$" : "-$"}${Math.abs(prizes[i]).toFixed(3)}`, 130, 5);
+      ctx.restore();
     }
+  }
+  drawWheel();
 
-    drawWheel();
+  function updateWallet() {
+    wallet.textContent = `Balance: $${balance.toFixed(3)}`;
+  }
 
-    function updateWallet() {
-      wallet.textContent = `Balance: $${balance.toFixed(3)}`;
-    }
+  function spin() {
+    if (isSpinning || balance < costPerSpin) return;
+    isSpinning = true;
+    result.textContent = '';
+    balance -= costPerSpin;
+    updateWallet();
 
-    function spin() {
-      if (isSpinning || balance < costPerSpin) {
-        msg.textContent = balance < costPerSpin ? "Not enough balance." : "";
-        return;
-      }
+    const weighted = [].concat(
+      Array(8).fill(0.010), Array(6).fill(0.025), Array(4).fill(0.050),
+      Array(3).fill(0.100), Array(2).fill(0.250), Array(1).fill(0.500),
+      Array(1).fill(0.750), Array(1).fill(1.000),
+      Array(4).fill(0.000), Array(3).fill(-0.250)
+    );
 
-      isSpinning = true;
-      result.textContent = '';
-      msg.textContent = '';
-      balance -= costPerSpin;
+    const winAmount = weighted[Math.floor(Math.random() * weighted.length)];
+    const winIndex = prizes.indexOf(winAmount);
+    const randomOffset = Math.floor(Math.random() * sliceDeg);
+    const targetAngle = 360 * 5 + (winIndex * sliceDeg + sliceDeg / 2 - randomOffset);
+    rotatingWheel.style.transform = `rotate(${targetAngle}deg)`;
 
-      const weighted = [].concat(
-        Array(8).fill(0.010), Array(6).fill(0.025), Array(4).fill(0.050),
-        Array(3).fill(0.100), Array(2).fill(0.250), Array(1).fill(0.500),
-        Array(1).fill(0.750), Array(1).fill(1.000),
-        Array(4).fill(0.000), Array(3).fill(-0.250)
-      );
-
-      const winAmount = weighted[Math.floor(Math.random() * weighted.length)];
-      const winIndex = prizes.indexOf(winAmount);
-      const targetAngle = 360 - (winIndex * sliceDeg + sliceDeg / 2);
-      const spinAngle = 360 * 5 + targetAngle;
-
-      const spinTime = 5000;
-      const start = performance.now();
-
-      function animate(now) {
-        let elapsed = now - start;
-        if (elapsed < spinTime) {
-          let progress = elapsed / spinTime;
-          let ease = 1 - Math.pow(1 - progress, 3);
-          let angle = rotation + (spinAngle - rotation) * ease;
-          canvas.style.transform = `rotate(${angle}deg)`;
-          requestAnimationFrame(animate);
-        } else {
-          rotation = spinAngle % 360;
-          canvas.style.transform = `rotate(${rotation}deg)`;
-          balance += winAmount;
-          result.textContent = winAmount > 0
-            ? `You won $${winAmount.toFixed(3)}`
-            : winAmount < 0
-              ? `Oof! Lost $${Math.abs(winAmount).toFixed(3)}`
-              : `No win this time.`;
-          updateWallet();
-
-          const userRef = ref(db, `users/${currentUser.uid}`);
-          update(userRef, {
-            balance: balance,
-            totalProfit: (winAmount > 0 ? winAmount : 0)
-          });
-
-          isSpinning = false;
-        }
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    document.getElementById("spinBtn").addEventListener("click", spin);
-
-    function loadLeaderboard() {
-      const usersRef = ref(db, 'users');
-      get(usersRef).then(snapshot => {
-        const list = [];
-        snapshot.forEach(child => {
-          const data = child.val();
-          if (data.totalProfit) {
-            list.push({
-              email: data.email,
-              profit: data.totalProfit
-            });
-          }
-        });
-
-        const top = list.sort((a, b) => b.profit - a.profit).slice(0, 3);
-        const ul = document.getElementById("topUsers");
-        ul.innerHTML = '';
-        top.forEach(u => {
-          const li = document.createElement("li");
-          li.textContent = `${u.email} — $${u.profit.toFixed(3)}`;
-          ul.appendChild(li);
-        });
+    setTimeout(() => {
+      result.textContent =
+        winAmount > 0 ? `You won $${winAmount.toFixed(3)}`
+        : winAmount < 0 ? `Ouch! Lost $${Math.abs(winAmount).toFixed(3)}`
+        : `Nothing this time.`;
+      balance += winAmount;
+      updateWallet();
+      const userRef = ref(db, `users/${currentUser.uid}`);
+      update(userRef, {
+        balance: balance,
+        totalProfit: winAmount > 0 ? (currentUser.totalProfit || 0) + winAmount : currentUser.totalProfit || 0
       });
-    }
+      isSpinning = false;
+    }, 5200);
+  }
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUser = user;
-        userEmail.textContent = user.email;
-
-        const userRef = ref(db, `users/${user.uid}`);
-        onValue(userRef, snapshot => {
-          const data = snapshot.val();
-          if (data) {
-            balance = data.balance || 0;
-            updateWallet();
-            if (data.profilePic) {
-              profilePic.src = data.profilePic;
-            }
-          }
-        });
-
-        loadLeaderboard();
-      } else {
-        userEmail.textContent = "Not logged in";
-      }
+  function loadLeaderboard() {
+    const lbRef = ref(db, 'users');
+    onValue(lbRef, (snapshot) => {
+      const data = snapshot.val();
+      const users = Object.values(data || {}).sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 3);
+      const list = document.getElementById("leaderboard-list");
+      list.innerHTML = '';
+      users.forEach((user, i) => {
+        const li = document.createElement("li");
+        li.textContent = `#${i + 1} ${user.email} - $${(user.totalProfit || 0).toFixed(3)}`;
+        list.appendChild(li);
+      });
     });
-  </script>
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      userEmail.textContent = user.email;
+      profilePic.src = user.photoURL || "https://i.imgur.com/DiHM5Zb.png";
+      const userRef = ref(db, `users/${user.uid}`);
+      get(userRef).then(snapshot => {
+        if (!snapshot.exists()) {
+          set(userRef, {
+            email: user.email,
+            balance: 1.000,
+            totalProfit: 0
+          });
+          balance = 1.000;
+        } else {
+          const data = snapshot.val();
+          balance = data.balance || 0;
+          currentUser.totalProfit = data.totalProfit || 0;
+        }
+        updateWallet();
+        loadLeaderboard();
+      });
+    } else {
+      alert("Please log in first.");
+    }
+  });
+
+  spinBtn.addEventListener("click", spin);
+</script>
+
 </body>
 </html>
