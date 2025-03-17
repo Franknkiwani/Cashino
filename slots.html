@@ -1,263 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Casino Slots</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online Tic-Tac-Toe</title>
   <style>
     body {
-      background: #111;
-      color: #fff;
       font-family: 'Segoe UI', sans-serif;
+      background: #f0f2f5;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
-      height: 100vh;
       margin: 0;
+      padding-top: 50px;
     }
-
-    .slot-machine {
-      background: #1f1f1f;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px #00f0ff;
-      text-align: center;
-      width: 400px;
-    }
-
-    .reels {
+    h1 { margin-bottom: 20px; }
+    .board {
       display: grid;
-      grid-template-columns: repeat(3, 80px);
-      grid-template-rows: repeat(3, 80px);
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(3, 100px);
+      gap: 5px;
     }
-
-    .reel {
-      background: #2a2a2a;
-      border: 2px solid #555;
-      border-radius: 8px;
-      font-size: 2rem;
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: white;
+      border: 2px solid #ccc;
+      font-size: 2.5rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.4s ease-in-out;
-    }
-
-    .spin {
-      animation: spin 0.4s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotateX(0deg); }
-      100% { transform: rotateX(360deg); }
-    }
-
-    input[type="number"] {
-      padding: 10px;
-      width: 120px;
-      font-size: 1rem;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: none;
-      text-align: center;
-    }
-
-    button {
-      padding: 12px 28px;
-      background: #00ffc3;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: bold;
       cursor: pointer;
+      user-select: none;
     }
-
-    .message {
-      margin-top: 15px;
-      font-size: 1rem;
-      font-weight: bold;
-    }
-
-    .balance {
-      margin-bottom: 10px;
-      font-size: 1rem;
-      color: #0f0;
-    }
-
-    .win-line {
-      border-color: #0f0 !important;
-      box-shadow: 0 0 10px #0f0;
-    }
+    #status { margin: 20px; font-size: 1.2rem; }
+    #reset { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
 <body>
+  <h1>Online Tic-Tac-Toe</h1>
+  <div class="board" id="board"></div>
+  <div id="status">Joining game...</div>
+  <button id="reset">Reset</button>
 
-<div class="slot-machine">
-  <h2>Casino Slots</h2>
-  <div class="balance" id="balance">Balance: $0.00</div>
-  <input type="number" id="betAmount" min="0.1" max="10" step="0.1" placeholder="Bet Amount ($)">
-  <div class="reels" id="reels">
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-    <div class="reel">?</div>
-  </div>
-  <button onclick="spin()">SPIN</button>
-  <div class="message" id="message"></div>
-</div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getDatabase();
+    const boardEl = document.getElementById('board');
+    const statusEl = document.getElementById('status');
+    const resetBtn = document.getElementById('reset');
 
-  const balanceDisplay = document.getElementById("balance");
-  const reels = document.querySelectorAll('.reel');
-  const message = document.getElementById("message");
+    let playerSymbol = null;
+    let gameId = "defaultRoom"; // could be dynamic
+    const gameRef = ref(db, `games/${gameId}`);
 
-  let currentUser = null;
-  let userBalance = 0;
+    const cells = [];
+    const gameState = Array(9).fill("");
+    let currentTurn = 'X';
+    let isMyTurn = false;
 
-  const symbols = [
-    { emoji: '🍒', weight: 30, multiplier: 1.2 },
-    { emoji: '🍋', weight: 25, multiplier: 1.5 },
-    { emoji: '🔔', weight: 20, multiplier: 2 },
-    { emoji: '⭐', weight: 12, multiplier: 3 },
-    { emoji: '7️⃣', weight: 8, multiplier: 5 },
-    { emoji: '💎', weight: 5, multiplier: 10 }
-  ];
+    const renderBoard = () => {
+      boardEl.innerHTML = '';
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.classList.add('cell');
+        cell.dataset.index = i;
+        cell.textContent = gameState[i];
+        cell.addEventListener('click', () => handleMove(i));
+        boardEl.appendChild(cell);
+        cells.push(cell);
+      }
+    };
 
-  const paylines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 4, 8],
-    [2, 4, 6]
-  ];
+    const joinGame = async () => {
+      onValue(gameRef, (snapshot) => {
+        const data = snapshot.val();
 
-  const totalWeight = symbols.reduce((sum, s) => sum + s.weight, 0);
-
-  function weightedRandomSymbol() {
-    let rand = Math.random() * totalWeight;
-    for (const sym of symbols) {
-      if (rand < sym.weight) return sym;
-      rand -= sym.weight;
-    }
-    return symbols[0];
-  }
-
-  function generateBoard() {
-    return Array(9).fill().map(() => weightedRandomSymbol());
-  }
-
-  function clearHighlights() {
-    reels.forEach(r => r.classList.remove('win-line'));
-  }
-
-  function updateBalanceDisplay() {
-    balanceDisplay.textContent = `Balance: $${userBalance.toFixed(2)}`;
-  }
-
-  async function spin() {
-    const bet = parseFloat(document.getElementById('betAmount').value);
-    if (!currentUser) return alert("You're not logged in!");
-    if (isNaN(bet) || bet < 0.1 || bet > 10) {
-      message.textContent = 'Enter a valid bet between $0.10 and $10';
-      message.style.color = 'red';
-      return;
-    }
-    if (bet > userBalance) {
-      message.textContent = 'Insufficient balance!';
-      message.style.color = 'red';
-      return;
-    }
-
-    clearHighlights();
-    reels.forEach(r => {
-      r.classList.add('spin');
-      r.textContent = '...';
-    });
-    message.textContent = '';
-
-    setTimeout(() => {
-      const board = generateBoard();
-      board.forEach((s, i) => {
-        reels[i].classList.remove('spin');
-        reels[i].textContent = s.emoji;
+        if (!data) {
+          set(gameRef, {
+            board: Array(9).fill(""),
+            currentTurn: 'X',
+            players: { X: true },
+            winner: null
+          });
+          playerSymbol = 'X';
+          isMyTurn = true;
+          statusEl.textContent = "You're X (your move)";
+        } else {
+          if (!data.players?.O) {
+            update(gameRef, { "players/O": true });
+            playerSymbol = 'O';
+            isMyTurn = false;
+            statusEl.textContent = "You're O (waiting...)";
+          } else {
+            playerSymbol = data.players.X ? 'O' : 'X'; // fallback
+            statusEl.textContent = "Spectating";
+          }
+        }
       });
 
-      const result = checkPaylines(board);
-      if (result) {
-        const { multiplier, line, symbol } = result;
-        const winAmount = bet * multiplier;
-        userBalance += (winAmount - bet);
-        line.forEach(i => reels[i].classList.add('win-line'));
-        message.textContent = `WIN! ${symbol} x3 — You won $${winAmount.toFixed(2)}`;
-        message.style.color = '#00ff99';
-      } else {
-        userBalance -= bet;
-        message.textContent = `You lost $${bet.toFixed(2)}`;
-        message.style.color = '#ff4444';
+      onValue(ref(db, `games/${gameId}/board`), (snap) => {
+        const board = snap.val();
+        for (let i = 0; i < 9; i++) {
+          gameState[i] = board[i];
+        }
+        renderBoard();
+      });
+
+      onValue(ref(db, `games/${gameId}/currentTurn`), (snap) => {
+        currentTurn = snap.val();
+        isMyTurn = currentTurn === playerSymbol;
+        if (!playerSymbol) return;
+        statusEl.textContent = isMyTurn ? `Your move (${playerSymbol})` : `Opponent's move (${currentTurn})`;
+      });
+
+      onValue(ref(db, `games/${gameId}/winner`), (snap) => {
+        const winner = snap.val();
+        if (winner) {
+          isMyTurn = false;
+          statusEl.textContent = winner === 'draw' ? "It's a draw!" : `${winner} wins!`;
+        }
+      });
+    };
+
+    const handleMove = async (index) => {
+      if (!isMyTurn || gameState[index]) return;
+
+      gameState[index] = playerSymbol;
+      await update(gameRef, {
+        board: gameState,
+        currentTurn: playerSymbol === 'X' ? 'O' : 'X',
+      });
+
+      const winner = checkWinner();
+      if (winner) {
+        await update(gameRef, { winner });
       }
+    };
 
-      update(ref(getDatabase(), "users/" + currentUser.uid + "/balance"), userBalance);
-      updateBalanceDisplay();
-    }, 1000);
-  }
-
-  function checkPaylines(board) {
-    for (const line of paylines) {
-      const [a, b, c] = line;
-      if (board[a].emoji === board[b].emoji && board[b].emoji === board[c].emoji) {
-        return {
-          symbol: board[a].emoji,
-          multiplier: board[a].multiplier,
-          line: line
-        };
+    const checkWinner = () => {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
+      ];
+      for (let [a,b,c] of wins) {
+        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+          return gameState[a];
+        }
       }
-    }
-    return null;
-  }
+      if (!gameState.includes("")) return 'draw';
+      return null;
+    };
 
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      const balRef = ref(db, "users/" + user.uid + "/balance");
-      const snap = await get(balRef);
-      if (!snap.exists()) {
-        await set(balRef, 3.00);
-        userBalance = 3.00;
-      } else {
-        userBalance = parseFloat(snap.val());
-      }
-      updateBalanceDisplay();
-    } else {
-      alert("Not logged in — redirecting...");
-      window.location.href = "login.html"; // change if needed
-    }
-  });
-</script>
+    resetBtn.addEventListener('click', () => {
+      set(gameRef, {
+        board: Array(9).fill(""),
+        currentTurn: 'X',
+        players: { X: true },
+        winner: null
+      });
+    });
 
+    joinGame();
+    renderBoard();
+  </script>
 </body>
 </html>
