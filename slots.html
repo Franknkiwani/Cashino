@@ -2,53 +2,128 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Online Tic Tac Toe</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyberpunk Tic-Tac-Toe</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #online-users div { margin: 10px 0; }
-    img { vertical-align: middle; border-radius: 50%; }
-    .board {
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap');
+
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: radial-gradient(ellipse at center, #0f0f0f 0%, #000000 100%);
+      color: #0ff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+    }
+
+    header {
+      width: 100%;
+      background: #111;
+      display: flex;
+      align-items: center;
+      padding: 10px 20px;
+      box-shadow: 0 0 10px #0ff;
+      justify-content: flex-start;
+      gap: 15px;
+    }
+
+    header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid #0ff;
+    }
+
+    header .username {
+      color: #0ff;
+      font-size: 1.2rem;
+      text-shadow: 0 0 5px #0ff;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #00f;
+      margin: 20px 0;
+    }
+
+    #game {
       display: grid;
       grid-template-columns: repeat(3, 100px);
-      gap: 5px;
-      margin-top: 20px;
+      grid-template-rows: repeat(3, 100px);
+      gap: 8px;
     }
+
     .cell {
       width: 100px;
       height: 100px;
-      font-size: 2em;
-      text-align: center;
-      line-height: 100px;
-      border: 1px solid #ccc;
+      background: rgba(0, 255, 255, 0.1);
+      border: 2px solid #0ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
       cursor: pointer;
-      background: #f0f0f0;
+      transition: 0.2s;
+      box-shadow: 0 0 8px #0ff;
     }
+
     .cell:hover {
-      background: #ddd;
+      background: rgba(0, 255, 255, 0.2);
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      color: #ff0;
+      text-shadow: 0 0 5px #f0f, 0 0 10px #ff0;
+    }
+
+    #reset {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border: none;
+      background: #0ff;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px #0ff, 0 0 20px #00f;
+      transition: 0.2s;
+    }
+
+    #reset:hover {
+      background: #00f;
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <h2>Multiplayer Tic Tac Toe</h2>
-  <div id="login-section">
-    <button id="login-btn">Login with Google</button>
-  </div>
 
-  <div id="online-users-section" style="display:none;">
-    <h3>Online Users</h3>
-    <div id="online-users"></div>
-  </div>
+  <!-- Header -->
+  <header>
+    <img id="avatar" src="https://api.dicebear.com/6.x/pixel-art/svg?seed=Cyber" alt="Avatar">
+    <div class="username" id="username">Loading...</div>
+  </header>
 
-  <div id="game-board" style="display:none;">
-    <h3 id="status"></h3>
-    <div class="board" id="board"></div>
-  </div>
+  <!-- Game Title -->
+  <h1>CYBER TIC-TAC-TOE</h1>
 
-  <!-- Firebase -->
+  <!-- Game Grid -->
+  <div id="game"></div>
+
+  <!-- Status Message -->
+  <div id="status">Player X's turn</div>
+
+  <!-- Reset Button -->
+  <button id="reset">Reset</button>
+
+  <!-- Firebase Auth + Game Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onDisconnect, set, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -62,137 +137,85 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const auth = getAuth(app);
-    const db = getDatabase(app);
 
-    let currentUser = null;
-    let currentGameRef = null;
+    const avatar = document.getElementById("avatar");
+    const username = document.getElementById("username");
 
-    const loginBtn = document.getElementById("login-btn");
-    loginBtn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        currentUser = user;
-        document.getElementById("login-section").style.display = "none";
-        document.getElementById("online-users-section").style.display = "block";
-        setupPresence(user);
-        loadOnlineUsers();
-        listenForGameRequests();
+        username.textContent = user.displayName || "User";
+        if (user.photoURL) {
+          avatar.src = user.photoURL;
+        }
+      } else {
+        username.textContent = "Guest";
       }
     });
 
-    function setupPresence(user) {
-      const userRef = ref(db, '/onlineUsers/' + user.uid);
-      const connRef = ref(db, '.info/connected');
-      onValue(connRef, snap => {
-        if (snap.val()) {
-          set(userRef, {
-            username: user.displayName,
-            profilePic: user.photoURL,
-            uid: user.uid
-          });
-          onDisconnect(userRef).remove();
+    // Game Logic
+    const gameEl = document.getElementById('game');
+    const statusEl = document.getElementById('status');
+    const resetBtn = document.getElementById('reset');
+
+    let board = ["", "", "", "", "", "", "", "", ""];
+    let currentPlayer = "X";
+    let isGameActive = true;
+
+    const winConditions = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    function checkWinner() {
+      for (const condition of winConditions) {
+        const [a, b, c] = condition;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          statusEl.textContent = `Player ${board[a]} wins!`;
+          isGameActive = false;
+          return;
         }
+      }
+      if (!board.includes("")) {
+        statusEl.textContent = "Draw!";
+        isGameActive = false;
+      }
+    }
+
+    function handleClick(i) {
+      if (!isGameActive || board[i]) return;
+      board[i] = currentPlayer;
+      render();
+      checkWinner();
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      if (isGameActive) {
+        statusEl.textContent = `Player ${currentPlayer}'s turn`;
+      }
+    }
+
+    function render() {
+      gameEl.innerHTML = "";
+      board.forEach((cell, i) => {
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = cell;
+        div.onclick = () => handleClick(i);
+        gameEl.appendChild(div);
       });
     }
 
-    function loadOnlineUsers() {
-      const container = document.getElementById("online-users");
-      onValue(ref(db, "/onlineUsers"), snapshot => {
-        container.innerHTML = "";
-        snapshot.forEach(child => {
-          const user = child.val();
-          if (user.uid !== currentUser.uid) {
-            const div = document.createElement("div");
-            div.innerHTML = `
-              <img src="${user.profilePic}" width="30" height="30" />
-              <b>${user.username}</b>
-              <button onclick="invite('${user.uid}', '${user.username}')">Invite</button>
-            `;
-            container.appendChild(div);
-          }
-        });
-      });
-    }
-
-    window.invite = (uid, name) => {
-      const requestRef = ref(db, `/gameRequests/${uid}`);
-      const gameId = `${currentUser.uid}_${uid}`;
-
-      set(requestRef, {
-        from: currentUser.uid,
-        name: currentUser.displayName,
-        gameId: gameId
-      });
-
-      alert(`Invitation sent to ${name}`);
-
-      // Listen for game creation and auto-join as X
-      const newGameRef = ref(db, `/games/${gameId}`);
-      onValue(newGameRef, (snapshot) => {
-        if (snapshot.exists()) {
-          joinGame(gameId, "x");
-          off(newGameRef);
-        }
-      });
+    resetBtn.onclick = () => {
+      board = ["", "", "", "", "", "", "", "", ""];
+      currentPlayer = "X";
+      isGameActive = true;
+      statusEl.textContent = "Player X's turn";
+      render();
     };
 
-    function listenForGameRequests() {
-      const requestRef = ref(db, `/gameRequests/${currentUser.uid}`);
-      onValue(requestRef, snap => {
-        if (snap.exists()) {
-          const req = snap.val();
-          const accept = confirm(`${req.name} invited you to play. Accept?`);
-          if (accept) {
-            const gameId = req.gameId;
-            set(ref(db, `/games/${gameId}`), {
-              players: {
-                x: req.from,
-                o: currentUser.uid
-              },
-              board: Array(9).fill(""),
-              turn: "x"
-            });
-            remove(requestRef);
-            joinGame(gameId, "o");
-          } else {
-            remove(requestRef);
-          }
-        }
-      });
-    }
-
-    function joinGame(gameId, role) {
-      document.getElementById("game-board").style.display = "block";
-      const boardDiv = document.getElementById("board");
-      const statusDiv = document.getElementById("status");
-      currentGameRef = ref(db, `/games/${gameId}`);
-
-      onValue(currentGameRef, snap => {
-        const game = snap.val();
-        if (!game) return;
-
-        boardDiv.innerHTML = "";
-        statusDiv.textContent = `You are '${role.toUpperCase()}'. It’s ${game.turn.toUpperCase()}'s turn`;
-
-        game.board.forEach((cell, idx) => {
-          const div = document.createElement("div");
-          div.className = "cell";
-          div.textContent = cell;
-          div.onclick = () => {
-            if (cell === "" && game.turn === role) {
-              game.board[idx] = role;
-              update(currentGameRef, {
-                board: game.board,
-                turn: role === "x" ? "o" : "x"
-              });
-            }
-          };
-          boardDiv.appendChild(div);
-        });
-      });
-    }
+    render();
   </script>
+
 </body>
 </html>
