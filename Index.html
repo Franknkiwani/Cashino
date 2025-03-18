@@ -1,180 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CASHINO | Authentication</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CASHINO | Auth</title>
   <style>
-    :root {
-      --glass-bg: rgba(18, 18, 22, 0.65);
-      --border-glow: rgba(255, 215, 0, 0.3);
-      --primary: #1f1f2e;
-      --accent: #ffc107;
-      --text: #eaeaea;
-      --subtle-text: #888;
-      --input-bg: #1a1a24;
-      --hover: #ffdd57;
-      --success-bg: #28a745;
-      --error-bg: #dc3545;
-    }
-
     * {
-      margin: 0;
-      padding: 0;
       box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
     }
-
     body {
-      font-family: 'Inter', sans-serif;
-      background: linear-gradient(130deg, #0d0d0f, #14141a, #1b1b23);
-      background-size: 400% 400%;
-      animation: backgroundFlow 20s ease infinite;
-      color: var(--text);
-      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(145deg, #0f0c29, #302b63, #24243e);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 30px;
+      height: 100vh;
+      color: white;
     }
-
-    @keyframes backgroundFlow {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-
     .auth-wrapper {
-      background: var(--glass-bg);
-      border: 1px solid var(--border-glow);
-      backdrop-filter: blur(16px);
-      border-radius: 20px;
-      box-shadow: 0 0 30px rgba(255, 215, 0, 0.05);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(15px);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.3);
+      width: 90%;
       max-width: 400px;
-      width: 100%;
-      padding: 40px 30px;
-      position: relative;
-    }
-
-    .logo {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 30px;
       text-align: center;
-      margin-bottom: 30px;
-      color: var(--accent);
-      letter-spacing: 2px;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+      animation: fadeIn 0.6s ease-out;
     }
-
+    .logo {
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      letter-spacing: 2px;
+      color: #00ffc3;
+    }
     .tabs {
       display: flex;
       justify-content: center;
-      margin-bottom: 30px;
-      background: #1c1c27;
-      border-radius: 12px;
-      overflow: hidden;
+      margin-bottom: 20px;
     }
-
     .tab {
       flex: 1;
-      text-align: center;
-      padding: 12px;
-      font-weight: 600;
-      color: var(--text);
+      padding: 10px;
       cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
       transition: 0.3s;
     }
-
     .tab.active {
-      background: var(--accent);
-      color: #000;
+      background: #00ffc3;
+      color: black;
     }
-
     form {
       display: none;
       flex-direction: column;
+      gap: 10px;
     }
-
     form.active {
       display: flex;
     }
-
-    label {
-      font-size: 14px;
-      margin-bottom: 6px;
-      color: var(--subtle-text);
-    }
-
     input {
-      padding: 12px;
-      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 5px;
       border: none;
-      border-radius: 8px;
-      background: var(--input-bg);
-      color: var(--text);
-      transition: 0.2s ease;
+      outline: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
     }
-
-    input:focus {
-      outline: 2px solid var(--accent);
-      background: #12121b;
-    }
-
     .btn {
-      background: var(--accent);
-      color: #000;
-      font-weight: bold;
-      border: none;
       padding: 12px;
-      border-radius: 8px;
+      border: none;
+      border-radius: 5px;
+      background: #00ffc3;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s;
+      color: black;
+      position: relative;
     }
-
-    .btn:hover {
-      background: var(--hover);
+    .btn.loading::after {
+      content: "";
+      border: 3px solid black;
+      border-top: 3px solid transparent;
+      border-radius: 50%;
+      width: 16px;
+      height: 16px;
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      animation: spin 0.8s linear infinite;
     }
-
     .forgot-password {
       text-align: right;
-      margin-bottom: 20px;
+      font-size: 12px;
     }
-
     .forgot-password a {
-      color: var(--accent);
+      color: #00ffc3;
       text-decoration: none;
-      font-size: 14px;
     }
-
-    .forgot-password a:hover {
-      text-decoration: underline;
-    }
-
     .message {
-      display: none;
       padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
-      font-weight: bold;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      display: none;
     }
-
     .message.success {
-      background-color: var(--success-bg);
+      background: #00ffc365;
+    }
+    .message.error {
+      background: #ff4d4d65;
+    }
+    .bonus {
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: #00ffc3;
     }
 
-    .message.error {
-      background-color: var(--error-bg);
+    /* Forgot popup */
+    #forgotModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      color: #00ffc3;
+    }
+
+    @keyframes spin {
+      0% { transform: translateY(-50%) rotate(0deg); }
+      100% { transform: translateY(-50%) rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
     }
   </style>
-  <!-- Firebase App (the core Firebase SDK) -->
+
+  <!-- Firebase -->
   <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -182,23 +164,23 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
+    const auth = getAuth();
+    const database = getDatabase();
 
-    // Reference to DOM elements
-    const loginTab = document.getElementById("loginTab");
-    const registerTab = document.getElementById("registerTab");
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
     const messageBox = document.getElementById("messageBox");
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const forgotLink = document.getElementById("forgotLink");
+    const forgotModal = document.getElementById("forgotModal");
+    const forgotSubmit = document.getElementById("forgotSubmit");
 
-    // Tab switching
+    // Tab switch
     loginTab.onclick = () => {
       loginTab.classList.add("active");
       registerTab.classList.remove("active");
@@ -206,7 +188,6 @@
       registerForm.classList.remove("active");
       messageBox.style.display = "none";
     };
-
     registerTab.onclick = () => {
       registerTab.classList.add("active");
       loginTab.classList.remove("active");
@@ -215,71 +196,67 @@
       messageBox.style.display = "none";
     };
 
-    // Show message
-    function showMessage(text, type = "success") {
-      messageBox.textContent = text;
-      messageBox.className = `message ${type}`;
+    function showMessage(msg, type = "success") {
+      messageBox.textContent = msg;
+      messageBox.className = "message " + type;
       messageBox.style.display = "block";
     }
 
-    // Handle Register
-    registerForm.addEventListener("submit", async (e) => {
+    loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const username = document.getElementById("registerUsername").value.trim();
-      const email = document.getElementById("registerEmail").value.trim();
-      const password = document.getElementById("registerPassword").value;
+      const email = loginForm.email.value;
+      const password = loginForm.password.value;
+      loginBtn.classList.add("loading");
 
       try {
-        const userCred = await createUserWithEmailAndPassword(auth, email, password);
-        const uid = userCred.user.uid;
+        const user = await signInWithEmailAndPassword(auth, email, password);
+        const uid = user.user.uid;
+        const res = await fetch(`https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com/users/${uid}/username.json`);
+        const username = await res.json();
+        showMessage(`Welcome back, ${username}!`, "success");
+        setTimeout(() => window.location.href = "loading.html", 1200);
+      } catch (err) {
+        showMessage(err.message, "error");
+      }
+      loginBtn.classList.remove("loading");
+    });
 
-        // Save extra data to database
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = registerForm.username.value;
+      const email = registerForm.email.value;
+      const password = registerForm.password.value;
+      registerBtn.classList.add("loading");
+
+      try {
+        const user = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = user.user.uid;
         await set(ref(database, "users/" + uid), {
           username: username,
           email: email,
           balance: 2.00
         });
-
         showMessage("Account created successfully!", "success");
-        setTimeout(() => window.location.href = "loading.html", 1000);
-      } catch (error) {
-        showMessage(error.message, "error");
+        setTimeout(() => window.location.href = "loading.html", 1200);
+      } catch (err) {
+        showMessage(err.message, "error");
       }
+      registerBtn.classList.remove("loading");
     });
 
-    // Handle Login
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-
-      try {
-        const userCred = await signInWithEmailAndPassword(auth, email, password);
-        const uid = userCred.user.uid;
-
-        // Fetch username from Realtime DB
-        const snapshot = await fetch(`https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com/users/${uid}/username.json`);
-        const username = await snapshot.json();
-
-        showMessage(`Welcome back, ${username}!`, "success");
-        setTimeout(() => window.location.href = "loading.html", 1000);
-      } catch (error) {
-        showMessage(error.message, "error");
-      }
-    });
-
-    // Forgot Password
-    document.getElementById("forgotLink").addEventListener("click", async () => {
-      const email = prompt("Enter your email to reset password:");
-      if (!email) return;
-
+    forgotLink.onclick = () => {
+      forgotModal.style.display = "flex";
+    };
+    forgotSubmit.onclick = async () => {
+      const email = document.getElementById("forgotEmail").value;
       try {
         await sendPasswordResetEmail(auth, email);
-        showMessage("Password reset email sent!", "success");
-      } catch (error) {
-        showMessage(error.message, "error");
+        showMessage("Reset email sent!", "success");
+        forgotModal.style.display = "none";
+      } catch (err) {
+        showMessage(err.message, "error");
       }
-    });
+    };
   </script>
 </head>
 <body>
@@ -293,26 +270,29 @@
 
     <div id="messageBox" class="message"></div>
 
-    <!-- Login Form -->
     <form id="loginForm" class="active">
-      <label>Email</label>
-      <input type="email" id="loginEmail" placeholder="Enter your email" required>
-      <label>Password</label>
-      <input type="password" id="loginPassword" placeholder="Enter your password" required>
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
       <div class="forgot-password"><a href="#" id="forgotLink">Forgot Password?</a></div>
-      <button type="submit" class="btn">Login</button>
+      <button type="submit" class="btn" id="loginBtn">Login</button>
     </form>
 
-    <!-- Register Form -->
     <form id="registerForm">
-      <label>Username</label>
-      <input type="text" id="registerUsername" placeholder="Choose a username" required>
-      <label>Email</label>
-      <input type="email" id="registerEmail" placeholder="Enter your email" required>
-      <label>Password</label>
-      <input type="password" id="registerPassword" placeholder="Choose a password" required>
-      <button type="submit" class="btn">Register</button>
+      <input type="text" name="username" placeholder="Username" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <div class="bonus">Get $2 bonus on signup!</div>
+      <button type="submit" class="btn" id="registerBtn">Register</button>
     </form>
+  </div>
+
+  <!-- Forgot Modal -->
+  <div id="forgotModal">
+    <div class="modal-content">
+      <h3>Reset Password</h3>
+      <input type="email" id="forgotEmail" placeholder="Enter your email" />
+      <button class="btn" id="forgotSubmit">Send Reset Email</button>
+    </div>
   </div>
 </body>
 </html>
