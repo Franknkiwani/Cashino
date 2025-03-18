@@ -1,315 +1,253 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cashino – Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto&display=swap" rel="stylesheet">
+  <title>CASHINO</title>
   <style>
     :root {
-      --bg: #0e1016;
-      --card: #1a1d24;
-      --accent: #00ffe7;
-      --text: #ffffff;
-      --glass: rgba(255,255,255,0.05);
+      --accent: #00ffe0;
+      --glass-bg: rgba(255, 255, 255, 0.05);
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
       -webkit-user-select: none;
       user-select: none;
     }
 
     body {
-      background: var(--bg);
-      font-family: 'Roboto', sans-serif;
-      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      background: #0a0a0f;
+      color: white;
     }
 
     header {
+      height: 60px;
+      background: var(--glass-bg);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 0 20px;
-      background: var(--glass);
-      backdrop-filter: blur(8px);
+      justify-content: space-between;
+      padding: 0 1rem;
       border-bottom: 1px solid var(--accent);
-      height: 48px;
+      backdrop-filter: blur(10px);
       position: relative;
+      z-index: 10;
     }
 
     .hamburger {
-      width: 30px;
-      height: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      font-size: 22px;
       cursor: pointer;
+      color: var(--accent);
     }
 
-    .hamburger span {
-      height: 3px;
-      background-color: var(--accent);
-      border-radius: 4px;
-      transition: 0.3s;
+    .right-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .deposit-btn {
+      background: var(--accent);
+      border: none;
+      padding: 8px 16px;
+      font-weight: bold;
+      color: black;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent);
+      transition: transform 0.2s ease;
+    }
+
+    .deposit-btn:hover {
+      transform: scale(1.05);
     }
 
     .profile {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: var(--card);
-      padding: 6px 14px;
-      border-radius: 30px;
-      border: 1px solid var(--glass);
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
       cursor: pointer;
+      transition: background 0.3s;
       position: relative;
-      z-index: 10;
-    }
-
-    .profile:hover {
-      background: rgba(0, 255, 231, 0.1);
-      box-shadow: 0 0 8px rgba(0, 255, 231, 0.2);
+      z-index: 12;
     }
 
     .profile img {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      object-fit: cover;
+      margin-right: 8px;
     }
 
-    .profile-name {
+    .balance {
+      margin: 10px 1rem;
       font-size: 0.9rem;
-      font-weight: bold;
+      color: #ccc;
     }
 
-    .dropdown {
+    #profileDropdown {
       position: absolute;
-      top: 60px;
-      right: 20px;
-      background: var(--card);
+      top: 65px;
+      right: 1rem;
+      background: #111;
       border: 1px solid var(--accent);
       border-radius: 10px;
       display: none;
       flex-direction: column;
-      min-width: 160px;
-      box-shadow: 0 0 10px rgba(0, 255, 231, 0.2);
-      z-index: 9;
+      z-index: 11;
+      box-shadow: 0 0 10px var(--accent);
     }
 
-    .dropdown a {
-      padding: 10px 16px;
-      color: var(--text);
+    #profileDropdown a {
+      padding: 12px 20px;
+      color: white;
       text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
       transition: background 0.2s;
-      font-size: 0.9rem;
-      border-bottom: 1px solid var(--glass);
     }
 
-    .dropdown a:last-child {
-      border-bottom: none;
-      color: #ff4c4c;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    #profileDropdown a:hover {
+      background: rgba(255,255,255,0.05);
     }
 
-    .dropdown a:hover {
-      background: rgba(0, 255, 231, 0.1);
-    }
-
-    .balance-bar {
-      margin: 20px auto;
-      max-width: 90%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .balance-text {
-      font-size: 0.95rem;
-      background: var(--card);
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid var(--glass);
-      box-shadow: 0 0 8px rgba(0, 255, 231, 0.05);
-    }
-
-    .balance-text span {
-      color: var(--accent);
-      font-weight: bold;
-    }
-
-    .deposit-btn {
-      font-size: 0.9rem;
-      padding: 10px 20px;
-      background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .deposit-btn::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--accent);
-      opacity: 0.1;
-      transition: left 0.4s ease;
-    }
-
-    .deposit-btn:hover::before {
-      left: 0;
-    }
-
-    .deposit-btn:hover {
-      background: var(--accent);
-      color: #000;
-      box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
-    }
-
-    .loading-screen {
+    #overlay {
       position: fixed;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.6);
+      z-index: 9;
       display: none;
-      justify-content: center;
+    }
+
+    #loadingScreen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      display: none;
       align-items: center;
-      flex-direction: column;
-      z-index: 999;
-    }
-
-    .loading-screen.active {
-      display: flex;
-    }
-
-    .loading-text {
+      justify-content: center;
+      color: white;
       font-size: 1.5rem;
-      color: var(--accent);
-      font-family: 'Orbitron', sans-serif;
-      animation: pulse 1.5s infinite;
+      z-index: 100;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    #loadingScreen.active {
+      display: flex;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="hamburger" onclick="openSidebar()">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-    <div class="profile" onclick="toggleDropdown()">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="User Avatar"/>
-      <div class="profile-name" id="username">Loading...</div>
-      <div class="dropdown" id="profileDropdown">
-        <a href="account.html">My Account</a>
-        <a href="withdraw.html">Withdraw</a>
-        <a href="deposit.html">Deposit</a>
-        <a href="history.html">History</a>
-        <a href="#" onclick="logout()">Logout <span>&rarr;</span></a>
-      </div>
-    </div>
-  </header>
+<div id="loadingScreen">Loading... Please wait</div>
+<div id="overlay" onclick="closeDropdown()"></div>
 
-  <div class="balance-bar">
-    <div class="balance-text">
-      Balance: <span id="balance">Loading...</span>
+<header>
+  <div class="hamburger">&#9776;</div>
+  <div class="right-header">
+    <button class="deposit-btn" onclick="deposit()">DEPOSIT</button>
+    <div class="profile" onclick="toggleDropdown(event)">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="Profile">
+      <span id="username">Loading...</span>
     </div>
-    <button class="deposit-btn" onclick="startDeposit()">DEPOSIT</button>
+    <div id="profileDropdown">
+      <a href="account.html">My Account</a>
+      <a href="withdrawal.html">Withdraw</a>
+      <a href="deposit.html">Deposit</a>
+      <a href="history.html">History</a>
+      <a href="#" onclick="logout()">Logout →</a>
+    </div>
   </div>
+</header>
 
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-text">Depositing... Please Wait</div>
-  </div>
+<div class="balance" id="balance">Balance: Loading...</div>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-    const usernameEl = document.getElementById('username');
-    const balanceEl = document.getElementById('balance');
-    const dropdown = document.getElementById('profileDropdown');
+  const usernameEl = document.getElementById("username");
+  const balanceEl = document.getElementById("balance");
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const uid = user.uid;
-        const userRef = ref(db, `users/${uid}`);
-        onValue(userRef, (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            usernameEl.textContent = data.username || user.email;
-            balanceEl.textContent = `$${(data.balance || 0).toFixed(2)}`;
-          } else {
-            usernameEl.textContent = user.email;
-            balanceEl.textContent = "$0.00";
-          }
-        });
-      } else {
-        window.location.href = "auth.html";
-      }
-    });
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      const uid = user.uid;
+      const email = user.email.split("@")[0];
+      usernameEl.textContent = email;
 
-    window.startDeposit = () => {
-      document.getElementById("loadingScreen").classList.add("active");
-      setTimeout(() => {
-        window.location.href = "deposit.html";
-      }, 2000);
-    };
-
-    window.toggleDropdown = () => {
-      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
-    };
-
-    window.logout = () => {
-      signOut(auth).then(() => {
-        window.location.href = "auth.html";
-      }).catch((error) => {
-        alert("Logout failed: " + error.message);
+      const balRef = ref(db, `users/${uid}/balance`);
+      onValue(balRef, snapshot => {
+        const bal = snapshot.exists() ? snapshot.val().toFixed(2) : "0.00";
+        balanceEl.textContent = `Balance: $${bal}`;
       });
-    };
+    } else {
+      window.location.href = "auth.html";
+    }
+  });
 
-    window.openSidebar = () => alert("Sidebar coming soon");
-  </script>
+  window.logout = () => {
+    signOut(auth).then(() => {
+      window.location.href = "auth.html";
+    });
+  };
 
+  window.deposit = () => {
+    const loading = document.getElementById("loadingScreen");
+    loading.classList.add("active");
+    setTimeout(() => {
+      window.location.href = "deposit.html";
+    }, 1300);
+  };
+
+  window.toggleDropdown = (e) => {
+    e.stopPropagation();
+    const dropdown = document.getElementById("profileDropdown");
+    const overlay = document.getElementById("overlay");
+    dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
+    overlay.style.display = dropdown.style.display === "flex" ? "block" : "none";
+  };
+
+  window.closeDropdown = () => {
+    document.getElementById("profileDropdown").style.display = "none";
+    document.getElementById("overlay").style.display = "none";
+  };
+
+  const dropdownLinks = document.querySelectorAll("#profileDropdown a:not(:last-child)");
+  dropdownLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const loading = document.getElementById("loadingScreen");
+      const target = e.target.getAttribute("href");
+      loading.classList.add("active");
+      setTimeout(() => {
+        window.location.href = target;
+      }, 1300);
+    });
+  });
+</script>
 </body>
 </html>
