@@ -4,298 +4,274 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cyberpunk Tic Tac Toe</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gwannon/Cyberpunk-2077-theme-css/cyberpunk-2077.css">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
     body {
-      font-family: 'Oxanium', sans-serif;
-      background-color: #0e0e0e;
+      font-family: 'Orbitron', sans-serif;
+      background: #0f0f0f;
       color: #00ffee;
       margin: 0;
       padding: 0;
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    #online-users {
       padding: 20px;
-      background: #111;
-      border-bottom: 2px solid #0ff;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
     }
-    #avatar {
+    .user-card {
+      background: #1c1c2b;
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 0 10px #00ffee44;
+    }
+    .user-card img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
     }
-    #users {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin: 20px;
-      justify-content: center;
+    .user-card button {
+      background: #00ffee22;
+      border: none;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: #00ffee;
+      border-radius: 5px;
     }
-    .user-card {
-      background: #111;
-      border: 1px solid #0ff;
-      padding: 10px;
-      border-radius: 8px;
-      width: 200px;
-      text-align: center;
-    }
-    .user-card img {
-      width: 50px;
-      border-radius: 50%;
-    }
-    #game-popup, #bet-popup {
-      position: fixed;
-      top: 30%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      border: 2px solid #0ff;
-      padding: 20px;
-      border-radius: 10px;
-      z-index: 999;
-      display: none;
-      text-align: center;
-    }
+    #game-area { display: none; padding: 20px; text-align: center; }
     #board {
-      display: none;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
       gap: 5px;
       justify-content: center;
-      margin: 20px auto;
+      margin-top: 20px;
     }
     .cell {
-      width: 100px;
-      height: 100px;
       background: #222;
-      color: #0ff;
-      font-size: 48px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      color: #00ffee;
+      font-size: 24px;
+      width: 80px;
+      height: 80px;
+      text-align: center;
+      line-height: 80px;
       cursor: pointer;
-      border: 1px solid #0ff;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #00ffee33;
+    }
+    #bet-popup {
+      background: #111;
+      padding: 20px;
+      border: 1px solid #00ffee;
+      margin-top: 20px;
+      display: none;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffee55;
+    }
+    input[type="number"] {
+      padding: 5px;
+      border-radius: 4px;
+      border: none;
+      margin-right: 10px;
+      width: 100px;
+      text-align: center;
     }
     button {
-      margin-top: 10px;
-      background: #0ff;
-      color: #000;
-      padding: 8px 14px;
-      font-weight: bold;
+      background: #00ffee22;
       border: none;
+      padding: 8px 16px;
       cursor: pointer;
+      color: #00ffee;
       border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div>
-      <img id="avatar" src="" alt="User Avatar">
-      <span id="username"></span>
-    </div>
-    <div>Balance: $<span id="balance">0.00</span></div>
-  </header>
 
-  <section id="users"></section>
+<div id="online-users"></div>
 
-  <div id="game-popup">
-    <p id="game-message">Incoming game request...</p>
-    <button id="accept-btn">Accept</button>
-    <button id="decline-btn">Decline</button>
-  </div>
-
-  <div id="bet-popup">
-    <p>Enter your bet ($0.10 - $100):</p>
-    <input type="number" id="bet-amount" min="0.1" max="100" step="0.1">
-    <button id="submit-bet">Submit</button>
-  </div>
-
+<div id="game-area">
+  <h2 id="status-text">Waiting...</h2>
   <div id="board"></div>
+  <div id="bet-popup">
+    <label>Enter your bet ($0.10 - $100):</label><br/><br/>
+    <input type="number" id="bet-amount" min="0.1" max="100" step="0.1" />
+    <button id="confirm-bet">Confirm Bet</button>
+  </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, update, push, get, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, update, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-    let currentUser = null;
-    let currentGame = null;
-    let playerSymbol = 'X';
-    let turn = 'X';
-    let balance = 0;
+  let currentUser = null, currentUserId = null, gameId = null, symbol = null, opponent = null;
 
-    const usersContainer = document.getElementById('users');
-    const avatarEl = document.getElementById('avatar');
-    const usernameEl = document.getElementById('username');
-    const balanceEl = document.getElementById('balance');
-    const boardEl = document.getElementById('board');
-    const popup = document.getElementById('game-popup');
-    const gameMessage = document.getElementById('game-message');
-    const acceptBtn = document.getElementById('accept-btn');
-    const declineBtn = document.getElementById('decline-btn');
-    const betPopup = document.getElementById('bet-popup');
-    const submitBet = document.getElementById('submit-bet');
-    const betInput = document.getElementById('bet-amount');
+  const onlineUsersDiv = document.getElementById("online-users");
+  const gameArea = document.getElementById("game-area");
+  const statusText = document.getElementById("status-text");
+  const board = document.getElementById("board");
+  const betPopup = document.getElementById("bet-popup");
+  const betAmountInput = document.getElementById("bet-amount");
+  const confirmBetBtn = document.getElementById("confirm-bet");
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        const username = "User" + Math.floor(Math.random() * 10000);
-        const avatar = `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random() * 10)}.jpg`;
-        await set(ref(db, "users/" + user.uid), {
-          username,
-          avatar,
-          balance: 100,
-          online: true
-        });
-        usernameEl.textContent = username;
-        avatarEl.src = avatar;
-        balance = 100;
-        balanceEl.textContent = balance.toFixed(2);
-        listenForUsers();
-        listenForRequests();
-      } else {
-        signInAnonymously(auth);
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      currentUserId = user.uid;
+      const name = user.email.split("@")[0];
+      const photo = `https://source.unsplash.com/random/40x40?sig=${Math.floor(Math.random() * 1000)}`;
+      set(ref(db, `onlineUsers/${currentUserId}`), { name, uid: currentUserId, photo });
+      onDisconnect(ref(db, `onlineUsers/${currentUserId}`)).remove();
+      loadUsers();
+      listenForRequests();
+    } else {
+      alert("Please login first.");
+    }
+  });
+
+  function loadUsers() {
+    onValue(ref(db, "onlineUsers"), (snapshot) => {
+      onlineUsersDiv.innerHTML = "";
+      snapshot.forEach((child) => {
+        const u = child.val();
+        if (u.uid !== currentUserId) {
+          const div = document.createElement("div");
+          div.className = "user-card";
+          div.innerHTML = `
+            <img src="${u.photo}" />
+            <span>${u.name}</span>
+            <button onclick="sendRequest('${u.uid}')">Connect</button>`;
+          onlineUsersDiv.appendChild(div);
+        }
+      });
+    });
+  }
+
+  window.sendRequest = function (targetUid) {
+    set(ref(db, `gameRequests/${targetUid}`), { from: currentUserId, status: "pending" });
+    alert("Waiting for opponent to accept...");
+  };
+
+  function listenForRequests() {
+    const reqRef = ref(db, `gameRequests/${currentUserId}`);
+    onValue(reqRef, (snap) => {
+      const data = snap.val();
+      if (data?.status === "pending") {
+        const accept = confirm("Game request received. Accept?");
+        if (accept) {
+          gameId = `${data.from}_${currentUserId}`;
+          symbol = "O";
+          opponent = data.from;
+          update(ref(db, `gameRooms/${gameId}`), {
+            player1: data.from, player2: currentUserId,
+            board: ["", "", "", "", "", "", "", "", ""],
+            turn: "X", status: "waiting_bet"
+          });
+          remove(reqRef);
+          initGame();
+        }
       }
     });
+  }
 
-    function listenForUsers() {
-      onValue(ref(db, "users"), (snapshot) => {
-        usersContainer.innerHTML = "";
-        snapshot.forEach((child) => {
-          const data = child.val();
-          const id = child.key;
-          if (id !== currentUser.uid && data.online) {
-            const card = document.createElement("div");
-            card.className = "user-card";
-            card.innerHTML = `
-              <img src="${data.avatar}" />
-              <p>${data.username}</p>
-              <button onclick="sendRequest('${id}')">Connect</button>
-            `;
-            usersContainer.appendChild(card);
-          }
-        });
-      });
-    }
-
-    window.sendRequest = async (toId) => {
-      const reqRef = ref(db, "requests/" + toId);
-      await set(reqRef, {
-        from: currentUser.uid
-      });
-      gameMessage.textContent = "Waiting for user to accept...";
-      popup.style.display = "block";
+  function initGame() {
+    gameArea.style.display = "block";
+    statusText.textContent = "Connected! Enter your bet.";
+    betPopup.style.display = "block";
+    confirmBetBtn.onclick = () => {
+      const bet = parseFloat(betAmountInput.value);
+      if (bet < 0.1 || bet > 100) return alert("Bet must be $0.10 - $100");
+      update(ref(db, `gameRooms/${gameId}/bets/${currentUserId}`), { bet });
+      waitForBothBets();
     };
+  }
 
-    function listenForRequests() {
-      onValue(ref(db, "requests/" + currentUser.uid), (snap) => {
-        if (snap.exists()) {
-          const fromId = snap.val().from;
-          gameMessage.textContent = "Game request from " + fromId;
-          popup.style.display = "block";
-          acceptBtn.onclick = () => {
-            startGame(fromId, currentUser.uid);
-            remove(ref(db, "requests/" + currentUser.uid));
-          };
-          declineBtn.onclick = () => {
-            popup.style.display = "none";
-            remove(ref(db, "requests/" + currentUser.uid));
-          };
-        }
-      });
-    }
-
-    function startGame(player1, player2) {
-      const gameId = player1 + "_" + player2;
-      const gameRef = ref(db, "games/" + gameId);
-      set(gameRef, {
-        board: Array(9).fill(""),
-        turn: "X",
-        players: {
-          X: player1,
-          O: player2
-        },
-        bet: 2
-      });
-      betPopup.style.display = "block";
-      submitBet.onclick = async () => {
-        const amount = parseFloat(betInput.value);
-        if (amount >= 0.1 && amount <= 100 && balance >= amount) {
-          balance -= amount;
-          balanceEl.textContent = balance.toFixed(2);
-          update(ref(db, "games/" + gameId), {
-            bet: amount
-          });
+  function waitForBothBets() {
+    onValue(ref(db, `gameRooms/${gameId}/bets`), (snap) => {
+      const bets = snap.val();
+      if (bets && Object.keys(bets).length === 2) {
+        const amounts = Object.values(bets).map(b => b.bet);
+        if (amounts[0] === amounts[1]) {
+          symbol = (gameId.startsWith(currentUserId)) ? "X" : "O";
           betPopup.style.display = "none";
-          boardEl.style.display = "grid";
-          renderBoard(gameRef);
-        }
-      };
-    }
-
-    function renderBoard(gameRef) {
-      onValue(gameRef, (snap) => {
-        const game = snap.val();
-        const board = game.board;
-        turn = game.turn;
-        boardEl.innerHTML = "";
-        board.forEach((val, idx) => {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.textContent = val;
-          cell.onclick = () => {
-            if (val === "" && turn === playerSymbol) {
-              board[idx] = playerSymbol;
-              update(gameRef, {
-                board,
-                turn: playerSymbol === "X" ? "O" : "X"
-              });
-              checkWin(board, game.bet, game.players);
-            }
-          };
-          boardEl.appendChild(cell);
-        });
-      });
-    }
-
-    function checkWin(board, bet, players) {
-      const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      for (const [a,b,c] of wins) {
-        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-          const winner = board[a];
-          const winnerId = players[winner];
-          const payout = bet * 2 * 0.8;
-          const devCut = bet * 2 * 0.2;
-          update(ref(db, "users/" + winnerId), {
-            balance: balance + payout
-          });
-          alert("Player " + winner + " wins! $" + payout.toFixed(2) + " awarded.");
-          remove(ref(db, "games/" + players.X + "_" + players.O));
+          drawBoard();
+          listenToGame();
+          statusText.textContent = "Game started!";
+        } else {
+          statusText.textContent = "Bets mismatch. Waiting for opponent...";
         }
       }
+    });
+  }
+
+  function drawBoard() {
+    board.innerHTML = "";
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.onclick = () => makeMove(i);
+      board.appendChild(cell);
     }
-  </script>
+  }
+
+  function makeMove(index) {
+    const gameRef = ref(db, `gameRooms/${gameId}`);
+    onValue(gameRef, (snap) => {
+      const game = snap.val();
+      if (game && game.turn === symbol && game.board[index] === "") {
+        game.board[index] = symbol;
+        game.turn = symbol === "X" ? "O" : "X";
+        set(gameRef, game);
+      }
+    }, { onlyOnce: true });
+  }
+
+  function listenToGame() {
+    onValue(ref(db, `gameRooms/${gameId}`), (snap) => {
+      const room = snap.val();
+      if (!room) {
+        statusText.textContent = "Opponent disconnected. Game ended.";
+        board.innerHTML = "";
+        return;
+      }
+      room.board.forEach((val, i) => board.children[i].textContent = val);
+      const winner = checkWinner(room.board);
+      if (winner) {
+        const winUid = winner === symbol ? currentUserId : opponent;
+        const pot = Object.values(room.bets)[0].bet * 2;
+        const prize = (pot * 0.8).toFixed(2);
+        alert(`${winner === symbol ? "You win!" : "You lose."} Prize: $${prize}`);
+        remove(ref(db, `gameRooms/${gameId}`));
+      }
+    });
+  }
+
+  function checkWinner(b) {
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for (const [a,b1,c] of wins) {
+      if (b[a] && b[a] === b[b1] && b[a] === b[c]) return b[a];
+    }
+    return null;
+  }
+</script>
+
 </body>
 </html>
