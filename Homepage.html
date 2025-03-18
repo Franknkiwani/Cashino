@@ -2,53 +2,50 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Casino Games</title>
   <style>
     :root {
-      --glass-bg: rgba(0, 0, 0, 0.5);
-      --border-glow: rgba(0, 255, 255, 0.5);
-      --primary: #00fff7;
-      --accent: #ff00cc;
-      --text: #ffffff;
-      --bg: #0a0a0f;
+      --glass-bg: rgba(0, 0, 0, 0.6);
+      --border-glow: #0ff;
+      --primary: #0ff;
+      --accent: #f0f;
     }
 
     body {
       margin: 0;
-      padding: 20px;
       font-family: 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    h1, h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .container {
+      padding: 2rem;
+      max-width: 1600px;
+      width: 100%;
     }
 
     .games-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: clamp(10px, 2vw, 20px);
-      max-width: 1200px;
-      margin: 0 auto;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
     }
 
     .game-card {
       background: var(--glass-bg);
       border: 1px solid var(--border-glow);
       border-radius: 12px;
-      box-shadow: 0 0 8px var(--border-glow);
+      padding: 1rem;
       text-align: center;
-      padding: 12px;
-      cursor: pointer;
       transition: transform 0.2s ease;
     }
 
     .game-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 15px var(--accent);
+      transform: scale(1.03);
+      border-color: var(--accent);
     }
 
     .game-card img {
@@ -56,113 +53,95 @@
       height: 120px;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 8px;
     }
 
-    .game-name {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--accent);
+    .game-title {
+      margin-top: 0.5rem;
+      font-weight: bold;
+      color: var(--primary);
     }
 
-    .user-stats {
+    .stats-grid {
+      margin-top: 3rem;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: clamp(10px, 2vw, 20px);
-      width: 100%;
-      max-width: 1000px;
-      margin: 40px auto;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
     }
 
     .stat-card {
       background: var(--glass-bg);
-      border: 1px solid var(--primary);
+      border: 1px solid var(--border-glow);
       border-radius: 10px;
-      box-shadow: 0 0 6px var(--primary);
-      padding: 16px 20px;
-      backdrop-filter: blur(8px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: 0.2s ease;
+      padding: 1rem;
+      text-align: center;
     }
 
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 10px var(--accent);
-    }
-
-    .stat-title {
+    .stat-label {
       font-size: 0.9rem;
       color: #ccc;
-      margin-bottom: 6px;
     }
 
     .stat-value {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
-      color: var(--text);
+      margin-top: 0.3rem;
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <div class="games-grid">
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAThbNpWAWWmodOzIuW8zrGe2AOPTZogWj1DMzca3YYoehbCWlS6oJAvY&s=10" alt="Aviator">
+        <div class="game-title">Aviator</div>
+      </div>
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWNssBc9_IooOiOhuwEaZXgFvUry7kD0fdgN0OioyUx03lQP415sMPvPE&s=10" alt="Spin to Win">
+        <div class="game-title">Spin to Win</div>
+      </div>
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLBn8R0kj7UQCGgUcYDVVn5L_-0EsXnGrnzhmsDhGYeZ4QGHRznSXfUUNF&s=10" alt="Dice Roll">
+        <div class="game-title">Dice Roll</div>
+      </div>
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRubggw8kMVgZvNnZtBKdRnrXTdvoNqtbrco57A_NQO8cYmJiyC7U5ypMM&s=10" alt="Blackjack">
+        <div class="game-title">Blackjack</div>
+      </div>
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyw8qUZW5zaFtK9ansj6i4Y_UoffpqkW5TMfZDdRMmdfZSUGExPhlbshQ&s=10" alt="Slots">
+        <div class="game-title">Slots</div>
+      </div>
+      <div class="game-card">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR25CP5XQx2RmGu6uottJYBv6Yf_9lrwzPAmR2-fpTXez5T3V4A0pINhoel&s=10" alt="Tic Tac Toe">
+        <div class="game-title">Tic Tac Toe</div>
+      </div>
+    </div>
 
-  <h1>Casino Games</h1>
-
-  <div class="games-grid">
-    <div class="game-card" onclick="location.href='aviator.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAThbNpWAWWmodOzIuW8zrGe2AOPTZogWj1DMzca3YYoehbCWlS6oJAvY&s=10" alt="Aviator">
-      <div class="game-name">Aviator</div>
-    </div>
-    <div class="game-card" onclick="location.href='spin.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWNssBc9_IooOiOhuwEaZXgFvUry7kD0fdgN0OioyUx03lQP415sMPvPE&s=10" alt="Spin to Win">
-      <div class="game-name">Spin to Win</div>
-    </div>
-    <div class="game-card" onclick="location.href='dice.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLBn8R0kj7UQCGgUcYDVVn5L_-0EsXnGrnzhmsDhGYeZ4QGHRznSXfUUNF&s=10" alt="Dice Roll">
-      <div class="game-name">Dice Roll</div>
-    </div>
-    <div class="game-card" onclick="location.href='blackjack.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRubggw8kMVgZvNnZtBKdRnrXTdvoNqtbrco57A_NQO8cYmJiyC7U5ypMM&s=10" alt="Blackjack">
-      <div class="game-name">Blackjack</div>
-    </div>
-    <div class="game-card" onclick="location.href='slots.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyw8qUZW5zaFtK9ansj6i4Y_UoffpqkW5TMfZDdRMmdfZSUGExPhlbshQ&s=10" alt="Slots">
-      <div class="game-name">Slots</div>
-    </div>
-    <div class="game-card" onclick="location.href='tictactoe.html'">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR25CP5XQx2RmGu6uottJYBv6Yf_9lrwzPAmR2-fpTXez5T3V4A0pINhoel&s=10" alt="Tic Tac Toe">
-      <div class="game-name">Tic Tac Toe</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Balance</div>
+        <div class="stat-value" id="balance">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Losses</div>
+        <div class="stat-value" id="losses">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Profit</div>
+        <div class="stat-value" id="profit">Loading...</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Games Played</div>
+        <div class="stat-value" id="gamesPlayed">Loading...</div>
+      </div>
     </div>
   </div>
 
-  <h2>Your Stats</h2>
-
-  <div class="user-stats">
-    <div class="stat-card">
-      <div class="stat-title">Balance</div>
-      <div class="stat-value" id="balance">Loading...</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">Losses</div>
-      <div class="stat-value" id="losses">Loading...</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">Profit</div>
-      <div class="stat-value" id="profit">Loading...</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-title">Games Played</div>
-      <div class="stat-value" id="gamesPlayed">Loading...</div>
-    </div>
-  </div>
-
-  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -176,30 +155,40 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth();
     const db = getDatabase();
+    const auth = getAuth();
 
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        const uid = user.uid;
-        const userRef = ref(db, `users/${uid}`);
-        get(userRef).then(snapshot => {
-          if (snapshot.exists()) {
-            const data = snapshot.val();
-            document.getElementById('balance').textContent = `$${Number(data.balance || 0).toFixed(2)}`;
-            document.getElementById('losses').textContent = `-$${Number(data.losses || 0).toFixed(2)}`;
-            document.getElementById('profit').textContent = `+$${Number(data.profit || 0).toFixed(2)}`;
-            document.getElementById('gamesPlayed').textContent = `${data.gamesPlayed || 0}`;
-          } else {
-            console.log("User data not found.");
-          }
-        });
-      } else {
-        window.location.href = "login.html";
-      }
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return window.location.href = "login.html";
+
+      const uid = user.uid;
+      const userRef = ref(db, `users/${uid}`);
+
+      get(userRef).then((snapshot) => {
+        if (!snapshot.exists()) {
+          const defaultData = {
+            email: user.email,
+            username: user.email.split('@')[0],
+            balance: 2.00,
+            profit: 0,
+            losses: 0,
+            gamesPlayed: 0,
+            joinedAt: Date.now()
+          };
+          set(userRef, defaultData);
+          updateStats(defaultData);
+        } else {
+          updateStats(snapshot.val());
+        }
+      });
     });
-  </script>
 
+    function updateStats(data) {
+      document.getElementById('balance').textContent = `$${data.balance.toFixed(2)}`;
+      document.getElementById('losses').textContent = `$${data.losses.toFixed(2)}`;
+      document.getElementById('profit').textContent = `$${data.profit.toFixed(2)}`;
+      document.getElementById('gamesPlayed').textContent = data.gamesPlayed;
+    }
+  </script>
 </body>
 </html>
