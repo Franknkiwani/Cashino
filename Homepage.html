@@ -1,253 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CASHINO</title>
+  <title>Cashino – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto&display=swap" rel="stylesheet">
   <style>
     :root {
-      --accent: #00ffe0;
-      --glass-bg: rgba(255, 255, 255, 0.05);
+      --bg: #0e1016;
+      --card: #1a1d24;
+      --accent: #00ffe7;
+      --text: #ffffff;
+      --glass: rgba(255,255,255,0.05);
     }
 
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
       -webkit-user-select: none;
       user-select: none;
     }
 
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0a0a0f;
-      color: white;
+      background: var(--bg);
+      font-family: 'Roboto', sans-serif;
+      color: var(--text);
+      overflow: hidden; /* Prevent scrolling when dropdown is active */
     }
 
     header {
-      height: 60px;
-      background: var(--glass-bg);
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      padding: 0 1rem;
+      align-items: center;
+      padding: 0 20px;
+      background: var(--glass);
+      backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--accent);
-      backdrop-filter: blur(10px);
+      height: 48px;
       position: relative;
-      z-index: 10;
+      z-index: 2;
     }
 
     .hamburger {
-      font-size: 22px;
-      cursor: pointer;
-      color: var(--accent);
-    }
-
-    .right-header {
+      width: 30px;
+      height: 24px;
       display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .deposit-btn {
-      background: var(--accent);
-      border: none;
-      padding: 8px 16px;
-      font-weight: bold;
-      color: black;
-      border-radius: 6px;
+      flex-direction: column;
+      justify-content: space-between;
       cursor: pointer;
-      box-shadow: 0 0 10px var(--accent);
-      transition: transform 0.2s ease;
     }
 
-    .deposit-btn:hover {
-      transform: scale(1.05);
+    .hamburger span {
+      height: 3px;
+      background-color: var(--accent);
+      border-radius: 4px;
+      transition: 0.3s;
     }
 
     .profile {
       display: flex;
       align-items: center;
-      padding: 6px 10px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.06);
+      gap: 10px;
+      background: var(--card);
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--glass);
       cursor: pointer;
-      transition: background 0.3s;
       position: relative;
-      z-index: 12;
+      z-index: 3;
+    }
+
+    .profile:hover {
+      background: rgba(0, 255, 231, 0.1);
+      box-shadow: 0 0 8px rgba(0, 255, 231, 0.2);
     }
 
     .profile img {
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      margin-right: 8px;
+      object-fit: cover;
     }
 
-    .balance {
-      margin: 10px 1rem;
+    .profile-name {
       font-size: 0.9rem;
-      color: #ccc;
+      font-weight: bold;
     }
 
-    #profileDropdown {
-      position: absolute;
-      top: 65px;
-      right: 1rem;
-      background: #111;
+    .dropdown-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+
+    .dropdown {
+      background: var(--card);
       border: 1px solid var(--accent);
       border-radius: 10px;
-      display: none;
-      flex-direction: column;
-      z-index: 11;
-      box-shadow: 0 0 10px var(--accent);
-    }
-
-    #profileDropdown a {
-      padding: 12px 20px;
-      color: white;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      transition: background 0.2s;
-    }
-
-    #profileDropdown a:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    #overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      backdrop-filter: blur(6px);
-      background: rgba(0,0,0,0.6);
-      z-index: 9;
-      display: none;
-    }
-
-    #loadingScreen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.9);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 1.5rem;
-      z-index: 100;
-    }
-
-    #loadingScreen.active {
       display: flex;
+      flex-direction: column;
+      min-width: 200px;
+      box-shadow: 0 0 10px rgba(0, 255, 231, 0.2);
+      z-index: 2;
+    }
+
+    .dropdown a {
+      padding: 12px 16px;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.2s;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--glass);
+    }
+
+    .dropdown a:last-child {
+      border-bottom: none;
+      color: #ff4c4c;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropdown a:hover {
+      background: rgba(0, 255, 231, 0.1);
+    }
+
+    .balance-bar {
+      margin: 20px auto;
+      max-width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .balance-text {
+      font-size: 0.95rem;
+      background: var(--card);
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--glass);
+      box-shadow: 0 0 8px rgba(0, 255, 231, 0.05);
+    }
+
+    .balance-text span {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .deposit-btn {
+      font-size: 0.9rem;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deposit-btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      opacity: 0.1;
+      transition: left 0.4s ease;
+    }
+
+    .deposit-btn:hover::before {
+      left: 0;
+    }
+
+    .deposit-btn:hover {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+    }
+
+    .loading-screen.active {
+      display: flex;
+    }
+
+    .loading-text {
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-family: 'Orbitron', sans-serif;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
   </style>
 </head>
 <body>
 
-<div id="loadingScreen">Loading... Please wait</div>
-<div id="overlay" onclick="closeDropdown()"></div>
-
-<header>
-  <div class="hamburger">&#9776;</div>
-  <div class="right-header">
-    <button class="deposit-btn" onclick="deposit()">DEPOSIT</button>
-    <div class="profile" onclick="toggleDropdown(event)">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="Profile">
-      <span id="username">Loading...</span>
+  <header>
+    <div class="hamburger" onclick="openSidebar()">
+      <span></span>
+      <span></span>
     </div>
-    <div id="profileDropdown">
-      <a href="account.html">My Account</a>
-      <a href="withdrawal.html">Withdraw</a>
-      <a href="deposit.html">Deposit</a>
-      <a href="history.html">History</a>
-      <a href="#" onclick="logout()">Logout →</a>
+
+    <div class="profile" onclick="toggleDropdown()">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="Profile" />
+      <div class="profile-name" id="username">Loading...</div>
+    </div>
+  </header>
+
+  <div class="balance-bar">
+    <div class="balance-text">Balance: $<span id="balance">Loading...</span></div>
+    <button class="deposit-btn" onclick="showLoadingScreen('deposit.html')">DEPOSIT</button>
+  </div>
+
+  <!-- Profile Dropdown Overlay -->
+  <div class="dropdown-overlay" id="dropdownOverlay" onclick="toggleDropdown()">
+    <div class="dropdown" onclick="event.stopPropagation()">
+      <a href="account.html" onclick="showLoadingScreen('account.html')">My Account</a>
+      <a href="withdrawal.html" onclick="showLoadingScreen('withdrawal.html')">Withdraw</a>
+      <a href="deposit.html" onclick="showLoadingScreen('deposit.html')">Deposit</a>
+      <a href="history.html" onclick="showLoadingScreen('history.html')">History</a>
+      <a href="#" onclick="logoutUser()">Logout <span>→</span></a>
     </div>
   </div>
-</header>
 
-<div class="balance" id="balance">Balance: Loading...</div>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-text">Processing, please wait...</div>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  const usernameEl = document.getElementById("username");
-  const balanceEl = document.getElementById("balance");
+    const usernameEl = document.getElementById("username");
+    const balanceEl = document.getElementById("balance");
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      const uid = user.uid;
-      const email = user.email.split("@")[0];
-      usernameEl.textContent = email;
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const uid = user.uid;
+        const emailName = user.email.split('@')[0];
+        usernameEl.textContent = emailName;
 
-      const balRef = ref(db, `users/${uid}/balance`);
-      onValue(balRef, snapshot => {
-        const bal = snapshot.exists() ? snapshot.val().toFixed(2) : "0.00";
-        balanceEl.textContent = `Balance: $${bal}`;
+        const balanceRef = ref(db, 'users/' + uid + '/balance');
+        onValue(balanceRef, snapshot => {
+          const bal = snapshot.val();
+          balanceEl.textContent = bal !== null ? bal.toFixed(2) : "0.00";
+        });
+      } else {
+        window.location.href = "login.html";
+      }
+    });
+
+    window.logoutUser = function () {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
       });
-    } else {
-      window.location.href = "auth.html";
     }
-  });
+  </script>
 
-  window.logout = () => {
-    signOut(auth).then(() => {
-      window.location.href = "auth.html";
-    });
-  };
+  <script>
+    function toggleDropdown() {
+      const overlay = document.getElementById("dropdownOverlay");
+      overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
+    }
 
-  window.deposit = () => {
-    const loading = document.getElementById("loadingScreen");
-    loading.classList.add("active");
-    setTimeout(() => {
-      window.location.href = "deposit.html";
-    }, 1300);
-  };
-
-  window.toggleDropdown = (e) => {
-    e.stopPropagation();
-    const dropdown = document.getElementById("profileDropdown");
-    const overlay = document.getElementById("overlay");
-    dropdown.style.display = dropdown.style.display === "flex" ? "none" : "flex";
-    overlay.style.display = dropdown.style.display === "flex" ? "block" : "none";
-  };
-
-  window.closeDropdown = () => {
-    document.getElementById("profileDropdown").style.display = "none";
-    document.getElementById("overlay").style.display = "none";
-  };
-
-  const dropdownLinks = document.querySelectorAll("#profileDropdown a:not(:last-child)");
-  dropdownLinks.forEach(link => {
-    link.addEventListener("click", e => {
-      e.preventDefault();
-      const loading = document.getElementById("loadingScreen");
-      const target = e.target.getAttribute("href");
-      loading.classList.add("active");
+    function showLoadingScreen(redirectTo) {
+      const screen = document.getElementById("loadingScreen");
+      screen.classList.add("active");
       setTimeout(() => {
-        window.location.href = target;
-      }, 1300);
-    });
-  });
-</script>
+        window.location.href = redirectTo;
+      }, 1200);
+    }
+
+    function openSidebar() {
+      // placeholder for your hamburger/sidebar logic
+      alert("Sidebar opened");
+    }
+  </script>
 </body>
 </html>
