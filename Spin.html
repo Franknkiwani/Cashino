@@ -1,267 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Spin to Win</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multiplayer Game</title>
   <style>
-    * {
-      user-select: none;
-      -webkit-user-select: none;
-      font-family: 'Segoe UI', sans-serif;
-    }
     body {
+      font-family: 'Segoe UI', sans-serif;
       background: #111;
       color: #fff;
+      padding: 20px;
       margin: 0;
-      padding: 0;
-      text-align: center;
     }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      padding: 10px 20px;
-      background: #1e1e1e;
-      border-bottom: 1px solid #333;
-    }
-    header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 10px;
-    }
-    .email {
-      font-size: 14px;
-      color: #ccc;
-    }
-    .wallet {
-      margin: 20px 0;
-      font-size: 18px;
-      font-weight: bold;
-    }
-    .wheel-container {
-      position: relative;
-      width: 300px;
-      height: 300px;
-      margin: 0 auto;
-      padding-top: 20px;
-    }
-    .pointer {
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-bottom: 25px solid #fff;
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
-    }
-    #rotatingWheel {
-      transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
-    }
-    #wheel {
-      border-radius: 50%;
-      background: #222;
-    }
-    button {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #0f0;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .result {
-      margin-top: 10px;
-      font-size: 16px;
-    }
-    .leaderboard {
-      margin-top: 40px;
-    }
-    .leaderboard h2 {
-      font-size: 20px;
-      color: #0f0;
-    }
-    .leaderboard ul {
-      list-style: none;
-      padding: 0;
-      margin: 10px auto;
-      max-width: 300px;
-    }
-    .leaderboard li {
-      background: #1e1e1e;
+    h1 { margin-bottom: 10px; }
+    .user-card {
       padding: 10px;
-      margin-bottom: 5px;
+      border: 1px solid #555;
+      margin: 5px 0;
+      background: #222;
+      cursor: pointer;
       border-radius: 4px;
     }
+    .user-card:hover {
+      background: #333;
+    }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
+  <h1>Multiplayer Game</h1>
 
-<header>
-  <img id="profile-pic" src="" alt="Profile">
-  <div class="email" id="user-email"></div>
-</header>
-
-<div class="wallet" id="wallet">Balance: $0.000</div>
-
-<div class="wheel-container">
-  <div class="pointer"></div>
-  <div id="rotatingWheel">
-    <canvas id="wheel" width="300" height="300"></canvas>
+  <div id="notLoggedIn" class="hidden">
+    <p>You are not logged in. Please refresh after logging in through another page.</p>
   </div>
-  <button id="spinBtn">SPIN ($0.100)</button>
-  <div class="result" id="result"></div>
-</div>
 
-<div class="leaderboard">
-  <h2>Top Winners</h2>
-  <ul id="leaderboard-list"></ul>
-</div>
+  <div id="userInfo" class="hidden">
+    <p>Logged in as: <span id="username"></span></p>
+    <h2>Online Users</h2>
+    <div id="onlineUsers"></div>
+  </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, update, child, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      onValue,
+      onDisconnect,
+      update,
+      remove
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getDatabase();
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
 
-  let currentUser, balance = 0;
-  const wallet = document.getElementById("wallet");
-  const result = document.getElementById("result");
-  const spinBtn = document.getElementById("spinBtn");
-  const userEmail = document.getElementById("user-email");
-  const profilePic = document.getElementById("profile-pic");
+    const userInfo = document.getElementById("userInfo");
+    const notLoggedIn = document.getElementById("notLoggedIn");
+    const usernameSpan = document.getElementById("username");
+    const onlineUsersDiv = document.getElementById("onlineUsers");
 
-  const canvas = document.getElementById("wheel");
-  const ctx = canvas.getContext("2d");
-  const rotatingWheel = document.getElementById("rotatingWheel");
+    let currentUser = null;
 
-  const prizes = [0.010, 0.025, 0.050, 0.100, 0.250, 0.500, 0.750, 1.000, 0.000, -0.250];
-  const sliceDeg = 360 / prizes.length;
-  const costPerSpin = 0.100;
-  let isSpinning = false;
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        usernameSpan.textContent = user.displayName || user.email || "User";
+        userInfo.classList.remove("hidden");
 
-  function drawWheel() {
-    for (let i = 0; i < prizes.length; i++) {
-      const angle = sliceDeg * i * Math.PI / 180;
-      ctx.beginPath();
-      ctx.moveTo(150, 150);
-      ctx.arc(150, 150, 150, angle, angle + sliceDeg * Math.PI / 180);
-      ctx.fillStyle = i % 2 === 0 ? '#444' : '#666';
-      ctx.fill();
-      ctx.save();
-      ctx.translate(150, 150);
-      ctx.rotate(angle + sliceDeg * Math.PI / 360);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#fff";
-      ctx.font = "bold 14px sans-serif";
-      ctx.fillText(`${prizes[i] >= 0 ? "$" : "-$"}${Math.abs(prizes[i]).toFixed(3)}`, 130, 5);
-      ctx.restore();
-    }
-  }
-  drawWheel();
+        const userRef = ref(db, "onlineUsers/" + user.uid);
+        set(userRef, {
+          uid: user.uid,
+          name: user.displayName || user.email,
+          status: "online"
+        });
+        onDisconnect(userRef).remove();
 
-  function updateWallet() {
-    wallet.textContent = `Balance: $${balance.toFixed(3)}`;
-  }
-
-  function spin() {
-    if (isSpinning || balance < costPerSpin) return;
-    isSpinning = true;
-    result.textContent = '';
-    balance -= costPerSpin;
-    updateWallet();
-
-    const weighted = [].concat(
-      Array(8).fill(0.010), Array(6).fill(0.025), Array(4).fill(0.050),
-      Array(3).fill(0.100), Array(2).fill(0.250), Array(1).fill(0.500),
-      Array(1).fill(0.750), Array(1).fill(1.000),
-      Array(4).fill(0.000), Array(3).fill(-0.250)
-    );
-
-    const winAmount = weighted[Math.floor(Math.random() * weighted.length)];
-    const winIndex = prizes.indexOf(winAmount);
-    const randomOffset = Math.floor(Math.random() * sliceDeg);
-    const targetAngle = 360 * 5 + (winIndex * sliceDeg + sliceDeg / 2 - randomOffset);
-    rotatingWheel.style.transform = `rotate(${targetAngle}deg)`;
-
-    setTimeout(() => {
-      result.textContent =
-        winAmount > 0 ? `You won $${winAmount.toFixed(3)}`
-        : winAmount < 0 ? `Ouch! Lost $${Math.abs(winAmount).toFixed(3)}`
-        : `Nothing this time.`;
-      balance += winAmount;
-      updateWallet();
-      const userRef = ref(db, `users/${currentUser.uid}`);
-      update(userRef, {
-        balance: balance,
-        totalProfit: winAmount > 0 ? (currentUser.totalProfit || 0) + winAmount : currentUser.totalProfit || 0
-      });
-      isSpinning = false;
-    }, 5200);
-  }
-
-  function loadLeaderboard() {
-    const lbRef = ref(db, 'users');
-    onValue(lbRef, (snapshot) => {
-      const data = snapshot.val();
-      const users = Object.values(data || {}).sort((a, b) => (b.totalProfit || 0) - (a.totalProfit || 0)).slice(0, 3);
-      const list = document.getElementById("leaderboard-list");
-      list.innerHTML = '';
-      users.forEach((user, i) => {
-        const li = document.createElement("li");
-        li.textContent = `#${i + 1} ${user.email} - $${(user.totalProfit || 0).toFixed(3)}`;
-        list.appendChild(li);
-      });
+        listenForUsers();
+        listenForRequests();
+      } else {
+        notLoggedIn.classList.remove("hidden");
+      }
     });
-  }
 
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      currentUser = user;
-      userEmail.textContent = user.email;
-      profilePic.src = user.photoURL || "https://i.imgur.com/DiHM5Zb.png";
-      const userRef = ref(db, `users/${user.uid}`);
-      get(userRef).then(snapshot => {
-        if (!snapshot.exists()) {
-          set(userRef, {
-            email: user.email,
-            balance: 1.000,
-            totalProfit: 0
-          });
-          balance = 1.000;
-        } else {
-          const data = snapshot.val();
-          balance = data.balance || 0;
-          currentUser.totalProfit = data.totalProfit || 0;
-        }
-        updateWallet();
-        loadLeaderboard();
+    function listenForUsers() {
+      const usersRef = ref(db, "onlineUsers");
+      onValue(usersRef, snap => {
+        onlineUsersDiv.innerHTML = "";
+        snap.forEach(child => {
+          const user = child.val();
+          if (user.uid !== currentUser.uid) {
+            const div = document.createElement("div");
+            div.className = "user-card";
+            div.textContent = user.name;
+            div.onclick = () => sendGameRequest(user.uid);
+            onlineUsersDiv.appendChild(div);
+          }
+        });
       });
-    } else {
-      alert("Please log in first.");
     }
-  });
 
-  spinBtn.addEventListener("click", spin);
-</script>
+    function sendGameRequest(opponentUid) {
+      const requestRef = ref(db, `gameRequests/${opponentUid}`);
+      set(requestRef, {
+        from: currentUser.uid,
+        fromName: currentUser.displayName || currentUser.email,
+        status: "pending"
+      });
+      alert(`Game request sent!`);
+    }
 
+    function listenForRequests() {
+      const requestRef = ref(db, `gameRequests/${auth.currentUser.uid}`);
+      onValue(requestRef, snap => {
+        const req = snap.val();
+        if (req && req.status === "pending") {
+          const accept = confirm(`${req.fromName} wants to play. Accept?`);
+          if (accept) {
+            update(ref(db), {
+              [`gameRequests/${auth.currentUser.uid}/status`]: "accepted",
+              [`activeGames/${auth.currentUser.uid}`]: { vs: req.from },
+              [`activeGames/${req.from}`]: { vs: auth.currentUser.uid }
+            });
+            remove(requestRef);
+            alert("Game started! (Add game logic here)");
+          } else {
+            remove(requestRef);
+            alert("Request declined.");
+          }
+        }
+      });
+    }
+  </script>
 </body>
 </html>
