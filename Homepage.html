@@ -1,269 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cashino – Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto&display=swap" rel="stylesheet">
+  <title>Casino Games</title>
   <style>
     :root {
-      --bg: #0e1016;
-      --card: #1a1d24;
-      --accent: #00ffe7;
+      --glass-bg: rgba(0, 0, 0, 0.5);
+      --border-glow: rgba(0, 255, 255, 0.5);
+      --primary: #00fff7;
+      --accent: #ff00cc;
       --text: #ffffff;
-      --glass: rgba(255,255,255,0.05);
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-user-select: none;
-      user-select: none;
+      --bg: #0a0a0f;
     }
 
     body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Segoe UI', sans-serif;
       background: var(--bg);
-      font-family: 'Roboto', sans-serif;
       color: var(--text);
-      overflow: hidden; /* Prevent scrolling when dropdown is active */
     }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 20px;
-      background: var(--glass);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--accent);
-      height: 48px;
-      position: relative;
-      z-index: 2;
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
-    .hamburger {
-      width: 30px;
-      height: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(10px, 2vw, 20px);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .game-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-glow);
+      border-radius: 12px;
+      box-shadow: 0 0 8px var(--border-glow);
+      text-align: center;
+      padding: 12px;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
-    .hamburger span {
-      height: 3px;
-      background-color: var(--accent);
-      border-radius: 4px;
-      transition: 0.3s;
+    .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 15px var(--accent);
     }
 
-    .profile {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--card);
-      padding: 6px 14px;
-      border-radius: 30px;
-      border: 1px solid var(--glass);
-      cursor: pointer;
-      position: relative;
-      z-index: 3;
-    }
-
-    .profile:hover {
-      background: rgba(0, 255, 231, 0.1);
-      box-shadow: 0 0 8px rgba(0, 255, 231, 0.2);
-    }
-
-    .profile img {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
+    .game-card img {
+      width: 100%;
+      height: 120px;
       object-fit: cover;
-    }
-
-    .profile-name {
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-
-    .dropdown-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(10px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1;
-    }
-
-    .dropdown {
-      background: var(--card);
-      border: 1px solid var(--accent);
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      min-width: 200px;
-      box-shadow: 0 0 10px rgba(0, 255, 231, 0.2);
-      z-index: 2;
-    }
-
-    .dropdown a {
-      padding: 12px 16px;
-      color: var(--text);
-      text-decoration: none;
-      transition: background 0.2s;
-      font-size: 0.9rem;
-      border-bottom: 1px solid var(--glass);
-    }
-
-    .dropdown a:last-child {
-      border-bottom: none;
-      color: #ff4c4c;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .dropdown a:hover {
-      background: rgba(0, 255, 231, 0.1);
-    }
-
-    .balance-bar {
-      margin: 20px auto;
-      max-width: 90%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .balance-text {
-      font-size: 0.95rem;
-      background: var(--card);
-      padding: 10px 16px;
-      border-radius: 10px;
-      border: 1px solid var(--glass);
-      box-shadow: 0 0 8px rgba(0, 255, 231, 0.05);
-    }
-
-    .balance-text span {
-      color: var(--accent);
-      font-weight: bold;
-    }
-
-    .deposit-btn {
-      font-size: 0.9rem;
-      padding: 10px 20px;
-      background: transparent;
-      border: 1px solid var(--accent);
-      color: var(--accent);
       border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
+      margin-bottom: 8px;
     }
 
-    .deposit-btn::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: var(--accent);
-      opacity: 0.1;
-      transition: left 0.4s ease;
-    }
-
-    .deposit-btn:hover::before {
-      left: 0;
-    }
-
-    .deposit-btn:hover {
-      background: var(--accent);
-      color: #000;
-      box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
-    }
-
-    .loading-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 999;
-    }
-
-    .loading-screen.active {
-      display: flex;
-    }
-
-    .loading-text {
-      font-size: 1.5rem;
+    .game-name {
+      font-size: 1rem;
+      font-weight: 600;
       color: var(--accent);
-      font-family: 'Orbitron', sans-serif;
-      animation: pulse 1.5s infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    .user-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: clamp(10px, 2vw, 20px);
+      width: 100%;
+      max-width: 1000px;
+      margin: 40px auto;
+    }
+
+    .stat-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      box-shadow: 0 0 6px var(--primary);
+      padding: 16px 20px;
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .stat-title {
+      font-size: 0.9rem;
+      color: #ccc;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--text);
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="hamburger" onclick="openSidebar()">
-      <span></span>
-      <span></span>
-    </div>
+  <h1>Casino Games</h1>
 
-    <div class="profile" onclick="toggleDropdown()">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="Profile" />
-      <div class="profile-name" id="username">Loading...</div>
+  <div class="games-grid">
+    <div class="game-card" onclick="location.href='aviator.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRAThbNpWAWWmodOzIuW8zrGe2AOPTZogWj1DMzca3YYoehbCWlS6oJAvY&s=10" alt="Aviator">
+      <div class="game-name">Aviator</div>
     </div>
-  </header>
-
-  <div class="balance-bar">
-    <div class="balance-text">Balance: $<span id="balance">Loading...</span></div>
-    <button class="deposit-btn" onclick="showLoadingScreen('deposit.html')">DEPOSIT</button>
+    <div class="game-card" onclick="location.href='spin.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSWNssBc9_IooOiOhuwEaZXgFvUry7kD0fdgN0OioyUx03lQP415sMPvPE&s=10" alt="Spin to Win">
+      <div class="game-name">Spin to Win</div>
+    </div>
+    <div class="game-card" onclick="location.href='dice.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLBn8R0kj7UQCGgUcYDVVn5L_-0EsXnGrnzhmsDhGYeZ4QGHRznSXfUUNF&s=10" alt="Dice Roll">
+      <div class="game-name">Dice Roll</div>
+    </div>
+    <div class="game-card" onclick="location.href='blackjack.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRubggw8kMVgZvNnZtBKdRnrXTdvoNqtbrco57A_NQO8cYmJiyC7U5ypMM&s=10" alt="Blackjack">
+      <div class="game-name">Blackjack</div>
+    </div>
+    <div class="game-card" onclick="location.href='slots.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyw8qUZW5zaFtK9ansj6i4Y_UoffpqkW5TMfZDdRMmdfZSUGExPhlbshQ&s=10" alt="Slots">
+      <div class="game-name">Slots</div>
+    </div>
+    <div class="game-card" onclick="location.href='tictactoe.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR25CP5XQx2RmGu6uottJYBv6Yf_9lrwzPAmR2-fpTXez5T3V4A0pINhoel&s=10" alt="Tic Tac Toe">
+      <div class="game-name">Tic Tac Toe</div>
+    </div>
   </div>
 
-  <!-- Profile Dropdown Overlay -->
-  <div class="dropdown-overlay" id="dropdownOverlay" onclick="toggleDropdown()">
-    <div class="dropdown" onclick="event.stopPropagation()">
-      <a href="account.html" onclick="showLoadingScreen('account.html')">My Account</a>
-      <a href="withdrawal.html" onclick="showLoadingScreen('withdrawal.html')">Withdraw</a>
-      <a href="deposit.html" onclick="showLoadingScreen('deposit.html')">Deposit</a>
-      <a href="history.html" onclick="showLoadingScreen('history.html')">History</a>
-      <a href="#" onclick="logoutUser()">Logout <span>→</span></a>
-    </div>
-  </div>
+  <h2>Your Stats</h2>
 
-  <!-- Loading Screen -->
-  <div class="loading-screen" id="loadingScreen">
-    <div class="loading-text">Processing, please wait...</div>
+  <div class="user-stats">
+    <div class="stat-card">
+      <div class="stat-title">Balance</div>
+      <div class="stat-value" id="balance">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Losses</div>
+      <div class="stat-value" id="losses">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Profit</div>
+      <div class="stat-value" id="profit">Loading...</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Games Played</div>
+      <div class="stat-value" id="gamesPlayed">Loading...</div>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -277,53 +176,30 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    const usernameEl = document.getElementById("username");
-    const balanceEl = document.getElementById("balance");
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+    const db = getDatabase();
 
     onAuthStateChanged(auth, user => {
       if (user) {
         const uid = user.uid;
-        const emailName = user.email.split('@')[0];
-        usernameEl.textContent = emailName;
-
-        const balanceRef = ref(db, 'users/' + uid + '/balance');
-        onValue(balanceRef, snapshot => {
-          const bal = snapshot.val();
-          balanceEl.textContent = bal !== null ? bal.toFixed(2) : "0.00";
+        const userRef = ref(db, `users/${uid}`);
+        get(userRef).then(snapshot => {
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            document.getElementById('balance').textContent = `$${Number(data.balance || 0).toFixed(2)}`;
+            document.getElementById('losses').textContent = `-$${Number(data.losses || 0).toFixed(2)}`;
+            document.getElementById('profit').textContent = `+$${Number(data.profit || 0).toFixed(2)}`;
+            document.getElementById('gamesPlayed').textContent = `${data.gamesPlayed || 0}`;
+          } else {
+            console.log("User data not found.");
+          }
         });
       } else {
         window.location.href = "login.html";
       }
     });
-
-    window.logoutUser = function () {
-      signOut(auth).then(() => {
-        window.location.href = "login.html";
-      });
-    }
   </script>
 
-  <script>
-    function toggleDropdown() {
-      const overlay = document.getElementById("dropdownOverlay");
-      overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
-    }
-
-    function showLoadingScreen(redirectTo) {
-      const screen = document.getElementById("loadingScreen");
-      screen.classList.add("active");
-      setTimeout(() => {
-        window.location.href = redirectTo;
-      }, 1200);
-    }
-
-    function openSidebar() {
-      // placeholder for your hamburger/sidebar logic
-      alert("Sidebar opened");
-    }
-  </script>
 </body>
 </html>
