@@ -1,478 +1,315 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8" />  
-  <title>Modern App UI</title>  
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />  
-  <style>  
-    /* Your entire existing CSS remains untouched except added game card styles below */  
-    * {  
-      -webkit-user-select: none;  
-      -webkit-touch-callout: none;  
-      user-select: none;  
-      touch-action: manipulation;  
-      margin: 0;  
-      padding: 0;  
-      box-sizing: border-box;  
-    }  
-    body {  
-      background-color: #000;  
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
-      color: white;  
-      overflow-x: hidden;  
-    }  
-    header {  
-      width: 100%;  
-      height: 60px;  
-      background-color: #0a0a0a;  
-      display: flex;  
-      align-items: center;  
-      justify-content: space-between;  
-      padding: 0 20px;  
-      position: relative;  
-      z-index: 2;  
-    }  
-    .left-section {  
-      display: flex;  
-      align-items: center;  
-    }  
-    .avatar {  
-      width: 40px;  
-      height: 40px;  
-      border-radius: 50%;  
-      margin-right: 10px;  
-      border: 2px solid #00ffff;  
-      cursor: pointer;  
-      transition: transform 0.2s ease;  
-    }  
-    .avatar:hover {  
-      transform: scale(1.05);  
-    }  
-    .welcome-text {  
-      font-size: 16px;  
-      font-weight: 500;  
-    }  
-    .clock {  
-      font-size: 18px;  
-      font-weight: bold;  
-      color: #00ffff;  
-      letter-spacing: 1px;  
-      font-family: 'Courier New', monospace;  
-    }  
-    .neon-line {  
-      width: 100%;  
-      height: 2px;  
-      background: linear-gradient(90deg, #ff00ff, #00ffff);  
-      box-shadow: 0 0 6px #00ffff;  
-    }  
-    .balance-container {  
-      margin: 20px auto 0;  
-      padding: 12px 24px;  
-      background-color: #0a0a0a;  
-      border: 2px solid #00ff99;  
-      border-radius: 12px;  
-      width: fit-content;  
-      text-align: center;  
-      box-shadow: 0 0 8px #00ff9966;  
-    }  
-    .balance-text {  
-      font-size: 20px;  
-      font-weight: bold;  
-      color: #00ff99;  
-    }  .overlay, .loading-overlay {  
-  position: fixed;  
-  top: 0; left: 0;  
-  width: 100vw; height: 100vh;  
-  z-index: 11;  
-  display: none;  
-  justify-content: center;  
-  align-items: center;  
-}  
-.overlay.active, .loading-overlay.active {  
-  display: flex;  
-}  
-.overlay {  
-  background: rgba(0, 0, 0, 0.6);  
-  backdrop-filter: blur(4px);  
-  z-index: 9;  
-}  
-.loading-overlay {  
-  background: rgba(0, 0, 0, 0.7);  
-  backdrop-filter: blur(6px);  
-}  
-.loading-text {  
-  color: #00ffff;  
-  font-size: 24px;  
-  font-weight: bold;  
-  animation: fadeInOut 1s infinite alternate;  
-}  
-@keyframes fadeInOut {  
-  0% { opacity: 0; }  
-  100% { opacity: 1; }  
-}  
-
-.sidebar {  
-  position: fixed;  
-  top: 0;  
-  left: -100%;  
-  height: 100%;  
-  width: 280px;  
-  background-color: #111;  
-  box-shadow: 4px 0 10px rgba(0, 255, 255, 0.3);  
-  transition: left 0.3s ease;  
-  z-index: 10;  
-  display: flex;  
-  flex-direction: column;  
-}  
-.sidebar.active {  
-  left: 0;  
-}  
-.sidebar-header {  
-  padding: 20px;  
-  border-bottom: 1px solid #00ffff33;  
-  display: flex;  
-  align-items: center;  
-  gap: 10px;  
-}  
-.close-btn {  
-  font-size: 14px;  
-  font-weight: bold;  
-  color: white;  
-  background-color: red;  
-  border: none;  
-  padding: 8px 14px;  
-  border-radius: 6px;  
-  cursor: pointer;  
-}  
-.sidebar-message {  
-  color: #00ffff;  
-  font-size: 14px;  
-  font-weight: 500;  
-}  
-.sidebar-options {  
-  padding: 20px 15px;  
-  flex: 1;  
-  overflow-y: auto;  
-}  
-.sidebar-option {  
-  background-color: #1a1a1a;  
-  border: 1px solid #00ffff55;  
-  border-radius: 8px;  
-  padding: 10px 12px;  
-  color: white;  
-  margin-bottom: 12px;  
-  text-align: center;  
-  font-size: 15px;  
-  transition: background 0.2s;  
-  cursor: pointer;  
-}  
-.sidebar-option:hover {  
-  background-color: #00ffff22;  
-}  
-.logout-btn {  
-  background-color: red;  
-  border: none;  
-  color: white;  
-  font-size: 16px;  
-  padding: 12px;  
-  border-radius: 8px;  
-  cursor: pointer;  
-  margin: 20px;  
-}  
-.logout-btn:hover {  
-  background-color: #ff3333;  
-}  
-
-/* Casino game cards */  
-.games-section {  
-  max-width: 1000px;  
-  margin: 40px auto;  
-  display: grid;  
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));  
-  gap: 16px;  
-  padding: 0 20px;  
-}  
-.game-card {  
-  background-color: #111;  
-  border: 2px solid #00ffff55;  
-  border-radius: 12px;  
-  padding: 20px;  
-  text-align: center;  
-  color: white;  
-  font-weight: bold;  
-  transition: transform 0.2s ease, background 0.2s ease;  
-  cursor: pointer;  
-  box-shadow: 0 0 6px #00ffff33;  
-}  
-.game-card:hover {  
-  background-color: #00ffff11;  
-  transform: scale(1.03);  
-}  
-.game-icon {  
-  font-size: 30px;  
-  margin-bottom: 10px;  
-  color: #00ffff;  
-}  
-.games-section {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-}
-
-.game-card {
-  width: 100px;
-  height: 150px;
-  background-size: cover;
-  background-position: center;
-  border-radius: 12px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 10px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.game-card:hover {
-  transform: scale(1.05);
-}
-
-.game-title {
-  background-color: rgba(0, 0, 0, 0.75);
-  color: white;
-  padding: 6px 10px;
-  border-radius: 10px;
-  font-weight: 600;
-  text-align: center;
-  font-size: 14px;
-  width: 100%;
-}
-</style>
-
-</head>  
-<body>  
-  <div id="overlay" class="overlay"></div>  
-  <div id="sidebar" class="sidebar">  
-    <div class="sidebar-header">  
-      <button class="close-btn" id="closeSidebar">Close</button>  
-      <span class="sidebar-message" id="sidebarMessage">Welcome!</span>  
-    </div>  
-    <div class="sidebar-options">  
-      <div class="sidebar-option" id="cashoutOption">Cashout</div>  
-      <div class="sidebar-option" id="depositOption">Deposit</div>  
-      <div class="sidebar-option" id="redeemOption">Redeem Codes</div>  
-      <div class="sidebar-option" id="historyOption">History</div>  
-      <div class="sidebar-option" id="contactOption">Contact Us</div>  
-      <div class="sidebar-option" id="privacyOption">Privacy Policy</div>  
-    </div>  
-    <button class="logout-btn" id="logoutBtn">Logout</button>  
-  </div>  
-  <div id="loadingOverlay" class="loading-overlay">  
-    <div class="loading-text" id="loadingText">Loading...</div>  
-  </div>  
-  <header>  
-    <div class="left-section">  
-      <img src="https://i.pravatar.cc/150?img=3" alt="Avatar" class="avatar" id="avatarClick">  
-      <div class="welcome-text" id="welcomeUser">Welcome back!</div>  
-    </div>  
-    <div class="clock" id="clock">00.00.00</div>  
-  </header>  
-  <div class="neon-line"></div>  
-  <div class="balance-container">  
-    <div class="balance-text" id="balance">Balance: Loading...</div>  
-  </div>
-<!-- Casino Game Cards -->
-<div class="games-section">
-  <div class="game-card" onclick="window.location.href='aviator.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1BbkL1eVtGXaK_ck_qPiqyBLbG9-Mm2mAf6ruBYrcVhGkkr-q4VX7i4E&s=10');">
-    <div class="game-title">Aviator</div>
-  </div>
-  <div class="game-card" onclick="window.location.href='spin.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_TH6ewDETKB-d6xQpXYPyB2C-ME8FPhiYL0ZUpoFQ5qShnF9dwCZrcAl9&s=10');">
-    <div class="game-title">Spin to Win</div>
-  </div>
-  <div class="game-card" onclick="window.location.href='dice.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLBn8R0kj7UQCGgUcYDVVn5L_-0EsXnGrnzhmsDhGYeZ4QGHRznSXfUUNF&s=10');">
-    <div class="game-title">Dice Roll</div>
-  </div>
-  <div class="game-card" onclick="window.location.href='blackjack.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTqo5VqIznOk3DTv0H_B4KY0naKsdfBN0xgZhPNX4u0rmbHzWOb9YW1knbS&s=10');">
-    <div class="game-title">Blackjack</div>
-  </div>
-  <div class="game-card" onclick="window.location.href='slots.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRkZNInwLifd50lXJPJEp5WA3nj2KBWkxD_uLsG-w5JuQ-L8Sy7IGpkiwnl&s=10');">
-    <div class="game-title">Slots</div>
-  </div>
-  <div class="game-card" onclick="window.location.href='tictactoe.html'" style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaZc3rzi35FeA0bt7gcVugYweSn98YTwuniYkok36lXpsIxgmTHrivkNA&s=10');">
-    <div class="game-title">X vs O</div>
-  </div>
-</div>
-<div class="leaderboard" style="max-width: 600px; margin: 40px auto; text-align: center;">
-  <h2 style="color: #00ffff; margin-bottom: 20px;">Top Players Today</h2>
-  <div id="leaderboardList" style="display: flex; flex-direction: column; gap: 10px;">
-    <!-- Top 3 users will be injected here -->
-  </div>
-</div>
-  </div>
-</div>
-</div>  
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const auth = getAuth(app);
-
-  const avatar = document.getElementById('avatarClick');
-  const balanceText = document.getElementById('balance');
-  const welcomeUser = document.getElementById('welcomeUser');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const loadingText = document.getElementById('loadingText');
-
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      const uid = user.uid;
-
-      get(ref(db, `users/${uid}/balance`)).then(snapshot => {
-        const bal = snapshot.exists() ? snapshot.val() : 0;
-        balanceText.textContent = `Balance: $${parseFloat(bal).toFixed(2)}`;
-      }).catch(() => {
-        balanceText.textContent = "Balance: $0.00";
-      });
-
-      get(ref(db, `users/${uid}/username`)).then(snapshot => {
-        const name = snapshot.exists() ? snapshot.val() : "User";
-        welcomeUser.textContent = `Welcome, ${name}`;
-      }).catch(() => {
-        welcomeUser.textContent = "Welcome, User";
-      });
-
-      if (user.photoURL) {
-        avatar.src = user.photoURL;
-      }
-
-    } else {
-      window.location.href = "index.html";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cashino – Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0e1016;
+      --card: #1a1d24;
+      --accent: #00ffe7;
+      --text: #ffffff;
+      --glass: rgba(255,255,255,0.05);
     }
-  });
 
-  function loadLeaderboard() {
-    const leaderboardList = document.getElementById('leaderboardList');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+    }
 
-    get(ref(db, 'users')).then(snapshot => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const usersArray = Object.entries(data).map(([uid, userData]) => ({
-          uid,
-          username: userData.username || "Unknown",
-          balance: parseFloat(userData.balance) || 0
-        }));
+    body {
+      background: var(--bg);
+      font-family: 'Roboto', sans-serif;
+      color: var(--text);
+    }
 
-        const topUsers = usersArray.sort((a, b) => b.balance - a.balance).slice(0, 3);
-        leaderboardList.innerHTML = "";
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--accent);
+      height: 48px;
+      position: relative;
+    }
 
-        topUsers.forEach((user, index) => {
-          const place = ["1st", "2nd", "3rd"][index];
-          const item = document.createElement('div');
-          item.style.background = '#111';
-          item.style.border = '1px solid #00ffff88';
-          item.style.borderRadius = '10px';
-          item.style.padding = '10px';
-          item.style.color = '#fff';
-          item.style.boxShadow = '0 0 6px #00ffff22';
+    .hamburger {
+      width: 30px;
+      height: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
 
-          item.innerHTML = `<strong>${place}</strong>: ${user.username} - $${user.balance.toFixed(2)}`;
-          leaderboardList.appendChild(item);
+    .hamburger span {
+      height: 3px;
+      background-color: var(--accent);
+      border-radius: 4px;
+      transition: 0.3s;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--card);
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--glass);
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+    }
+
+    .profile:hover {
+      background: rgba(0, 255, 231, 0.1);
+      box-shadow: 0 0 8px rgba(0, 255, 231, 0.2);
+    }
+
+    .profile img {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-name {
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      background: var(--card);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      display: none;
+      flex-direction: column;
+      min-width: 160px;
+      box-shadow: 0 0 10px rgba(0, 255, 231, 0.2);
+      z-index: 9;
+    }
+
+    .dropdown a {
+      padding: 10px 16px;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.2s;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--glass);
+    }
+
+    .dropdown a:last-child {
+      border-bottom: none;
+      color: #ff4c4c;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dropdown a:hover {
+      background: rgba(0, 255, 231, 0.1);
+    }
+
+    .balance-bar {
+      margin: 20px auto;
+      max-width: 90%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .balance-text {
+      font-size: 0.95rem;
+      background: var(--card);
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--glass);
+      box-shadow: 0 0 8px rgba(0, 255, 231, 0.05);
+    }
+
+    .balance-text span {
+      color: var(--accent);
+      font-weight: bold;
+    }
+
+    .deposit-btn {
+      font-size: 0.9rem;
+      padding: 10px 20px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .deposit-btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: var(--accent);
+      opacity: 0.1;
+      transition: left 0.4s ease;
+    }
+
+    .deposit-btn:hover::before {
+      left: 0;
+    }
+
+    .deposit-btn:hover {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 15px var(--accent), 0 0 30px var(--accent);
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999;
+    }
+
+    .loading-screen.active {
+      display: flex;
+    }
+
+    .loading-text {
+      font-size: 1.5rem;
+      color: var(--accent);
+      font-family: 'Orbitron', sans-serif;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="hamburger" onclick="openSidebar()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="profile" onclick="toggleDropdown()">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSRL4b2-OP2C_rls_BcquiRTVQYiwxRO_tpQm1W5Qz_wbbzlJ_J75dd6Y8&s=10" alt="User Avatar"/>
+      <div class="profile-name" id="username">Loading...</div>
+      <div class="dropdown" id="profileDropdown">
+        <a href="account.html">My Account</a>
+        <a href="withdraw.html">Withdraw</a>
+        <a href="deposit.html">Deposit</a>
+        <a href="history.html">History</a>
+        <a href="#" onclick="logout()">Logout <span>&rarr;</span></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="balance-bar">
+    <div class="balance-text">
+      Balance: <span id="balance">Loading...</span>
+    </div>
+    <button class="deposit-btn" onclick="startDeposit()">DEPOSIT</button>
+  </div>
+
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-text">Depositing... Please Wait</div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const usernameEl = document.getElementById('username');
+    const balanceEl = document.getElementById('balance');
+    const dropdown = document.getElementById('profileDropdown');
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        const userRef = ref(db, `users/${uid}`);
+        onValue(userRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            usernameEl.textContent = data.username || user.email;
+            balanceEl.textContent = `$${(data.balance || 0).toFixed(2)}`;
+          } else {
+            usernameEl.textContent = user.email;
+            balanceEl.textContent = "$0.00";
+          }
         });
-
       } else {
-        leaderboardList.innerHTML = "<div style='color: gray;'>No data found.</div>";
+        window.location.href = "auth.html";
       }
-    }).catch(error => {
-      console.error("Error loading leaderboard:", error);
-      leaderboardList.innerHTML = "<div style='color: red;'>Failed to load leaderboard.</div>";
     });
-  }
 
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    loadingOverlay.classList.add('active');
-    loadingText.textContent = 'Logging you out...';
-    signOut(auth).then(() => {
+    window.startDeposit = () => {
+      document.getElementById("loadingScreen").classList.add("active");
       setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1000);
-    });
-  });
+        window.location.href = "deposit.html";
+      }, 2000);
+    };
 
-  window.addEventListener('offline', () => {
-    loadingOverlay.classList.add('active');
-    loadingText.textContent = "You're offline!";
-  });
+    window.toggleDropdown = () => {
+      dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+    };
 
-  // Load leaderboard on page load
-  loadLeaderboard();
-</script>
+    window.logout = () => {
+      signOut(auth).then(() => {
+        window.location.href = "auth.html";
+      }).catch((error) => {
+        alert("Logout failed: " + error.message);
+      });
+    };
 
-<script>
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  const sidebarMsg = document.getElementById('sidebarMessage');
-  const messages = ["You're awesome!", "Good to see you!", "Let's win big!", "Ready to roll?", "Feeling lucky?", "Have fun!", "Keep it up!"];
-  const loadingMessages = ["Teleporting...", "Spinning the wheel...", "Loading your luck...", "Summoning servers...", "Just a sec...", "Getting things ready..."];
+    window.openSidebar = () => alert("Sidebar coming soon");
+  </script>
 
-  document.getElementById('avatarClick').addEventListener('click', () => {
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-    sidebarMsg.textContent = messages[Math.floor(Math.random() * messages.length)];
-  });
-
-  document.getElementById('closeSidebar').addEventListener('click', () => {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-  });
-
-  overlay.addEventListener('click', () => {
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-  });
-
-  const navOptions = [
-    { id: 'cashoutOption', url: 'cashout.html' },
-    { id: 'depositOption', url: 'deposit.html' },
-    { id: 'redeemOption', url: 'redeem.html' },
-    { id: 'historyOption', url: 'history.html' },
-    { id: 'contactOption', url: 'contact.html' },
-    { id: 'privacyOption', url: 'privacy.html' }
-  ];
-
-  navOptions.forEach(opt => {
-    document.getElementById(opt.id).addEventListener('click', () => {
-      sidebar.classList.remove('active');
-      overlay.classList.remove('active');
-      loadingOverlay.classList.add('active');
-      loadingText.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
-      setTimeout(() => window.location.href = opt.url, 1500);
-    });
-  });
-
-  function updateClock() {
-    const now = new Date();
-    const h = String(now.getHours()).padStart(2, '0');
-    const m = String(now.getMinutes()).padStart(2, '0');
-    const s = String(now.getSeconds()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${h}.${m}.${s}`;
-  }
-
-  setInterval(updateClock, 1000);
-  updateClock();
-</script>
 </body>
 </html>
