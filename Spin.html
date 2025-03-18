@@ -1,93 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Multiplayer Tic Tac Toe</title>
+  <title>Cyberpunk Tic Tac Toe</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/gwannon/Cyberpunk-2077-theme-css/cyberpunk-2077.css">
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #111;
-      color: #fff;
+      font-family: 'Oxanium', sans-serif;
+      background-color: #0e0e0e;
+      color: #00ffee;
       margin: 0;
+      padding: 0;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       padding: 20px;
+      background: #111;
+      border-bottom: 2px solid #0ff;
     }
-    h1 { margin-bottom: 10px; }
-    .hidden { display: none; }
+    #avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    #users {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px;
+      justify-content: center;
+    }
     .user-card {
-      background: #222;
-      margin: 5px;
+      background: #111;
+      border: 1px solid #0ff;
       padding: 10px;
-      border: 1px solid #555;
-      border-radius: 5px;
-      cursor: pointer;
+      border-radius: 8px;
+      width: 200px;
+      text-align: center;
     }
-    .user-card:hover {
-      background: #333;
+    .user-card img {
+      width: 50px;
+      border-radius: 50%;
     }
-    #game {
-      display: grid;
+    #game-popup, #bet-popup {
+      position: fixed;
+      top: 30%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      border: 2px solid #0ff;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 999;
+      display: none;
+      text-align: center;
+    }
+    #board {
+      display: none;
       grid-template-columns: repeat(3, 100px);
-      grid-gap: 5px;
-      margin-top: 20px;
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+      justify-content: center;
+      margin: 20px auto;
     }
     .cell {
       width: 100px;
       height: 100px;
-      font-size: 32px;
-      text-align: center;
-      line-height: 100px;
-      background: #444;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    .cell.disabled {
-      cursor: not-allowed;
       background: #222;
+      color: #0ff;
+      font-size: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border: 1px solid #0ff;
+    }
+    button {
+      margin-top: 10px;
+      background: #0ff;
+      color: #000;
+      padding: 8px 14px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Multiplayer Game</h1>
+  <header>
+    <div>
+      <img id="avatar" src="" alt="User Avatar">
+      <span id="username"></span>
+    </div>
+    <div>Balance: $<span id="balance">0.00</span></div>
+  </header>
 
-  <div id="notLoggedIn" class="hidden">
-    <p>You are not logged in. Please refresh after logging in through another page.</p>
+  <section id="users"></section>
+
+  <div id="game-popup">
+    <p id="game-message">Incoming game request...</p>
+    <button id="accept-btn">Accept</button>
+    <button id="decline-btn">Decline</button>
   </div>
 
-  <div id="userInfo" class="hidden">
-    <p>Logged in as: <span id="username"></span></p>
-    <h2>Online Users</h2>
-    <div id="onlineUsers"></div>
+  <div id="bet-popup">
+    <p>Enter your bet ($0.10 - $100):</p>
+    <input type="number" id="bet-amount" min="0.1" max="100" step="0.1">
+    <button id="submit-bet">Submit</button>
   </div>
 
-  <div id="gameContainer" class="hidden">
-    <h2>Tic Tac Toe vs <span id="opponentName"></span></h2>
-    <div id="game"></div>
-    <p id="status"></p>
-  </div>
+  <div id="board"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      set,
-      onValue,
-      onDisconnect,
-      update,
-      remove
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, update, push, get, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
       measurementId: "G-LLT6F9WRKH"
@@ -95,185 +133,168 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
-    const db = getDatabase();
-
-    const userInfo = document.getElementById("userInfo");
-    const notLoggedIn = document.getElementById("notLoggedIn");
-    const usernameSpan = document.getElementById("username");
-    const onlineUsersDiv = document.getElementById("onlineUsers");
-    const gameContainer = document.getElementById("gameContainer");
-    const gameDiv = document.getElementById("game");
-    const opponentNameSpan = document.getElementById("opponentName");
-    const statusP = document.getElementById("status");
+    const db = getDatabase(app);
 
     let currentUser = null;
-    let currentGameId = null;
-    let playerSymbol = null;
+    let currentGame = null;
+    let playerSymbol = 'X';
+    let turn = 'X';
+    let balance = 0;
 
-    onAuthStateChanged(auth, user => {
+    const usersContainer = document.getElementById('users');
+    const avatarEl = document.getElementById('avatar');
+    const usernameEl = document.getElementById('username');
+    const balanceEl = document.getElementById('balance');
+    const boardEl = document.getElementById('board');
+    const popup = document.getElementById('game-popup');
+    const gameMessage = document.getElementById('game-message');
+    const acceptBtn = document.getElementById('accept-btn');
+    const declineBtn = document.getElementById('decline-btn');
+    const betPopup = document.getElementById('bet-popup');
+    const submitBet = document.getElementById('submit-bet');
+    const betInput = document.getElementById('bet-amount');
+
+    onAuthStateChanged(auth, async (user) => {
       if (user) {
         currentUser = user;
-        usernameSpan.textContent = user.displayName || user.email;
-        userInfo.classList.remove("hidden");
-
-        const userRef = ref(db, "onlineUsers/" + user.uid);
-        set(userRef, {
-          uid: user.uid,
-          name: user.displayName || user.email,
-          status: "online"
+        const username = "User" + Math.floor(Math.random() * 10000);
+        const avatar = `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random() * 10)}.jpg`;
+        await set(ref(db, "users/" + user.uid), {
+          username,
+          avatar,
+          balance: 100,
+          online: true
         });
-        onDisconnect(userRef).remove();
-
+        usernameEl.textContent = username;
+        avatarEl.src = avatar;
+        balance = 100;
+        balanceEl.textContent = balance.toFixed(2);
         listenForUsers();
         listenForRequests();
-        checkIfInGame();
       } else {
-        notLoggedIn.classList.remove("hidden");
+        signInAnonymously(auth);
       }
     });
 
     function listenForUsers() {
-      const usersRef = ref(db, "onlineUsers");
-      onValue(usersRef, snap => {
-        onlineUsersDiv.innerHTML = "";
-        snap.forEach(child => {
-          const user = child.val();
-          if (user.uid !== currentUser.uid) {
-            const div = document.createElement("div");
-            div.className = "user-card";
-            div.textContent = user.name;
-            div.onclick = () => sendGameRequest(user.uid);
-            onlineUsersDiv.appendChild(div);
+      onValue(ref(db, "users"), (snapshot) => {
+        usersContainer.innerHTML = "";
+        snapshot.forEach((child) => {
+          const data = child.val();
+          const id = child.key;
+          if (id !== currentUser.uid && data.online) {
+            const card = document.createElement("div");
+            card.className = "user-card";
+            card.innerHTML = `
+              <img src="${data.avatar}" />
+              <p>${data.username}</p>
+              <button onclick="sendRequest('${id}')">Connect</button>
+            `;
+            usersContainer.appendChild(card);
           }
         });
       });
     }
 
-    function sendGameRequest(opponentUid) {
-      const requestRef = ref(db, `gameRequests/${opponentUid}`);
-      set(requestRef, {
-        from: currentUser.uid,
-        fromName: currentUser.displayName || currentUser.email,
-        status: "pending"
+    window.sendRequest = async (toId) => {
+      const reqRef = ref(db, "requests/" + toId);
+      await set(reqRef, {
+        from: currentUser.uid
       });
-      alert(`Game request sent!`);
-    }
+      gameMessage.textContent = "Waiting for user to accept...";
+      popup.style.display = "block";
+    };
 
     function listenForRequests() {
-      const requestRef = ref(db, `gameRequests/${auth.currentUser.uid}`);
-      onValue(requestRef, snap => {
-        const req = snap.val();
-        if (req && req.status === "pending") {
-          const accept = confirm(`${req.fromName} wants to play. Accept?`);
-          if (accept) {
-            const gameId = `${req.from}_${auth.currentUser.uid}_${Date.now()}`;
-            const initialGameState = {
-              players: {
-                X: req.from,
-                O: auth.currentUser.uid
-              },
-              board: Array(9).fill(""),
-              turn: "X",
-              winner: null
-            };
-            set(ref(db, `games/${gameId}`), initialGameState);
-            update(ref(db), {
-              [`activeGames/${auth.currentUser.uid}`]: { gameId },
-              [`activeGames/${req.from}`]: { gameId }
-            });
-            remove(requestRef);
-          } else {
-            remove(requestRef);
-          }
+      onValue(ref(db, "requests/" + currentUser.uid), (snap) => {
+        if (snap.exists()) {
+          const fromId = snap.val().from;
+          gameMessage.textContent = "Game request from " + fromId;
+          popup.style.display = "block";
+          acceptBtn.onclick = () => {
+            startGame(fromId, currentUser.uid);
+            remove(ref(db, "requests/" + currentUser.uid));
+          };
+          declineBtn.onclick = () => {
+            popup.style.display = "none";
+            remove(ref(db, "requests/" + currentUser.uid));
+          };
         }
       });
     }
 
-    function checkIfInGame() {
-      const myGameRef = ref(db, `activeGames/${auth.currentUser.uid}`);
-      onValue(myGameRef, snap => {
-        const data = snap.val();
-        if (data && data.gameId) {
-          currentGameId = data.gameId;
-          startGame();
-        }
+    function startGame(player1, player2) {
+      const gameId = player1 + "_" + player2;
+      const gameRef = ref(db, "games/" + gameId);
+      set(gameRef, {
+        board: Array(9).fill(""),
+        turn: "X",
+        players: {
+          X: player1,
+          O: player2
+        },
+        bet: 2
       });
+      betPopup.style.display = "block";
+      submitBet.onclick = async () => {
+        const amount = parseFloat(betInput.value);
+        if (amount >= 0.1 && amount <= 100 && balance >= amount) {
+          balance -= amount;
+          balanceEl.textContent = balance.toFixed(2);
+          update(ref(db, "games/" + gameId), {
+            bet: amount
+          });
+          betPopup.style.display = "none";
+          boardEl.style.display = "grid";
+          renderBoard(gameRef);
+        }
+      };
     }
 
-    function startGame() {
-      userInfo.classList.add("hidden");
-      gameContainer.classList.remove("hidden");
-
-      const gameRef = ref(db, `games/${currentGameId}`);
-      onValue(gameRef, snap => {
+    function renderBoard(gameRef) {
+      onValue(gameRef, (snap) => {
         const game = snap.val();
-        if (!game) return;
-
-        playerSymbol = game.players.X === auth.currentUser.uid ? "X" : "O";
-        const opponentUid = game.players.X === auth.currentUser.uid ? game.players.O : game.players.X;
-
-        getOpponentName(opponentUid);
-        renderBoard(game.board, game.turn, game.winner);
-      });
-    }
-
-    function renderBoard(board, turn, winner) {
-      gameDiv.innerHTML = "";
-      board.forEach((cell, i) => {
-        const div = document.createElement("div");
-        div.className = "cell";
-        div.textContent = cell;
-        if (!cell && turn === playerSymbol && !winner) {
-          div.onclick = () => makeMove(i);
-        } else {
-          div.classList.add("disabled");
-        }
-        gameDiv.appendChild(div);
-      });
-
-      if (winner) {
-        statusP.textContent = winner === "draw" ? "It's a draw!" : `${winner} wins!`;
-      } else {
-        statusP.textContent = turn === playerSymbol ? "Your turn!" : "Opponent's turn...";
-      }
-    }
-
-    function makeMove(index) {
-      const gameRef = ref(db, `games/${currentGameId}`);
-      onValue(gameRef, snap => {
-        const game = snap.val();
-        if (!game || game.board[index] || game.turn !== playerSymbol || game.winner) return;
-
-        const newBoard = [...game.board];
-        newBoard[index] = playerSymbol;
-
-        const winner = checkWinner(newBoard);
-        update(gameRef, {
-          board: newBoard,
-          turn: playerSymbol === "X" ? "O" : "X",
-          winner: winner
+        const board = game.board;
+        turn = game.turn;
+        boardEl.innerHTML = "";
+        board.forEach((val, idx) => {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          cell.textContent = val;
+          cell.onclick = () => {
+            if (val === "" && turn === playerSymbol) {
+              board[idx] = playerSymbol;
+              update(gameRef, {
+                board,
+                turn: playerSymbol === "X" ? "O" : "X"
+              });
+              checkWin(board, game.bet, game.players);
+            }
+          };
+          boardEl.appendChild(cell);
         });
-      }, { onlyOnce: true });
+      });
     }
 
-    function checkWinner(b) {
-      const lines = [
-        [0,1,2],[3,4,5],[6,7,8], // rows
-        [0,3,6],[1,4,7],[2,5,8], // cols
-        [0,4,8],[2,4,6] // diagonals
+    function checkWin(board, bet, players) {
+      const wins = [
+        [0,1,2],[3,4,5],[6,7,8],
+        [0,3,6],[1,4,7],[2,5,8],
+        [0,4,8],[2,4,6]
       ];
-      for (const [a,b1,c] of lines) {
-        if (b[a] && b[a] === b[b1] && b[a] === b[c]) return b[a];
+      for (const [a,b,c] of wins) {
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          const winner = board[a];
+          const winnerId = players[winner];
+          const payout = bet * 2 * 0.8;
+          const devCut = bet * 2 * 0.2;
+          update(ref(db, "users/" + winnerId), {
+            balance: balance + payout
+          });
+          alert("Player " + winner + " wins! $" + payout.toFixed(2) + " awarded.");
+          remove(ref(db, "games/" + players.X + "_" + players.O));
+        }
       }
-      return b.includes("") ? null : "draw";
-    }
-
-    function getOpponentName(uid) {
-      const refUser = ref(db, "onlineUsers/" + uid);
-      onValue(refUser, snap => {
-        const user = snap.val();
-        opponentNameSpan.textContent = user?.name || "Opponent";
-      }, { onlyOnce: true });
     }
   </script>
 </body>
