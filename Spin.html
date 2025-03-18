@@ -1,30 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Multiplayer Game</title>
+  <title>Live Multiplayer Tic Tac Toe</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: #111;
       color: #fff;
-      padding: 20px;
       margin: 0;
+      padding: 20px;
     }
     h1 { margin-bottom: 10px; }
+    .hidden { display: none; }
     .user-card {
+      background: #222;
+      margin: 5px;
       padding: 10px;
       border: 1px solid #555;
-      margin: 5px 0;
-      background: #222;
+      border-radius: 5px;
       cursor: pointer;
-      border-radius: 4px;
     }
     .user-card:hover {
       background: #333;
     }
-    .hidden { display: none; }
+    #game {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+      margin-top: 20px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      font-size: 32px;
+      text-align: center;
+      line-height: 100px;
+      background: #444;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .cell.disabled {
+      cursor: not-allowed;
+      background: #222;
+    }
   </style>
 </head>
 <body>
@@ -38,6 +58,12 @@
     <p>Logged in as: <span id="username"></span></p>
     <h2>Online Users</h2>
     <div id="onlineUsers"></div>
+  </div>
+
+  <div id="gameContainer" class="hidden">
+    <h2>Tic Tac Toe vs <span id="opponentName"></span></h2>
+    <div id="game"></div>
+    <p id="status"></p>
   </div>
 
   <script type="module">
@@ -75,13 +101,19 @@
     const notLoggedIn = document.getElementById("notLoggedIn");
     const usernameSpan = document.getElementById("username");
     const onlineUsersDiv = document.getElementById("onlineUsers");
+    const gameContainer = document.getElementById("gameContainer");
+    const gameDiv = document.getElementById("game");
+    const opponentNameSpan = document.getElementById("opponentName");
+    const statusP = document.getElementById("status");
 
     let currentUser = null;
+    let currentGameId = null;
+    let playerSymbol = null;
 
     onAuthStateChanged(auth, user => {
       if (user) {
         currentUser = user;
-        usernameSpan.textContent = user.displayName || user.email || "User";
+        usernameSpan.textContent = user.displayName || user.email;
         userInfo.classList.remove("hidden");
 
         const userRef = ref(db, "onlineUsers/" + user.uid);
@@ -94,6 +126,7 @@
 
         listenForUsers();
         listenForRequests();
+        checkIfInGame();
       } else {
         notLoggedIn.classList.remove("hidden");
       }
@@ -133,19 +166,114 @@
         if (req && req.status === "pending") {
           const accept = confirm(`${req.fromName} wants to play. Accept?`);
           if (accept) {
+            const gameId = `${req.from}_${auth.currentUser.uid}_${Date.now()}`;
+            const initialGameState = {
+              players: {
+                X: req.from,
+                O: auth.currentUser.uid
+              },
+              board: Array(9).fill(""),
+              turn: "X",
+              winner: null
+            };
+            set(ref(db, `games/${gameId}`), initialGameState);
             update(ref(db), {
-              [`gameRequests/${auth.currentUser.uid}/status`]: "accepted",
-              [`activeGames/${auth.currentUser.uid}`]: { vs: req.from },
-              [`activeGames/${req.from}`]: { vs: auth.currentUser.uid }
+              [`activeGames/${auth.currentUser.uid}`]: { gameId },
+              [`activeGames/${req.from}`]: { gameId }
             });
             remove(requestRef);
-            alert("Game started! (Add game logic here)");
           } else {
             remove(requestRef);
-            alert("Request declined.");
           }
         }
       });
+    }
+
+    function checkIfInGame() {
+      const myGameRef = ref(db, `activeGames/${auth.currentUser.uid}`);
+      onValue(myGameRef, snap => {
+        const data = snap.val();
+        if (data && data.gameId) {
+          currentGameId = data.gameId;
+          startGame();
+        }
+      });
+    }
+
+    function startGame() {
+      userInfo.classList.add("hidden");
+      gameContainer.classList.remove("hidden");
+
+      const gameRef = ref(db, `games/${currentGameId}`);
+      onValue(gameRef, snap => {
+        const game = snap.val();
+        if (!game) return;
+
+        playerSymbol = game.players.X === auth.currentUser.uid ? "X" : "O";
+        const opponentUid = game.players.X === auth.currentUser.uid ? game.players.O : game.players.X;
+
+        getOpponentName(opponentUid);
+        renderBoard(game.board, game.turn, game.winner);
+      });
+    }
+
+    function renderBoard(board, turn, winner) {
+      gameDiv.innerHTML = "";
+      board.forEach((cell, i) => {
+        const div = document.createElement("div");
+        div.className = "cell";
+        div.textContent = cell;
+        if (!cell && turn === playerSymbol && !winner) {
+          div.onclick = () => makeMove(i);
+        } else {
+          div.classList.add("disabled");
+        }
+        gameDiv.appendChild(div);
+      });
+
+      if (winner) {
+        statusP.textContent = winner === "draw" ? "It's a draw!" : `${winner} wins!`;
+      } else {
+        statusP.textContent = turn === playerSymbol ? "Your turn!" : "Opponent's turn...";
+      }
+    }
+
+    function makeMove(index) {
+      const gameRef = ref(db, `games/${currentGameId}`);
+      onValue(gameRef, snap => {
+        const game = snap.val();
+        if (!game || game.board[index] || game.turn !== playerSymbol || game.winner) return;
+
+        const newBoard = [...game.board];
+        newBoard[index] = playerSymbol;
+
+        const winner = checkWinner(newBoard);
+        update(gameRef, {
+          board: newBoard,
+          turn: playerSymbol === "X" ? "O" : "X",
+          winner: winner
+        });
+      }, { onlyOnce: true });
+    }
+
+    function checkWinner(b) {
+      const lines = [
+        [0,1,2],[3,4,5],[6,7,8], // rows
+        [0,3,6],[1,4,7],[2,5,8], // cols
+        [0,4,8],[2,4,6] // diagonals
+      ];
+      for (const [a,b1,c] of lines) {
+        if (b[a] && b[a] === b[b1] && b[a] === b[c]) return b[a];
+      }
+      return b.includes("") ? null : "draw";
+    }
+
+    function getOpponentName(uid) {
+      const refUser = ref(db, "onlineUsers/" + uid);
+      onValue(refUser, snap => {
+        const user = snap.val();
+        opponentNameSpan.textContent = user?.name || "Opponent";
+      }, { onlyOnce: true });
     }
   </script>
 </body>
