@@ -220,6 +220,26 @@
       50% { transform: translateY(-5px); }
       100% { transform: translateY(0px); }
     }
+    .cooldown {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.loader {
+  border: 2px solid transparent;
+  border-top: 2px solid var(--accent, #f0f);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
   </style>
 </head>
 <body>
@@ -375,6 +395,35 @@
     document.getElementById("profileOverlay").style.display = "none";
     setTimeout(() => location.href = url, 300);
   }
+const clickEarnBtn = document.getElementById("clickEarnBtn");
+const clickLink = "https://ptukseew.top/4/7165724";
+
+let clickCount = parseInt(localStorage.getItem("clickEarnCount")) || 0;
+let isCooldown = false;
+
+clickEarnBtn.addEventListener("click", () => {
+  if (isCooldown) return;
+
+  clickCount++;
+  localStorage.setItem("clickEarnCount", clickCount);
+
+  if (clickCount >= 15) {
+    isCooldown = true;
+    clickEarnBtn.classList.add("cooldown");
+    const originalText = clickEarnBtn.innerHTML;
+    clickEarnBtn.innerHTML = `<span class="loader"></span> Loading...`;
+
+    setTimeout(() => {
+      window.open(clickLink, "_blank");
+      clickCount = 0;
+      localStorage.setItem("clickEarnCount", clickCount);
+
+      clickEarnBtn.innerHTML = originalText;
+      clickEarnBtn.classList.remove("cooldown");
+      isCooldown = false;
+    }, 1000);
+  }
+});
 </script>
 </body>
 </html>
