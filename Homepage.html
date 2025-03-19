@@ -123,32 +123,7 @@
       0% { opacity: 1; transform: translateY(0); }
       100% { opacity: 0; transform: translateY(-50px); }
     }
-    .leaderboard {
-      width: 90%;
-      max-width: 600px;
-      margin: 30px auto;
-      background: var(--glass-bg);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: var(--border-glow);
-    }
-    .leaderboard h2 {
-      text-align: center;
-      margin-bottom: 15px;
-      color: var(--primary);
-    }
-    .leaderboard table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    .leaderboard th, .leaderboard td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #444;
-    }
-    .leaderboard th {
-      color: var(--accent);
-    }
+
     .profile-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -206,42 +181,69 @@
 .logout-btn:hover {
   background: #ff6659;
 }
-.user-stats-box {
-  margin-top: 30px;
+.leaderboard {
+  width: 90%;
+  max-width: 600px;
+  margin: 30px auto;
   background: var(--glass-bg);
   border: 3px dashed var(--accent);
   border-radius: 15px;
   padding: 20px;
   text-align: center;
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Poppins', sans-serif;
   box-shadow: 0 0 15px var(--accent);
   animation: floaty 2s infinite ease-in-out;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
   color: var(--primary);
 }
 
-.cute-face {
-  font-size: 30px;
-  margin-bottom: 10px;
-  animation: blink 3s infinite;
+.leaderboard h2 {
+  font-size: 26px;
+  margin-bottom: 15px;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.leaderboard table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.leaderboard th, .leaderboard td {
+  padding: 12px 14px;
+  border-bottom: 2px dashed var(--accent);
+  font-size: 16px;
+  text-align: left;
+  color: var(--primary);
+}
+
+.leaderboard th {
+  color: var(--accent);
+  font-size: 17px;
+  font-weight: bold;
+}
+
+/* Top 3 highlight rows */
+.leaderboard tr.gold td {
+  color: gold;
+  font-weight: bold;
+  text-shadow: 0 0 5px gold;
+}
+.leaderboard tr.silver td {
+  color: silver;
+  font-weight: bold;
+  text-shadow: 0 0 5px silver;
+}
+.leaderboard tr.bronze td {
+  color: #cd7f32;
+  font-weight: bold;
+  text-shadow: 0 0 5px #cd7f32;
 }
 
 @keyframes floaty {
   0% { transform: translateY(0px); }
   50% { transform: translateY(-5px); }
   100% { transform: translateY(0px); }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.user-stats-info p {
-  margin: 6px 0;
-  font-size: 16px;
 }
   </style>
 </head>
@@ -291,23 +293,15 @@
   <div class="leaderboard">
     <h2>Leaderboard</h2>
     <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Clicks</th>
-          <th>Lifetime Earnings</th>
-        </tr>
-      </thead>
+<thead>
+  <tr>
+    <th>User</th>
+    <th>Clicks</th>
+    <th>Lifetime Earnings</th>
+  </tr>
+</thead>
       <tbody id="leaderboardBody"></tbody>
     </table>
-  </div>
-  <div id="yourStatsBlock" class="user-stats-box">
-  <div class="cute-face">（＾・ω・＾）</div>
-  <div class="user-stats-info">
-    <p><strong>Your Stats:</strong></p>
-    <p>Clicks: <span id="yourClicks">Loading...</span></p>
-    <p>Balance: $<span id="yourBalance">Loading...</span></p>
-    <p>Lifetime Earnings: $<span id="yourLifetime">Loading...</span></p>
   </div>
 </div>
 <div class="profile-overlay" id="profileOverlay" onclick="closeProfile(event)">
@@ -461,27 +455,6 @@
       window.location.href = "index.html";
     });
   };
-</script>
-
-<!-- External script injection (separate and safe) -->
-<script>
-  (function(d, z, s) {
-    s.src = 'https://' + d + '/401/' + z;
-    try {
-      (document.body || document.documentElement).appendChild(s);
-    } catch (e) {}
-  })('groleegni.net', 9105850, document.createElement('script'));
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    const userRef = ref(db, `users/${user.uid}`);
-    onValue(userRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      document.getElementById("yourClicks").textContent = data.clicks || 0;
-      document.getElementById("yourBalance").textContent = parseFloat(data.balance || 0).toFixed(3);
-      document.getElementById("yourLifetime").textContent = parseFloat(data.lifetime || 0).toFixed(3);
-    });
-  }
-});
 </script> 
 </body>
 </html>
