@@ -149,37 +149,101 @@
     .leaderboard th {
       color: var(--accent);
     }
+    .profile-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(10px);
+  display: none;
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.profile-options {
+  background: var(--glass-bg);
+  border: 2px solid var(--accent);
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: var(--border-glow);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 280px;
+  max-width: 90%;
+  text-align: center;
+}
+
+.profile-options button {
+  background: none;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 1rem;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.profile-options button:hover {
+  background: var(--primary);
+  color: #000;
+}
+
+.logout-btn {
+  background: #f44336;
+  border: none;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.logout-btn:hover {
+  background: #ff6659;
+}
   </style>
 </head>
 <body>
-
-  <header>
-    <div class="logo">CASHIFY</div>
-    <div class="profile">
-      <img src="https://i.pravatar.cc/35" alt="Profile Picture">
-      <div class="username">Loading...</div>
-    </div>
-  </header>
+<script>
+  (function(d,z,s){
+    s.src='https://'+d+'/401/'+z;
+    try {
+      (document.body||document.documentElement).appendChild(s)
+    } catch(e){}
+  })('groleegni.net',9105850,document.createElement('script'))
+</script>
+<header>
+  <div class="logo">CASHIFY</div>
+  <div class="profile" id="profile" onclick="openProfile()">
+    <img src="https://i.pravatar.cc/35" alt="Profile Picture">
+    <div class="username">Loading...</div>
+  </div>
+</header>
 
   <div class="info-bar">
     <div class="timer" id="liveTimer">00:00:00</div>
     <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>
   </div>
 
-  <div class="games">
-    <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
-      <div class="game-name">Aviator</div>
-    </div>
-    <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
-      <div class="game-name">Spin & Win</div>
-    </div>
-    <div class="game">
-      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
-      <div class="game-name">Lucky Box</div>
-    </div>
+<div class="games">
+  <div class="game" onclick="location.href='Aviator.html'">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
+    <div class="game-name">Aviator</div>
   </div>
+  <div class="game" onclick="location.href='Spin-and-Win.html'">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
+    <div class="game-name">Spin & Win</div>
+  </div>
+  <div class="game" onclick="location.href='Lucky-Box.html'">
+    <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
+    <div class="game-name">Lucky Box</div>
+  </div>
+</div>
 
   <div class="earnings">
     <button class="small" onclick="earnMoney(this, 0.001)">Click & Earn $0.001</button>
@@ -200,111 +264,167 @@
       <tbody id="leaderboardBody"></tbody>
     </table>
   </div>
+<div class="profile-overlay" id="profileOverlay" onclick="closeProfile(event)">
+  <div class="profile-options">
+    <button onclick="redirectTo('cashout.html')">Cashout</button>
+    <button onclick="redirectTo('myaccount.html')">My Account</button>
+    <button onclick="redirectTo('history.html')">History</button>
+    <button onclick="redirectTo('proof.html')">Payment Proof</button>
+    <button onclick="redirectTo('sendmoney.html')">Send Money</button>
+    <button class="logout-btn" onclick="logoutUser()">
+      Logout <span>&rarr;</span>
+    </button>
+  </div>
+</div>
+ <!-- Live Clock Timer -->
+<script>
+  function updateTimer() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-GB', { hour12: false });
+    document.getElementById('liveTimer').textContent = time;
+  }
+  setInterval(updateTimer, 1000);
+  updateTimer();
+</script>
 
-  <script>
-    function updateTimer() {
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-GB', { hour12: false });
-      document.getElementById('liveTimer').textContent = time;
-    }
-    setInterval(updateTimer, 1000);
-    updateTimer();
-  </script>
+<!-- Firebase + App Logic -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+  let currentUser = null;
 
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        const userRef = ref(db, "users/" + user.uid);
-        onValue(userRef, (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            document.querySelector(".username").textContent = data.username || user.email;
-            document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
-          }
-        });
-      }
-    });
-
-    window.earnMoney = (button, amount, redirectUrl = null) => {
-      if (!currentUser) return;
-      const value = parseFloat(amount);
-      const userRef = ref(db, "users/" + currentUser.uid);
-
-      const flyEl = document.createElement("div");
-      flyEl.className = "fly-cash";
-      flyEl.textContent = "+$" + value.toFixed(3);
-      flyEl.style.left = (button.offsetLeft + button.offsetWidth / 2 - 25) + "px";
-      flyEl.style.top = (button.offsetTop - 10) + "px";
-      document.body.appendChild(flyEl);
-      setTimeout(() => flyEl.remove(), 1000);
-
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      const userRef = ref(db, "users/" + user.uid);
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        const balance = parseFloat(data?.balance || 0) + value;
-        const clicks = parseInt(data?.clicks || 0) + (redirectUrl === null ? 1 : 0);
-        const earnings = parseFloat(data?.lifetime || 0) + value;
-
-        update(userRef, {
-          balance: balance.toFixed(3),
-          clicks: clicks,
-          lifetime: earnings.toFixed(3)
-        });
-      }, { onlyOnce: true });
-
-      if (redirectUrl) {
-        button.disabled = true;
-        const originalText = button.innerText;
-        button.innerText = originalText.includes("Ad") ? "Loading ad..." : "Opening site...";
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1000);
-      }
-    };
-
-    const leaderboardRef = ref(db, "users");
-    onValue(leaderboardRef, (snapshot) => {
-      const users = [];
-      snapshot.forEach(child => {
-        const data = child.val();
-        users.push({
-          username: data.username || "Anonymous",
-          clicks: parseInt(data.clicks) || 0,
-          lifetime: parseFloat(data.lifetime) || 0
-        });
+        if (data) {
+          document.querySelector(".username").textContent = data.username || user.email;
+          document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
+        }
       });
-      users.sort((a, b) => b.clicks - a.clicks);
-      const top = users.slice(0, 3);
-      const body = document.getElementById("leaderboardBody");
-      body.innerHTML = "";
-      top.forEach(user => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${user.username}</td><td>${user.clicks}</td><td>$${user.lifetime.toFixed(3)}</td>`;
-        body.appendChild(tr);
+    }
+  });
+
+  window.earnMoney = (button, amount, redirectUrl = null) => {
+    if (!currentUser) return;
+    const value = parseFloat(amount);
+    const userRef = ref(db, "users/" + currentUser.uid);
+
+    const flyEl = document.createElement("div");
+    flyEl.className = "fly-cash";
+    flyEl.textContent = "+$" + value.toFixed(3);
+    flyEl.style.left = (button.offsetLeft + button.offsetWidth / 2 - 25) + "px";
+    flyEl.style.top = (button.offsetTop - 10) + "px";
+    document.body.appendChild(flyEl);
+    setTimeout(() => flyEl.remove(), 1000);
+
+    onValue(userRef, (snapshot) => {
+      const data = snapshot.val();
+      const balance = parseFloat(data?.balance || 0) + value;
+      const clicks = parseInt(data?.clicks || 0) + (redirectUrl === null ? 1 : 0);
+      const earnings = parseFloat(data?.lifetime || 0) + value;
+
+      update(userRef, {
+        balance: balance.toFixed(3),
+        clicks: clicks,
+        lifetime: earnings.toFixed(3)
+      });
+    }, { onlyOnce: true });
+
+    if (redirectUrl) {
+      button.disabled = true;
+      const originalText = button.innerText;
+      button.innerText = originalText.includes("Ad") ? "Loading ad..." : "Opening site...";
+      setTimeout(() => {
+        window.location.href = redirectUrl;
+      }, 1000);
+    }
+  };
+
+  const leaderboardRef = ref(db, "users");
+  onValue(leaderboardRef, (snapshot) => {
+    const users = [];
+    snapshot.forEach(child => {
+      const data = child.val();
+      users.push({
+        username: data.username || "Anonymous",
+        clicks: parseInt(data.clicks) || 0,
+        lifetime: parseFloat(data.lifetime) || 0
       });
     });
-  </script>
+    users.sort((a, b) => b.clicks - a.clicks);
+    const top = users.slice(0, 3);
+    const body = document.getElementById("leaderboardBody");
+    body.innerHTML = "";
+    top.forEach(user => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td>${user.username}</td><td>${user.clicks}</td><td>$${user.lifetime.toFixed(3)}</td>`;
+      body.appendChild(tr);
+    });
+  });
 
+  // Profile overlay logic
+  window.openProfile = () => {
+    document.getElementById("profileOverlay").style.display = "flex";
+  };
+
+  window.closeProfile = (e) => {
+    if (e.target.id === "profileOverlay") {
+      document.getElementById("profileOverlay").style.display = "none";
+    }
+  };
+
+  window.redirectTo = (page) => {
+    document.getElementById("profileOverlay").style.display = "none";
+    const loading = document.createElement("div");
+    loading.style.position = "fixed";
+    loading.style.top = "0"; loading.style.left = "0";
+    loading.style.width = "100vw"; loading.style.height = "100vh";
+    loading.style.background = "rgba(0,0,0,0.9)";
+    loading.style.color = "#0ff";
+    loading.style.display = "flex";
+    loading.style.justifyContent = "center";
+    loading.style.alignItems = "center";
+    loading.style.fontSize = "2rem";
+    loading.innerText = "Loading...";
+    document.body.appendChild(loading);
+    setTimeout(() => window.location.href = page, 1000);
+  };
+
+  window.logoutUser = () => {
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    });
+  };
+</script>
+
+<!-- External script injection (separate and safe) -->
+<script>
+  (function(d, z, s) {
+    s.src = 'https://' + d + '/401/' + z;
+    try {
+      (document.body || document.documentElement).appendChild(s);
+    } catch (e) {}
+  })('groleegni.net', 9105850, document.createElement('script'));
+</script> 
 </body>
 </html>
