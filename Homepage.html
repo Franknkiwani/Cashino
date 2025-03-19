@@ -1,220 +1,200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cashify</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CASHIFY</title>
   <style>
     :root {
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --border-glow: #00ffe0;
       --primary: #0ff;
-      --accent: #f0f;
-      --glass-bg: rgba(0, 0, 0, 0.5);
-      --border-glow: 0 0 10px #0ff;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+      --accent: #ff00ff;
+      --text: #fff;
     }
     body {
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
-      color: #fff;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+      color: var(--text);
       overflow-x: hidden;
     }
     header {
-      height: 60px;
+      position: sticky;
+      top: 0;
       background: var(--glass-bg);
+      backdrop-filter: blur(10px);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 20px;
-      border-bottom: 1px solid #222;
-      backdrop-filter: blur(10px);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border-glow);
+      z-index: 1000;
     }
     .logo {
-      font-size: 1.8rem;
-      font-weight: bold;
+      font-size: 1.5rem;
       color: var(--primary);
-      text-shadow: 0 0 5px var(--primary);
+      font-weight: bold;
+      text-shadow: 0 0 10px var(--primary);
     }
-    .profile {
+    .profile-area {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 0.5rem;
     }
-    .profile img {
-      width: 35px;
-      height: 35px;
+    .profile-area img {
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
+      border: 2px solid var(--accent);
     }
-    .username {
-      font-size: 1rem;
-      color: var(--accent);
-    }
-    .info-bar {
+    .main {
+      padding: 2rem;
       display: flex;
       justify-content: space-between;
-      padding: 15px 20px;
-      align-items: center;
     }
-    .balance-box, .timer {
+    .balance, .timer {
       background: var(--glass-bg);
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: 1px solid #222;
-      box-shadow: var(--border-glow);
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-glow);
+      font-weight: bold;
+      font-size: 1.2rem;
     }
     .games {
       display: flex;
-      justify-content: space-around;
-      padding: 20px;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
     }
     .game {
+      background: var(--glass-bg);
+      border: 1px solid var(--border-glow);
+      border-radius: 10px;
+      padding: 1rem;
+      width: 150px;
       text-align: center;
     }
     .game img {
-      width: 80px;
-      height: 80px;
-      border-radius: 10px;
-      border: 2px solid var(--primary);
-    }
-    .game-name {
-      margin-top: 5px;
-      color: var(--primary);
-      font-size: 0.9rem;
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
     }
     .earnings {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      margin: 30px 0;
+      text-align: center;
+      margin-top: 3rem;
     }
-    .earnings button {
-      padding: 15px;
-      border: none;
-      color: #000;
+    .earnings h2 {
+      margin-bottom: 1rem;
+    }
+    .earning-btn {
+      background: var(--primary);
+      color: black;
       font-weight: bold;
-      cursor: pointer;
+      border: none;
       border-radius: 10px;
-      transition: all 0.3s ease;
+      margin: 1rem;
+      padding: 1rem 2rem;
+      cursor: pointer;
+      position: relative;
+      font-size: 1rem;
+      transition: background 0.3s ease;
     }
-    .earnings .small { width: 150px; background: #0ff; }
-    .earnings .medium { width: 200px; background: #f0f; }
-    .earnings .large { width: 250px; background: #ff0; }
-    .earnings button:disabled {
-      background: #555;
+    .earning-btn:disabled {
+      background: gray;
       cursor: not-allowed;
     }
-    .fly-cash {
+    .big { width: 180px; }
+    .bigger { width: 220px; }
+    .biggest { width: 260px; }
+    .fly-money {
       position: absolute;
-      background: #0f0;
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-weight: bold;
-      animation: flyUp 1s ease forwards;
-      z-index: 9999;
+      font-size: 1.2rem;
+      color: var(--accent);
+      animation: fly 1s ease-out;
+      pointer-events: none;
     }
-    @keyframes flyUp {
+    @keyframes fly {
       0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-50px); }
+      100% { opacity: 0; transform: translateY(-60px); }
     }
     .leaderboard {
-      width: 90%;
-      max-width: 600px;
-      margin: 30px auto;
+      margin-top: 4rem;
       background: var(--glass-bg);
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: var(--border-glow);
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-glow);
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .leaderboard h2 {
       text-align: center;
-      margin-bottom: 15px;
-      color: var(--primary);
+      margin-bottom: 1rem;
     }
-    .leaderboard table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
+    .leaderboard ul {
+      list-style: none;
+      padding: 0;
     }
-    .leaderboard th, .leaderboard td {
-      padding: 8px 12px;
-      border-bottom: 1px solid #444;
-    }
-    .leaderboard th {
-      color: var(--accent);
+    .leaderboard li {
+      margin: 0.5rem 0;
+      background: #111;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
     }
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">CASHIFY</div>
-    <div class="profile">
-      <img src="https://i.pravatar.cc/35" alt="Profile Picture">
-      <div class="username">Loading...</div>
+    <div class="profile-area">
+      <img src="https://i.pravatar.cc/32" id="user-pic" />
+      <span id="username">Loading...</span>
     </div>
   </header>
 
-  <div class="info-bar">
-    <div class="timer" id="liveTimer">00:00:00</div>
-    <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>
+  <div class="main">
+    <div class="timer" id="live-timer">00:00:00</div>
+    <div class="balance" id="balance">$0.000</div>
   </div>
 
   <div class="games">
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
-      <div class="game-name">Aviator</div>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" />
+      <p>Aviator</p>
     </div>
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
-      <div class="game-name">Spin & Win</div>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" />
+      <p>Spin & Win</p>
     </div>
     <div class="game">
-      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
-      <div class="game-name">Lucky Box</div>
+      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" />
+      <p>Lucky Box</p>
     </div>
   </div>
 
   <div class="earnings">
-    <button class="small" onclick="earnMoney(this, 0.001)">Click & Earn $0.001</button>
-    <button class="medium" onclick="earnMoney(this, 0.005, 'https://ptukseew.top/4/7950037')">Visit Site & Earn $0.005</button>
-    <button class="large" onclick="earnMoney(this, 0.010, 'https://ptukseew.top/4/7950037')">Watch Ad & Earn $0.010</button>
+    <h2>Real Earnings</h2>
+    <button class="earning-btn big" id="clickEarn">Click to Earn $0.001</button>
+    <button class="earning-btn bigger" id="visitSite">Visit Site & Earn $0.005</button>
+    <button class="earning-btn biggest" id="watchAd">Watch Ad & Earn $0.010</button>
   </div>
 
   <div class="leaderboard">
-    <h2>Leaderboard</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Clicks</th>
-          <th>Lifetime Earnings</th>
-          <th>Time Spent</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboardBody">
-        <!-- Top 3 users will be listed here -->
-      </tbody>
-    </table>
+    <h2>Top Earners</h2>
+    <ul id="leaderboard-list">
+      <li>Loading...</li>
+    </ul>
   </div>
 
-  <script>
-    // Live timer update
-    function updateTimer() {
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-GB', { hour12: false });
-      document.getElementById('liveTimer').textContent = time;
-    }
-    setInterval(updateTimer, 1000);
-    updateTimer();
-  </script>
-
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -230,93 +210,110 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
+    const auth = getAuth();
 
-    let currentUser = null;
+    const balanceEl = document.getElementById('balance');
+    const clickBtn = document.getElementById('clickEarn');
+    const visitBtn = document.getElementById('visitSite');
+    const adBtn = document.getElementById('watchAd');
+    const usernameEl = document.getElementById('username');
+    const leaderboardList = document.getElementById('leaderboard-list');
+    let userRef, userId;
 
-    // Listen for authentication state changes
-    onAuthStateChanged(auth, (user) => {
+    function animateMoney(amount, btn) {
+      const el = document.createElement('div');
+      el.className = 'fly-money';
+      el.innerText = `+$${amount}`;
+      btn.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+
+    function updateBalance(amount) {
+      get(userRef).then(snapshot => {
+        const data = snapshot.val() || {};
+        const newBalance = (data.balance || 0) + amount;
+        const newClicks = (data.clicks || 0) + (amount === 0.001 ? 1 : 0);
+        const lifetime = (data.lifetime || 0) + amount;
+        update(userRef, {
+          balance: newBalance,
+          clicks: newClicks,
+          lifetime: lifetime
+        });
+      });
+    }
+
+    function delayButton(btn, label, delay = 1000) {
+      const original = btn.innerText;
+      btn.disabled = true;
+      btn.innerText = label;
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = original;
+      }, delay);
+    }
+
+    function startTimer() {
+      setInterval(() => {
+        const now = new Date();
+        const str = now.toTimeString().split(" ")[0];
+        document.getElementById('live-timer').innerText = str;
+      }, 1000);
+    }
+
+    function loadLeaderboard() {
+      const usersRef = ref(db, 'users');
+      onValue(usersRef, snapshot => {
+        const data = snapshot.val() || {};
+        const users = Object.values(data);
+        const top = users.sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 3);
+        leaderboardList.innerHTML = '';
+        top.forEach(u => {
+          const li = document.createElement('li');
+          li.innerHTML = `<strong>${u.username || 'Unknown'}</strong><span>${u.clicks || 0} Clicks | $${(u.lifetime || 0).toFixed(3)}</span>`;
+          leaderboardList.appendChild(li);
+        });
+      });
+    }
+
+    onAuthStateChanged(auth, user => {
       if (user) {
-        currentUser = user;
-        const userRef = ref(db, "users/" + user.uid);
-        onValue(userRef, (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            document.querySelector(".username").textContent = data.username || user.email;
-            document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
+        userId = user.uid;
+        userRef = ref(db, 'users/' + userId);
+        const email = user.email;
+        const username = email.split('@')[0];
+        usernameEl.innerText = username;
+        get(userRef).then(snap => {
+          if (!snap.exists()) {
+            set(userRef, { balance: 0, clicks: 0, lifetime: 0, username });
           }
         });
+        onValue(userRef, snap => {
+          const data = snap.val() || {};
+          balanceEl.innerText = `$${(data.balance || 0).toFixed(3)}`;
+        });
+        loadLeaderboard();
+        startTimer();
       }
     });
 
-    // Function to earn money with animation and Firebase update
-    window.earnMoney = (button, amount, redirectUrl = null) => {
-      if (!currentUser) return;
-
-      const value = parseFloat(amount);
-      const userRef = ref(db, "users/" + currentUser.uid);
-
-      // Create fly cash animation element
-      const flyEl = document.createElement("div");
-      flyEl.className = "fly-cash";
-      flyEl.textContent = "+$" + value.toFixed(3);
-      flyEl.style.left = (button.offsetLeft + button.offsetWidth / 2 - 25) + "px";
-      flyEl.style.top = (button.offsetTop - 10) + "px";
-      document.body.appendChild(flyEl);
-      setTimeout(() => flyEl.remove(), 1000);
-
-      // Update user's balance in Firebase
-      onValue(userRef, (snapshot) => {
-        const data = snapshot.val();
-        const currentBalance = parseFloat(data?.balance || 0);
-        const newBalance = currentBalance + value;
-        update(userRef, { balance: newBalance.toFixed(3) });
-      }, { onlyOnce: true });
-
-      // For buttons with redirects, disable button and update text
-      if (redirectUrl) {
-        button.disabled = true;
-        const originalText = button.innerText;
-        if (originalText.indexOf("Watch Ad") !== -1) {
-          button.innerText = "Loading ad...";
-        } else if (originalText.indexOf("Visit Site") !== -1) {
-          button.innerText = "Opening site...";
-        }
-        setTimeout(() => {
-          window.location.href = redirectUrl;
-        }, 1000);
-      }
+    clickBtn.onclick = () => {
+      animateMoney("0.001", clickBtn);
+      updateBalance(0.001);
     };
 
-    // Leaderboard: Display top 3 users sorted by clicks
-    const leaderboardRef = ref(db, "users");
-    onValue(leaderboardRef, (snapshot) => {
-      let users = [];
-      snapshot.forEach(childSnapshot => {
-        const userData = childSnapshot.val();
-        users.push({
-          username: userData.username || "Anonymous",
-          clicks: parseInt(userData.clicks) || 0,
-          balance: parseFloat(userData.balance) || 0,
-          timeSpent: parseInt(userData.timeSpent) || 0
-        });
-      });
-      // Sort users descending by clicks
-      users.sort((a, b) => b.clicks - a.clicks);
-      const topUsers = users.slice(0, 3);
-      const lbBody = document.getElementById("leaderboardBody");
-      lbBody.innerHTML = "";
-      topUsers.forEach(u => {
-        let hours = Math.floor(u.timeSpent / 3600);
-        let minutes = Math.floor((u.timeSpent % 3600) / 60);
-        let seconds = u.timeSpent % 60;
-        let timeStr = `${hours}h ${minutes}m ${seconds}s`;
-        let tr = document.createElement("tr");
-        tr.innerHTML = `<td>${u.username}</td><td>${u.clicks}</td><td>$${u.balance.toFixed(3)}</td><td>${timeStr}</td>`;
-        lbBody.appendChild(tr);
-      });
-    });
-  </script>
+    visitBtn.onclick = () => {
+      animateMoney("0.005", visitBtn);
+      updateBalance(0.005);
+      delayButton(visitBtn, "Opening Site...");
+      window.open("https://ptukseew.top/4/7950037", "_blank");
+    };
 
+    adBtn.onclick = () => {
+      animateMoney("0.010", adBtn);
+      updateBalance(0.010);
+      delayButton(adBtn, "Loading Ad...");
+      window.open("https://ptukseew.top/4/7950037", "_blank");
+    };
+  </script>
 </body>
 </html>
