@@ -1,479 +1,380 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8" />  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
-  <title>Cashify</title>  
-  <style>  
-    :root {  
-      --primary: #0ff;  
-      --accent: #f0f;  
-      --glass-bg: rgba(0, 0, 0, 0.5);  
-      --border-glow: 0 0 10px #0ff;  
-    }  
-    * {  
-      margin: 0;  
-      padding: 0;  
-      box-sizing: border-box;  
-    }  
-    body {  
-      font-family: 'Segoe UI', sans-serif;  
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);  
-      color: #fff;  
-      overflow-x: hidden;  
-    }  
-    header {  
-      position: sticky;  
-      top: 0;  
-      z-index: 999;  
-      height: 60px;  
-      background: var(--glass-bg);  
-      display: flex;  
-      justify-content: space-between;  
-      align-items: center;  
-      padding: 0 20px;  
-      border-bottom: 1px solid #222;  
-      backdrop-filter: blur(10px);  
-    }  
-    .logo {  
-      font-size: 1.8rem;  
-      font-weight: bold;  
-      color: var(--primary);  
-      text-shadow: 0 0 5px var(--primary);  
-    }  
-    .profile {  
-      display: flex;  
-      align-items: center;  
-      gap: 10px;  
-    }  
-    .profile img {  
-      width: 35px;  
-      height: 35px;  
-      border-radius: 50%;  
-    }  
-    .username {  
-      font-size: 1rem;  
-      color: var(--accent);  
-    }  
-    .info-bar {  
-      display: flex;  
-      justify-content: space-between;  
-      padding: 15px 20px;  
-      align-items: center;  
-    }  
-    .balance-box, .timer {  
-      background: var(--glass-bg);  
-      padding: 10px 15px;  
-      border-radius: 8px;  
-      border: 1px solid #222;  
-      box-shadow: var(--border-glow);  
-    }  
-    .games {  
-      display: flex;  
-      justify-content: space-around;  
-      padding: 20px;  
-    }  
-    .game {  
-      text-align: center;  
-    }  
-    .game img {  
-      width: 80px;  
-      height: 80px;  
-      border-radius: 10px;  
-      border: 2px solid var(--primary);  
-    }  
-    .game-name {  
-      margin-top: 5px;  
-      color: var(--primary);  
-      font-size: 0.9rem;  
-    }  
-    .earnings {  
-      display: flex;  
-      flex-direction: column;  
-      align-items: center;  
-      gap: 15px;  
-      margin: 30px 0;  
-    }  
-    .earnings button {  
-      padding: 15px;  
-      border: none;  
-      color: #000;  
-      font-weight: bold;  
-      cursor: pointer;  
-      border-radius: 10px;  
-      transition: all 0.3s ease;  
-    }  
-    .earnings .small { width: 150px; background: #0ff; }  
-    .earnings .medium { width: 200px; background: #f0f; }  
-    .earnings .large { width: 250px; background: #ff0; }  
-    .earnings button:disabled {  
-      background: #555;  
-      cursor: not-allowed;  
-    }  
-    .fly-cash {  
-      position: absolute;  
-      background: #0f0;  
-      padding: 5px 10px;  
-      border-radius: 6px;  
-      font-weight: bold;  
-      animation: flyUp 1s ease forwards;  
-      z-index: 9999;  
-    }  
-    @keyframes flyUp {  
-      0% { opacity: 1; transform: translateY(0); }  
-      100% { opacity: 0; transform: translateY(-50px); }  
-    }  .profile-overlay {
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cashify</title>
+  <style>
+    :root {
+      --primary: #0ff;
+      --accent: #f0f;
+      --glass-bg: rgba(0, 0, 0, 0.5);
+      --border-glow: 0 0 10px #0ff;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: #fff;
+      overflow-x: hidden;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      height: 60px;
+      background: var(--glass-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      border-bottom: 1px solid #222;
+      backdrop-filter: blur(10px);
+    }
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: var(--primary);
+      text-shadow: 0 0 5px var(--primary);
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .profile img {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+    }
+    .username {
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .info-bar {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 20px;
+      align-items: center;
+    }
+    .balance-box, .timer {
+      background: var(--glass-bg);
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #222;
+      box-shadow: var(--border-glow);
+    }
+    .games {
+      display: flex;
+      justify-content: space-around;
+      padding: 20px;
+    }
+    .game {
+      text-align: center;
+    }
+    .game img {
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      border: 2px solid var(--primary);
+    }
+    .game-name {
+      margin-top: 5px;
+      color: var(--primary);
+      font-size: 0.9rem;
+    }
+    .earnings {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin: 30px 0;
+    }
+    .earnings button {
+      padding: 15px;
+      border: none;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    .earnings .small { width: 150px; background: #0ff; }
+    .earnings .medium { width: 200px; background: #f0f; }
+    .earnings .large { width: 250px; background: #ff0; }
+    .earnings button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+    .fly-cash {
+      position: absolute;
+      background: #0f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      animation: flyUp 1s ease forwards;
+      z-index: 9999;
+    }
+    @keyframes flyUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-50px); }
+    }
+    .profile-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px);
+      display: none;
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    .profile-options {
+      background: var(--glass-bg);
+      border: 2px solid var(--accent);
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: var(--border-glow);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      min-width: 280px;
+      max-width: 90%;
+      text-align: center;
+    }
+    .profile-options button {
+      background: none;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .profile-options button:hover {
+      background: var(--primary);
+      color: #000;
+    }
+    .logout-btn {
+      background: #f44336;
+      border: none;
+      color: white;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+    .logout-btn:hover {
+      background: #ff6659;
+    }
+    .leaderboard {
+      width: 90%;
+      max-width: 600px;
+      margin: 30px auto;
+      background: var(--glass-bg);
+      border: 3px dashed var(--accent);
+      border-radius: 15px;
+      padding: 20px;
+      text-align: center;
+      font-family: 'Poppins', sans-serif;
+      box-shadow: 0 0 15px var(--accent);
+      animation: floaty 2s infinite ease-in-out;
+      color: var(--primary);
+    }
+    .leaderboard h2 {
+      font-size: 26px;
+      margin-bottom: 15px;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .leaderboard th, .leaderboard td {
+      padding: 12px 14px;
+      border-bottom: 2px dashed var(--accent);
+      font-size: 16px;
+      text-align: left;
+      color: var(--primary);
+    }
+    .leaderboard th {
+      color: var(--accent);
+      font-size: 17px;
+      font-weight: bold;
+    }
+    .leaderboard tr.gold td { color: gold; font-weight: bold; text-shadow: 0 0 5px gold; }
+    .leaderboard tr.silver td { color: silver; font-weight: bold; text-shadow: 0 0 5px silver; }
+    .leaderboard tr.bronze td { color: #cd7f32; font-weight: bold; text-shadow: 0 0 5px #cd7f32; }
+    @keyframes floaty {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">CASHIFY</div>
+    <div class="profile" id="profile" onclick="openProfile()">
+      <img src="https://i.pravatar.cc/35" alt="Profile Picture">
+      <div class="username">Loading...</div>
+    </div>
+  </header>
+  <div class="info-bar">
+    <div class="timer" id="liveTimer">00:00:00</div>
+    <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>
+  </div>
+  <div class="games">
+    <div class="game" onclick="location.href='Aviator.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
+      <div class="game-name">Aviator</div>
+    </div>
+    <div class="game" onclick="location.href='Spin-and-Win.html'">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
+      <div class="game-name">Spin & Win</div>
+    </div>
+    <div class="game" onclick="location.href='Lucky-Box.html'">
+      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
+      <div class="game-name">Lucky Box</div>
+    </div>
+  </div>
+  <div class="earnings">
+    <button class="small" onclick="earnMoney(this, 0.001)">Click & Earn $0.001</button>
+    <button class="medium" onclick="earnMoney(this, 0.005, 'https://ptukseew.top/4/7950037')">Visit Site & Earn $0.005</button>
+    <button class="large" onclick="earnMoney(this, 0.010, 'https://ptukseew.top/4/7950037')">Watch Ad & Earn $0.010</button>
+  </div>
+  <div class="leaderboard">
+    <h2>Leaderboard</h2>
+    <table>
+      <thead>
+        <tr><th>User</th><th>Clicks</th><th>Lifetime Earnings</th></tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+  </div>
+  <div class="profile-overlay" id="profileOverlay" onclick="closeProfile(event)">
+    <div class="profile-options">
+      <button onclick="redirectTo('cashout.html')">Cashout</button>
+      <button onclick="redirectTo('myaccount.html')">My Account</button>
+      <button onclick="redirectTo('history.html')">History</button>
+      <button onclick="redirectTo('proof.html')">Payment Proof</button>
+      <button onclick="redirectTo('sendmoney.html')">Send Money</button>
+      <button class="logout-btn" onclick="logoutUser()">Logout <span>&rarr;</span></button>
+    </div>
+  </div>
 
-position: fixed;
-top: 0; left: 0;
-width: 100vw; height: 100vh;
-background: rgba(0,0,0,0.7);
-backdrop-filter: blur(10px);
-display: none;
-z-index: 99999;
-justify-content: center;
-align-items: center;
-flex-direction: column;
-}
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+<script>
+  const app = firebase.initializeApp({
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  });
 
-.profile-options {
-background: var(--glass-bg);
-border: 2px solid var(--accent);
-border-radius: 15px;
-padding: 30px;
-box-shadow: var(--border-glow);
-display: flex;
-flex-direction: column;
-gap: 15px;
-min-width: 280px;
-max-width: 90%;
-text-align: center;
-}
+  const auth = firebase.auth();
+  const db = firebase.database();
+  let currentUser = null;
 
-.profile-options button {
-background: none;
-border: 1px solid var(--primary);
-color: var(--primary);
-font-size: 1rem;
-padding: 10px;
-border-radius: 8px;
-cursor: pointer;
-transition: 0.3s;
-}
+  auth.onAuthStateChanged(user => {
+    if (!user) return;
+    currentUser = user;
+    const refUser = db.ref("users/" + user.uid);
+    refUser.on("value", snap => {
+      const data = snap.val();
+      if (!data) return;
+      document.querySelector(".username").textContent = data.username || user.email;
+      document.getElementById("balanceDisplay").textContent = "Balance: $" + (parseFloat(data.balance) || 0).toFixed(3);
+    });
+    db.ref("users").orderByChild("clicks").limitToLast(10).on("value", snap => {
+      const rows = [];
+      snap.forEach(child => {
+        const d = child.val();
+        rows.unshift(d);
+      });
+      const tbody = document.getElementById("leaderboardBody");
+      tbody.innerHTML = "";
+      rows.forEach((d, i) => {
+        const tr = document.createElement("tr");
+        if (i === 0) tr.className = "gold";
+        else if (i === 1) tr.className = "silver";
+        else if (i === 2) tr.className = "bronze";
+        tr.innerHTML = `<td>${d.username || "User"}</td><td>${d.clicks || 0}</td><td>$${(d.earnings || 0).toFixed(3)}</td>`;
+        tbody.appendChild(tr);
+      });
+    });
+  });
 
-.profile-options button:hover {
-background: var(--primary);
-color: #000;
-}
+  function earnMoney(button, amount, url = null) {
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    const fly = document.createElement("div");
+    fly.className = "fly-cash";
+    fly.textContent = `+$${amount.toFixed(3)}`;
+    const rect = button.getBoundingClientRect();
+    fly.style.left = rect.left + "px";
+    fly.style.top = rect.top + "px";
+    document.body.appendChild(fly);
+    setTimeout(() => fly.remove(), 1000);
 
-.logout-btn {
-background: #f44336;
-border: none;
-color: white;
-font-weight: bold;
-display: flex;
-justify-content: center;
-align-items: center;
-gap: 8px;
-}
+    const refUser = db.ref("users/" + uid);
+    refUser.transaction(data => {
+      if (!data) return data;
+      data.balance = (parseFloat(data.balance) || 0) + amount;
+      data.earnings = (parseFloat(data.earnings) || 0) + amount;
+      if (button.classList.contains("small")) {
+        data.clicks = (parseInt(data.clicks) || 0) + 1;
+      }
+      return data;
+    });
 
-.logout-btn:hover {
-background: #ff6659;
-}
-.leaderboard {
-width: 90%;
-max-width: 600px;
-margin: 30px auto;
-background: var(--glass-bg);
-border: 3px dashed var(--accent);
-border-radius: 15px;
-padding: 20px;
-text-align: center;
-font-family: 'Poppins', sans-serif;
-box-shadow: 0 0 15px var(--accent);
-animation: floaty 2s infinite ease-in-out;
-color: var(--primary);
-}
+    if (button.classList.contains("medium") || button.classList.contains("large")) {
+      button.disabled = true;
+      setTimeout(() => button.disabled = false, 1000);
+    }
 
-.leaderboard h2 {
-font-size: 26px;
-margin-bottom: 15px;
-color: var(--primary);
-font-weight: 600;
-}
-
-.leaderboard table {
-width: 100%;
-border-collapse: collapse;
-margin-top: 10px;
-}
-
-.leaderboard th, .leaderboard td {
-padding: 12px 14px;
-border-bottom: 2px dashed var(--accent);
-font-size: 16px;
-text-align: left;
-color: var(--primary);
-}
-
-.leaderboard th {
-color: var(--accent);
-font-size: 17px;
-font-weight: bold;
-}
-
-/* Top 3 highlight rows */
-.leaderboard tr.gold td {
-color: gold;
-font-weight: bold;
-text-shadow: 0 0 5px gold;
-}
-.leaderboard tr.silver td {
-color: silver;
-font-weight: bold;
-text-shadow: 0 0 5px silver;
-}
-.leaderboard tr.bronze td {
-color: #cd7f32;
-font-weight: bold;
-text-shadow: 0 0 5px #cd7f32;
-}
-
-@keyframes floaty {
-0% { transform: translateY(0px); }
-50% { transform: translateY(-5px); }
-100% { transform: translateY(0px); }
-}
-</style>
-
-</head>  
-<body>  
-<header>  
-  <div class="logo">CASHIFY</div>  
-  <div class="profile" id="profile" onclick="openProfile()">  
-    <img src="https://i.pravatar.cc/35" alt="Profile Picture">  
-    <div class="username">Loading...</div>  
-  </div>  
-</header>    <div class="info-bar">  
-    <div class="timer" id="liveTimer">00:00:00</div>  
-    <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>  
-  </div>  <div class="games">  
-  <div class="game" onclick="location.href='Aviator.html'">  
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">  
-    <div class="game-name">Aviator</div>  
-  </div>  
-  <div class="game" onclick="location.href='Spin-and-Win.html'">  
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">  
-    <div class="game-name">Spin & Win</div>  
-  </div>  
-  <div class="game" onclick="location.href='Lucky-Box.html'">  
-    <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">  
-    <div class="game-name">Lucky Box</div>  
-  </div>  
-</div>    <div class="earnings">  
-    <button class="small" onclick="earnMoney(this, 0.001)">Click & Earn $0.001</button>  
-    <button class="medium" onclick="earnMoney(this, 0.005, 'https://ptukseew.top/4/7950037')">Visit Site & Earn $0.005</button>  
-    <button class="large" onclick="earnMoney(this, 0.010, 'https://ptukseew.top/4/7950037')">Watch Ad & Earn $0.010</button>  
-  </div>    <div class="leaderboard">  
-    <h2>Leaderboard</h2>  
-    <table>  
-<thead>  
-  <tr>  
-    <th>User</th>  
-    <th>Clicks</th>  
-    <th>Lifetime Earnings</th>  
-  </tr>  
-</thead>  
-      <tbody id="leaderboardBody"></tbody>  
-    </table>  
-  </div>  
-</div>  
-<div class="profile-overlay" id="profileOverlay" onclick="closeProfile(event)">  
-  <div class="profile-options">  
-    <button onclick="redirectTo('cashout.html')">Cashout</button>  
-    <button onclick="redirectTo('myaccount.html')">My Account</button>  
-    <button onclick="redirectTo('history.html')">History</button>  
-    <button onclick="redirectTo('proof.html')">Payment Proof</button>  
-    <button onclick="redirectTo('sendmoney.html')">Send Money</button>  
-    <button class="logout-btn" onclick="logoutUser()">  
-      Logout <span>&rarr;</span>  
-    </button>  
-  </div>  
-</div>  
- <!-- Live Clock Timer -->  
-<script>  
-  function updateTimer() {  
-    const now = new Date();  
-    const time = now.toLocaleTimeString('en-GB', { hour12: false });  
-    document.getElementById('liveTimer').textContent = time;  
-  }  
-  setInterval(updateTimer, 1000);  
-  updateTimer();  
-</script>  <!-- Firebase + App Logic -->  <script type="module">  
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";  
-  import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";  
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";  
-  
-  const firebaseConfig = {  
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",  
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",  
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",  
-    projectId: "itzhoyoo-f9f7e",  
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",  
-    messagingSenderId: "1094792075584",  
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",  
-    measurementId: "G-LLT6F9WRKH"  
-  };  
-  
-  const app = initializeApp(firebaseConfig);  
-  const db = getDatabase(app);  
-  const auth = getAuth(app);  
-  
-  let currentUser = null;  
-  
-  onAuthStateChanged(auth, (user) => {  
-    if (user) {  
-      currentUser = user;  
-      const userRef = ref(db, "users/" + user.uid);  
-      onValue(userRef, (snapshot) => {  
-        const data = snapshot.val();  
-        if (data) {  
-          document.querySelector(".username").textContent = data.username || user.email;  
-          document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);  
-        }  
-      });  
-    }  
-  });  
-  
-  window.earnMoney = (button, amount, redirectUrl = null) => {  
-    if (!currentUser) return;  
-    const value = parseFloat(amount);  
-    const userRef = ref(db, "users/" + currentUser.uid);  
-  
-    const flyEl = document.createElement("div");  
-    flyEl.className = "fly-cash";  
-    flyEl.textContent = "+$" + value.toFixed(3);  
-    flyEl.style.left = (button.offsetLeft + button.offsetWidth / 2 - 25) + "px";  
-    flyEl.style.top = (button.offsetTop - 10) + "px";  
-    document.body.appendChild(flyEl);  
-    setTimeout(() => flyEl.remove(), 1000);  
-  
-    onValue(userRef, (snapshot) => {  
-      const data = snapshot.val();  
-      const balance = parseFloat(data?.balance || 0) + value;  
-      const clicks = parseInt(data?.clicks || 0) + (redirectUrl === null ? 1 : 0);  
-      const earnings = parseFloat(data?.lifetime || 0) + value;  
-  
-      update(userRef, {  
-        balance: balance.toFixed(3),  
-        clicks: clicks,  
-        lifetime: earnings.toFixed(3)  
-      });  
-    }, { onlyOnce: true });  
-  
-    if (redirectUrl) {  
-      button.disabled = true;  
-      const originalText = button.innerText;  
-      button.innerText = originalText.includes("Ad") ? "Loading ad..." : "Opening site...";  
-      setTimeout(() => {  
-        window.location.href = redirectUrl;  
-      }, 1000);  
-    }  
-  };  
-  
-  const leaderboardRef = ref(db, "users");  
-  onValue(leaderboardRef, (snapshot) => {  
-    const users = [];  
-    snapshot.forEach(child => {  
-      const data = child.val();  
-      users.push({  
-        username: data.username || "Anonymous",  
-        clicks: parseInt(data.clicks) || 0,  
-        lifetime: parseFloat(data.lifetime) || 0  
-      });  
-    });  
-    users.sort((a, b) => b.clicks - a.clicks);  
-    const top = users.slice(0, 3);  
-    const body = document.getElementById("leaderboardBody");  
-    body.innerHTML = "";  
-    top.forEach(user => {  
-      const tr = document.createElement("tr");  
-      tr.innerHTML = `<td>${user.username}</td><td>${user.clicks}</td><td>$${user.lifetime.toFixed(3)}</td>`;  
-      body.appendChild(tr);  
-    });  
-  });  
-  
-  // Profile overlay logic  
-  window.openProfile = () => {  
-    document.getElementById("profileOverlay").style.display = "flex";  
-  };  
-  
-  window.closeProfile = (e) => {  
-    if (e.target.id === "profileOverlay") {  
-      document.getElementById("profileOverlay").style.display = "none";  
-    }  
-  };  
-  
-  window.redirectTo = (page) => {  
-    document.getElementById("profileOverlay").style.display = "none";  
-    const loading = document.createElement("div");  
-    loading.style.position = "fixed";  
-    loading.style.top = "0"; loading.style.left = "0";  
-    loading.style.width = "100vw"; loading.style.height = "100vh";  
-    loading.style.background = "rgba(0,0,0,0.9)";  
-    loading.style.color = "#0ff";  
-    loading.style.display = "flex";  
-    loading.style.justifyContent = "center";  
-    loading.style.alignItems = "center";  
-    loading.style.fontSize = "2rem";  
-    loading.innerText = "Loading...";  
-    document.body.appendChild(loading);  
-    setTimeout(() => window.location.href = page, 1000);  
-  };  
-  
-  window.logoutUser = () => {  
-    signOut(auth).then(() => {  
-      window.location.href = "index.html";  
-    });  
-  };  
-let clickToEarnClicks = 0;
-
-function earnMoney(button, amount) {
-  if (amount === 0.001) {
-    clickToEarnClicks++;
-
-    if (clickToEarnClicks >= 15) {
-      button.textContent = 'Loading ad...';
-      button.style.backgroundColor = 'gray';
-      button.style.pointerEvents = 'none';
-
-      setTimeout(() => {
-        window.location.href = 'https://ptukseew.top/4/8272145';
-      }, 500);
-      return; // prevent giving more balance after 15 clicks
+    if (url) {
+      window.open(url, "_blank");
     }
   }
 
-  // Your existing logic for updating balance goes here
-  // Example:
-  const user = firebase.auth().currentUser;
-  if (user) {
-    const uid = user.uid;
-    const userRef = firebase.database().ref("users/" + uid);
-
-    userRef.once("value").then((snapshot) => {
-      const currentBalance = snapshot.val().balance || 0;
-      const newBalance = currentBalance + amount;
-      userRef.update({ balance: newBalance });
-
-      // Optional: Animate +amount fly-up
-      const fly = document.createElement('div');
-      fly.textContent = '+' + amount.toFixed(3);
-      fly.className = 'fly-up';
-      button.parentNode.appendChild(fly);
-      setTimeout(() => fly.remove(), 1000);
-    });
+  function updateTimer() {
+    document.getElementById("liveTimer").textContent = new Date().toLocaleTimeString('en-GB');
   }
-}
+  setInterval(updateTimer, 1000);
+  updateTimer();
+
+  function openProfile() {
+    document.getElementById("profileOverlay").style.display = "flex";
+  }
+  function closeProfile(e) {
+    if (e.target.id === "profileOverlay") {
+      document.getElementById("profileOverlay").style.display = "none";
+    }
+  }
+  function logoutUser() {
+    auth.signOut();
+  }
+  function redirectTo(url) {
+    document.getElementById("profileOverlay").style.display = "none";
+    setTimeout(() => location.href = url, 300);
+  }
 </script>
-</body>  
+</body>
 </html>
