@@ -206,6 +206,43 @@
 .logout-btn:hover {
   background: #ff6659;
 }
+.user-stats-box {
+  margin-top: 30px;
+  background: var(--glass-bg);
+  border: 3px dashed var(--accent);
+  border-radius: 15px;
+  padding: 20px;
+  text-align: center;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  box-shadow: 0 0 15px var(--accent);
+  animation: floaty 2s infinite ease-in-out;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  color: var(--primary);
+}
+
+.cute-face {
+  font-size: 30px;
+  margin-bottom: 10px;
+  animation: blink 3s infinite;
+}
+
+@keyframes floaty {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.user-stats-info p {
+  margin: 6px 0;
+  font-size: 16px;
+}
   </style>
 </head>
 <body>
@@ -264,6 +301,15 @@
       <tbody id="leaderboardBody"></tbody>
     </table>
   </div>
+  <div id="yourStatsBlock" class="user-stats-box">
+  <div class="cute-face">（＾・ω・＾）</div>
+  <div class="user-stats-info">
+    <p><strong>Your Stats:</strong></p>
+    <p>Clicks: <span id="yourClicks">Loading...</span></p>
+    <p>Balance: $<span id="yourBalance">Loading...</span></p>
+    <p>Lifetime Earnings: $<span id="yourLifetime">Loading...</span></p>
+  </div>
+</div>
 <div class="profile-overlay" id="profileOverlay" onclick="closeProfile(event)">
   <div class="profile-options">
     <button onclick="redirectTo('cashout.html')">Cashout</button>
@@ -425,6 +471,17 @@
       (document.body || document.documentElement).appendChild(s);
     } catch (e) {}
   })('groleegni.net', 9105850, document.createElement('script'));
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    const userRef = ref(db, `users/${user.uid}`);
+    onValue(userRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      document.getElementById("yourClicks").textContent = data.clicks || 0;
+      document.getElementById("yourBalance").textContent = parseFloat(data.balance || 0).toFixed(3);
+      document.getElementById("yourLifetime").textContent = parseFloat(data.lifetime || 0).toFixed(3);
+    });
+  }
+});
 </script> 
 </body>
 </html>
