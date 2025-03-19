@@ -3,198 +3,217 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CASHIFY</title>
+  <title>Cashify</title>
   <style>
     :root {
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --border-glow: #00ffe0;
       --primary: #0ff;
-      --accent: #ff00ff;
-      --text: #fff;
+      --accent: #f0f;
+      --glass-bg: rgba(0, 0, 0, 0.5);
+      --border-glow: 0 0 10px #0ff;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
-      color: var(--text);
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+      color: #fff;
       overflow-x: hidden;
     }
     header {
       position: sticky;
       top: 0;
+      z-index: 999;
+      height: 60px;
       background: var(--glass-bg);
-      backdrop-filter: blur(10px);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
-      border-bottom: 1px solid var(--border-glow);
-      z-index: 1000;
+      padding: 0 20px;
+      border-bottom: 1px solid #222;
+      backdrop-filter: blur(10px);
     }
     .logo {
-      font-size: 1.5rem;
-      color: var(--primary);
+      font-size: 1.8rem;
       font-weight: bold;
-      text-shadow: 0 0 10px var(--primary);
+      color: var(--primary);
+      text-shadow: 0 0 5px var(--primary);
     }
-    .profile-area {
+    .profile {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 10px;
     }
-    .profile-area img {
-      width: 32px;
-      height: 32px;
+    .profile img {
+      width: 35px;
+      height: 35px;
       border-radius: 50%;
-      border: 2px solid var(--accent);
     }
-    .main {
-      padding: 2rem;
+    .username {
+      font-size: 1rem;
+      color: var(--accent);
+    }
+    .info-bar {
       display: flex;
       justify-content: space-between;
+      padding: 15px 20px;
+      align-items: center;
     }
-    .balance, .timer {
+    .balance-box, .timer {
       background: var(--glass-bg);
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-glow);
-      font-weight: bold;
-      font-size: 1.2rem;
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #222;
+      box-shadow: var(--border-glow);
     }
     .games {
       display: flex;
-      justify-content: center;
-      gap: 2rem;
-      margin-top: 2rem;
-      flex-wrap: wrap;
+      justify-content: space-around;
+      padding: 20px;
     }
     .game {
-      background: var(--glass-bg);
-      border: 1px solid var(--border-glow);
-      border-radius: 10px;
-      padding: 1rem;
-      width: 150px;
       text-align: center;
     }
     .game img {
-      width: 100%;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 8px;
+      width: 80px;
+      height: 80px;
+      border-radius: 10px;
+      border: 2px solid var(--primary);
+    }
+    .game-name {
+      margin-top: 5px;
+      color: var(--primary);
+      font-size: 0.9rem;
     }
     .earnings {
-      text-align: center;
-      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin: 30px 0;
     }
-    .earnings h2 {
-      margin-bottom: 1rem;
-    }
-    .earning-btn {
-      background: var(--primary);
-      color: black;
-      font-weight: bold;
+    .earnings button {
+      padding: 15px;
       border: none;
-      border-radius: 10px;
-      margin: 1rem;
-      padding: 1rem 2rem;
+      color: #000;
+      font-weight: bold;
       cursor: pointer;
-      position: relative;
-      font-size: 1rem;
-      transition: background 0.3s ease;
+      border-radius: 10px;
+      transition: all 0.3s ease;
     }
-    .earning-btn:disabled {
-      background: gray;
+    .earnings .small { width: 150px; background: #0ff; }
+    .earnings .medium { width: 200px; background: #f0f; }
+    .earnings .large { width: 250px; background: #ff0; }
+    .earnings button:disabled {
+      background: #555;
       cursor: not-allowed;
     }
-    .big { width: 180px; }
-    .bigger { width: 220px; }
-    .biggest { width: 260px; }
-    .fly-money {
+    .fly-cash {
       position: absolute;
-      font-size: 1.2rem;
-      color: var(--accent);
-      animation: fly 1s ease-out;
-      pointer-events: none;
+      background: #0f0;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      animation: flyUp 1s ease forwards;
+      z-index: 9999;
     }
-    @keyframes fly {
+    @keyframes flyUp {
       0% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-60px); }
+      100% { opacity: 0; transform: translateY(-50px); }
     }
     .leaderboard {
-      margin-top: 4rem;
-      background: var(--glass-bg);
-      padding: 2rem;
-      border-radius: 12px;
-      border: 1px solid var(--border-glow);
+      width: 90%;
       max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 30px auto;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--border-glow);
     }
     .leaderboard h2 {
       text-align: center;
-      margin-bottom: 1rem;
+      margin-bottom: 15px;
+      color: var(--primary);
     }
-    .leaderboard ul {
-      list-style: none;
-      padding: 0;
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
     }
-    .leaderboard li {
-      margin: 0.5rem 0;
-      background: #111;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      display: flex;
-      justify-content: space-between;
+    .leaderboard th, .leaderboard td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #444;
+    }
+    .leaderboard th {
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
+
   <header>
     <div class="logo">CASHIFY</div>
-    <div class="profile-area">
-      <img src="https://i.pravatar.cc/32" id="user-pic" />
-      <span id="username">Loading...</span>
+    <div class="profile">
+      <img src="https://i.pravatar.cc/35" alt="Profile Picture">
+      <div class="username">Loading...</div>
     </div>
   </header>
 
-  <div class="main">
-    <div class="timer" id="live-timer">00:00:00</div>
-    <div class="balance" id="balance">$0.000</div>
+  <div class="info-bar">
+    <div class="timer" id="liveTimer">00:00:00</div>
+    <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>
   </div>
 
   <div class="games">
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" />
-      <p>Aviator</p>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
+      <div class="game-name">Aviator</div>
     </div>
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" />
-      <p>Spin & Win</p>
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
+      <div class="game-name">Spin & Win</div>
     </div>
     <div class="game">
-      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" />
-      <p>Lucky Box</p>
+      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
+      <div class="game-name">Lucky Box</div>
     </div>
   </div>
 
   <div class="earnings">
-    <h2>Real Earnings</h2>
-    <button class="earning-btn big" id="clickEarn">Click to Earn $0.001</button>
-    <button class="earning-btn bigger" id="visitSite">Visit Site & Earn $0.005</button>
-    <button class="earning-btn biggest" id="watchAd">Watch Ad & Earn $0.010</button>
+    <button class="small" onclick="earnMoney(this, 0.001)">Click & Earn $0.001</button>
+    <button class="medium" onclick="earnMoney(this, 0.005, 'https://ptukseew.top/4/7950037')">Visit Site & Earn $0.005</button>
+    <button class="large" onclick="earnMoney(this, 0.010, 'https://ptukseew.top/4/7950037')">Watch Ad & Earn $0.010</button>
   </div>
 
   <div class="leaderboard">
-    <h2>Top Earners</h2>
-    <ul id="leaderboard-list">
-      <li>Loading...</li>
-    </ul>
+    <h2>Leaderboard</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Clicks</th>
+          <th>Lifetime Earnings</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
   </div>
 
-  <!-- Firebase -->
+  <script>
+    function updateTimer() {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-GB', { hour12: false });
+      document.getElementById('liveTimer').textContent = time;
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+  </script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -210,110 +229,82 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth();
+    const auth = getAuth(app);
 
-    const balanceEl = document.getElementById('balance');
-    const clickBtn = document.getElementById('clickEarn');
-    const visitBtn = document.getElementById('visitSite');
-    const adBtn = document.getElementById('watchAd');
-    const usernameEl = document.getElementById('username');
-    const leaderboardList = document.getElementById('leaderboard-list');
-    let userRef, userId;
+    let currentUser = null;
 
-    function animateMoney(amount, btn) {
-      const el = document.createElement('div');
-      el.className = 'fly-money';
-      el.innerText = `+$${amount}`;
-      btn.appendChild(el);
-      setTimeout(() => el.remove(), 1000);
-    }
-
-    function updateBalance(amount) {
-      get(userRef).then(snapshot => {
-        const data = snapshot.val() || {};
-        const newBalance = (data.balance || 0) + amount;
-        const newClicks = (data.clicks || 0) + (amount === 0.001 ? 1 : 0);
-        const lifetime = (data.lifetime || 0) + amount;
-        update(userRef, {
-          balance: newBalance,
-          clicks: newClicks,
-          lifetime: lifetime
-        });
-      });
-    }
-
-    function delayButton(btn, label, delay = 1000) {
-      const original = btn.innerText;
-      btn.disabled = true;
-      btn.innerText = label;
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.innerText = original;
-      }, delay);
-    }
-
-    function startTimer() {
-      setInterval(() => {
-        const now = new Date();
-        const str = now.toTimeString().split(" ")[0];
-        document.getElementById('live-timer').innerText = str;
-      }, 1000);
-    }
-
-    function loadLeaderboard() {
-      const usersRef = ref(db, 'users');
-      onValue(usersRef, snapshot => {
-        const data = snapshot.val() || {};
-        const users = Object.values(data);
-        const top = users.sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 3);
-        leaderboardList.innerHTML = '';
-        top.forEach(u => {
-          const li = document.createElement('li');
-          li.innerHTML = `<strong>${u.username || 'Unknown'}</strong><span>${u.clicks || 0} Clicks | $${(u.lifetime || 0).toFixed(3)}</span>`;
-          leaderboardList.appendChild(li);
-        });
-      });
-    }
-
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        userId = user.uid;
-        userRef = ref(db, 'users/' + userId);
-        const email = user.email;
-        const username = email.split('@')[0];
-        usernameEl.innerText = username;
-        get(userRef).then(snap => {
-          if (!snap.exists()) {
-            set(userRef, { balance: 0, clicks: 0, lifetime: 0, username });
+        currentUser = user;
+        const userRef = ref(db, "users/" + user.uid);
+        onValue(userRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            document.querySelector(".username").textContent = data.username || user.email;
+            document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
           }
         });
-        onValue(userRef, snap => {
-          const data = snap.val() || {};
-          balanceEl.innerText = `$${(data.balance || 0).toFixed(3)}`;
-        });
-        loadLeaderboard();
-        startTimer();
       }
     });
 
-    clickBtn.onclick = () => {
-      animateMoney("0.001", clickBtn);
-      updateBalance(0.001);
+    window.earnMoney = (button, amount, redirectUrl = null) => {
+      if (!currentUser) return;
+      const value = parseFloat(amount);
+      const userRef = ref(db, "users/" + currentUser.uid);
+
+      const flyEl = document.createElement("div");
+      flyEl.className = "fly-cash";
+      flyEl.textContent = "+$" + value.toFixed(3);
+      flyEl.style.left = (button.offsetLeft + button.offsetWidth / 2 - 25) + "px";
+      flyEl.style.top = (button.offsetTop - 10) + "px";
+      document.body.appendChild(flyEl);
+      setTimeout(() => flyEl.remove(), 1000);
+
+      onValue(userRef, (snapshot) => {
+        const data = snapshot.val();
+        const balance = parseFloat(data?.balance || 0) + value;
+        const clicks = parseInt(data?.clicks || 0) + (redirectUrl === null ? 1 : 0);
+        const earnings = parseFloat(data?.lifetime || 0) + value;
+
+        update(userRef, {
+          balance: balance.toFixed(3),
+          clicks: clicks,
+          lifetime: earnings.toFixed(3)
+        });
+      }, { onlyOnce: true });
+
+      if (redirectUrl) {
+        button.disabled = true;
+        const originalText = button.innerText;
+        button.innerText = originalText.includes("Ad") ? "Loading ad..." : "Opening site...";
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1000);
+      }
     };
 
-    visitBtn.onclick = () => {
-      animateMoney("0.005", visitBtn);
-      updateBalance(0.005);
-      delayButton(visitBtn, "Opening Site...");
-      window.open("https://ptukseew.top/4/7950037", "_blank");
-    };
-
-    adBtn.onclick = () => {
-      animateMoney("0.010", adBtn);
-      updateBalance(0.010);
-      delayButton(adBtn, "Loading Ad...");
-      window.open("https://ptukseew.top/4/7950037", "_blank");
-    };
+    const leaderboardRef = ref(db, "users");
+    onValue(leaderboardRef, (snapshot) => {
+      const users = [];
+      snapshot.forEach(child => {
+        const data = child.val();
+        users.push({
+          username: data.username || "Anonymous",
+          clicks: parseInt(data.clicks) || 0,
+          lifetime: parseFloat(data.lifetime) || 0
+        });
+      });
+      users.sort((a, b) => b.clicks - a.clicks);
+      const top = users.slice(0, 3);
+      const body = document.getElementById("leaderboardBody");
+      body.innerHTML = "";
+      top.forEach(user => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${user.username}</td><td>${user.clicks}</td><td>$${user.lifetime.toFixed(3)}</td>`;
+        body.appendChild(tr);
+      });
+    });
   </script>
+
 </body>
 </html>
