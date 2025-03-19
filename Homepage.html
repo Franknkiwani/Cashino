@@ -378,27 +378,31 @@
   }
   let clickCount = 0;
 let isCooldown = false;
+const redirectURL = 'https://ptukseew.top/4/7950037'; // put your redirect link here
 
 function earnClick(button) {
   if (isCooldown) return;
 
   clickCount++;
+  earnMoney(button, 0.001); // still calling your core earning logic
 
-  // Perform the normal earn logic
-  earnMoney(button, 0.001); // You already have this function doing Firebase + animation etc.
-
-  // If 15th click, trigger a cooldown
+  // On every 15th click:
   if (clickCount >= 15) {
     isCooldown = true;
     button.disabled = true;
     button.textContent = 'Cooldown...';
+
+    // Optional: redirect user after earning
+    setTimeout(() => {
+      window.open(redirectURL, '_blank'); // open in new tab
+    }, 300); // short delay before redirect to avoid overlap with animation
 
     setTimeout(() => {
       isCooldown = false;
       clickCount = 0;
       button.disabled = false;
       button.textContent = 'Click & Earn $0.001';
-    }, 1000); // Adjust time as needed
+    }, 1000); // cooldown duration
   }
 }
 </script>
