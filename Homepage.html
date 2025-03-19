@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cashify</title>
   <style>
     :root {
@@ -103,7 +103,10 @@
     .earnings .small { width: 150px; background: #0ff; }
     .earnings .medium { width: 200px; background: #f0f; }
     .earnings .large { width: 250px; background: #ff0; }
-
+    .earnings button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
     .fly-cash {
       position: absolute;
       background: #0f0;
@@ -113,10 +116,35 @@
       animation: flyUp 1s ease forwards;
       z-index: 9999;
     }
-
     @keyframes flyUp {
       0% { opacity: 1; transform: translateY(0); }
       100% { opacity: 0; transform: translateY(-50px); }
+    }
+    .leaderboard {
+      width: 90%;
+      max-width: 600px;
+      margin: 30px auto;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--border-glow);
+    }
+    .leaderboard h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: var(--primary);
+    }
+    .leaderboard table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .leaderboard th, .leaderboard td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #444;
+    }
+    .leaderboard th {
+      color: var(--accent);
     }
   </style>
 </head>
@@ -125,27 +153,27 @@
   <header>
     <div class="logo">CASHIFY</div>
     <div class="profile">
-      <img src="https://i.pravatar.cc/35" />
+      <img src="https://i.pravatar.cc/35" alt="Profile Picture">
       <div class="username">Loading...</div>
     </div>
   </header>
 
   <div class="info-bar">
     <div class="timer" id="liveTimer">00:00:00</div>
-    <div class="balance-box">Balance: $0.000</div>
+    <div class="balance-box" id="balanceDisplay">Balance: $0.000</div>
   </div>
 
   <div class="games">
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvy6eBulxdcoVuFyQCwAHhAClHcVVWvR-BxAEgeuNHBACYr9e4eKzSx8xS&s=10" alt="Aviator">
       <div class="game-name">Aviator</div>
     </div>
     <div class="game">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" />
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR4RBotCo5k0D_hBalBtYh3_FKq40HY3hPEd6kuoWg3Op11R1k3NcbMVk&s=10" alt="Spin & Win">
       <div class="game-name">Spin & Win</div>
     </div>
     <div class="game">
-      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" />
+      <img src="https://play-lh.googleusercontent.com/Nhs26k1wCD38W6RD9JDZSx_NGctxBCEU966tteEuf94r9mZyk3LO4App7ZIcTRvxFUQ" alt="Lucky Box">
       <div class="game-name">Lucky Box</div>
     </div>
   </div>
@@ -156,7 +184,25 @@
     <button class="large" onclick="earnMoney(this, 0.010, 'https://ptukseew.top/4/7950037')">Watch Ad & Earn $0.010</button>
   </div>
 
+  <div class="leaderboard">
+    <h2>Leaderboard</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Clicks</th>
+          <th>Lifetime Earnings</th>
+          <th>Time Spent</th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody">
+        <!-- Top 3 users will be listed here -->
+      </tbody>
+    </table>
+  </div>
+
   <script>
+    // Live timer update
     function updateTimer() {
       const now = new Date();
       const time = now.toLocaleTimeString('en-GB', { hour12: false });
@@ -188,27 +234,29 @@
 
     let currentUser = null;
 
+    // Listen for authentication state changes
     onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
         const userRef = ref(db, "users/" + user.uid);
-
         onValue(userRef, (snapshot) => {
           const data = snapshot.val();
           if (data) {
             document.querySelector(".username").textContent = data.username || user.email;
-            document.querySelector(".balance-box").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
+            document.getElementById("balanceDisplay").textContent = "Balance: $" + parseFloat(data.balance || 0).toFixed(3);
           }
         });
       }
     });
 
+    // Function to earn money with animation and Firebase update
     window.earnMoney = (button, amount, redirectUrl = null) => {
       if (!currentUser) return;
 
       const value = parseFloat(amount);
       const userRef = ref(db, "users/" + currentUser.uid);
 
+      // Create fly cash animation element
       const flyEl = document.createElement("div");
       flyEl.className = "fly-cash";
       flyEl.textContent = "+$" + value.toFixed(3);
@@ -217,19 +265,57 @@
       document.body.appendChild(flyEl);
       setTimeout(() => flyEl.remove(), 1000);
 
+      // Update user's balance in Firebase
       onValue(userRef, (snapshot) => {
         const data = snapshot.val();
-        const current = parseFloat(data?.balance || 0);
-        const newBalance = current + value;
+        const currentBalance = parseFloat(data?.balance || 0);
+        const newBalance = currentBalance + value;
         update(userRef, { balance: newBalance.toFixed(3) });
       }, { onlyOnce: true });
 
+      // For buttons with redirects, disable button and update text
       if (redirectUrl) {
+        button.disabled = true;
+        const originalText = button.innerText;
+        if (originalText.indexOf("Watch Ad") !== -1) {
+          button.innerText = "Loading ad...";
+        } else if (originalText.indexOf("Visit Site") !== -1) {
+          button.innerText = "Opening site...";
+        }
         setTimeout(() => {
           window.location.href = redirectUrl;
         }, 1000);
       }
     };
+
+    // Leaderboard: Display top 3 users sorted by clicks
+    const leaderboardRef = ref(db, "users");
+    onValue(leaderboardRef, (snapshot) => {
+      let users = [];
+      snapshot.forEach(childSnapshot => {
+        const userData = childSnapshot.val();
+        users.push({
+          username: userData.username || "Anonymous",
+          clicks: parseInt(userData.clicks) || 0,
+          balance: parseFloat(userData.balance) || 0,
+          timeSpent: parseInt(userData.timeSpent) || 0
+        });
+      });
+      // Sort users descending by clicks
+      users.sort((a, b) => b.clicks - a.clicks);
+      const topUsers = users.slice(0, 3);
+      const lbBody = document.getElementById("leaderboardBody");
+      lbBody.innerHTML = "";
+      topUsers.forEach(u => {
+        let hours = Math.floor(u.timeSpent / 3600);
+        let minutes = Math.floor((u.timeSpent % 3600) / 60);
+        let seconds = u.timeSpent % 60;
+        let timeStr = `${hours}h ${minutes}m ${seconds}s`;
+        let tr = document.createElement("tr");
+        tr.innerHTML = `<td>${u.username}</td><td>${u.clicks}</td><td>$${u.balance.toFixed(3)}</td><td>${timeStr}</td>`;
+        lbBody.appendChild(tr);
+      });
+    });
   </script>
 
 </body>
