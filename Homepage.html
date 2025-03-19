@@ -367,43 +367,6 @@
     document.getElementById("profileOverlay").style.display = "none";  
     setTimeout(() => location.href = url, 300);  
   }  
-function earnMoney(button, amount, url) {
-  if (button.classList.contains('small')) {
-    if (clickCooldown) return;
-
-    clickCount++;
-    if (clickCount >= earnClickLimit) {
-      button.disabled = true;
-      clickCooldown = true;
-
-      // Redirect to ad site during cooldown
-      window.open("https://ptukseew.top/4/7165724", "_blank");
-
-      // Reset after cooldown
-      setTimeout(() => {
-        button.disabled = false;
-        clickCount = 0;
-        clickCooldown = false;
-      }, clickCooldownTime);
-    }
-  } else {
-    // Medium / large buttons get 1 second cooldown
-    button.disabled = true;
-    setTimeout(() => {
-      button.disabled = false;
-    }, 1000);
-
-    // Open site/ad
-    if (url) {
-      setTimeout(() => {
-        window.open(url, "_blank");
-      }, 200);
-    }
-  }
-
-  showFlyCash(button, amount);
-  updateBalance(amount);
-}
 </script>  
 </body>  
 </html>
