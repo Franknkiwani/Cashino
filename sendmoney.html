@@ -204,10 +204,15 @@
       errorMsg.textContent = "";
       successMsg.textContent = "";
 
-      if (!toEmail || isNaN(amount) || amount <= 0) {
-        errorMsg.textContent = "Enter valid recipient and amount.";
-        return;
-      }
+     
+if (!toEmail || isNaN(amount) || amount <= 0) {
+  errorMsg.textContent = "Enter valid recipient and amount.";
+  return;
+}
+if (toEmail.toLowerCase() === currentUser.email.toLowerCase()) {
+  errorMsg.textContent = "You can't send money to yourself.";
+  return;
+}
 
       const usersSnap = await get(ref(db, "users"));
       const users = usersSnap.val();
@@ -256,22 +261,7 @@
         set(ref(db, `users/${currentUser.uid}/online`), false);
       }
     });
-  document.getElementById("sendBtn").addEventListener("click", async function () {
-    const senderEmail = firebase.auth().currentUser.email;  // Get logged-in user's email
-    const recipientEmail = document.getElementById("recipientEmail").value.trim().toLowerCase(); // Get recipient email input
-    
-    if (!recipientEmail) {
-        showToast("Please enter a recipient email!", "error");
-        return;
-    }
-    
-    if (senderEmail === recipientEmail) {
-        showToast("You can't send money to yourself!", "error");
-        return;
-    }
-    
-    // Continue with sending money process...
-});
+  
 </script>
 </body>
 </html>
