@@ -189,25 +189,39 @@
       });
 
       spinBtn.onclick = () => {
-        spinBtn.disabled = true;
-        resultText.textContent = "";
-        const degree = 3600 + Math.floor(Math.random() * 360);
-        const prize = getWeightedPrize();
-        wheel.style.transform = `rotate(${degree}deg)`;
+  if ((userData.earnings || 0) < 0.1) {
+    resultText.textContent = "Not enough balance to spin. You need $0.10.";
+    return;
+  }
 
-        setTimeout(() => {
-          resultText.textContent = `You won $${prize.toFixed(2)}!`;
+  spinBtn.disabled = true;
+  resultText.textContent = "";
 
-          const newEarnings = (userData.earnings || 0) + prize;
-          update(ref(db, "users/" + uid), {
-            earnings: newEarnings
-          });
+  // Deduct $0.10 immediately
+  const currentEarnings = (userData.earnings || 0) - 0.10;
+  update(ref(db, "users/" + uid), {
+    earnings: currentEarnings
+  });
 
-          balanceEl.textContent = `$${newEarnings.toFixed(2)}`;
-          spinBtn.disabled = false;
-        }, 4000);
-      };
+  balanceEl.textContent = `$${currentEarnings.toFixed(2)}`;
+
+  const degree = 3600 + Math.floor(Math.random() * 360);
+  const prize = getWeightedPrize();
+  wheel.style.transform = `rotate(${degree}deg)`;
+
+  setTimeout(() => {
+    resultText.textContent = `You won $${prize.toFixed(2)}!`;
+
+    const newEarnings = currentEarnings + prize;
+    update(ref(db, "users/" + uid), {
+      earnings: newEarnings
     });
+
+    balanceEl.textContent = `$${newEarnings.toFixed(2)}`;
+    spinBtn.disabled = false;
+  }, 4000);
+};
+
   </script>
 
 </body>
