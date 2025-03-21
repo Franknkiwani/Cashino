@@ -12,7 +12,9 @@
       --accent: #f0f;
       --win: #0f0;
       --lose: #f00;
+      --gold: linear-gradient(145deg, #FFD700, #FFB700);
     }
+
     body {
       margin: 0;
       background: #050505;
@@ -24,21 +26,25 @@
       padding: 20px;
       user-select: none;
     }
+
     h1 {
       margin-top: 20px;
       color: var(--primary);
       text-shadow: var(--border-glow);
     }
+
     #balance {
       margin: 10px 0 20px;
       font-size: 1.2rem;
       color: var(--accent);
     }
+
     .grid {
       display: grid;
       grid-template-columns: repeat(3, 100px);
       gap: 15px;
     }
+
     .box {
       background: var(--glass-bg);
       border: 2px solid var(--primary);
@@ -50,20 +56,35 @@
       justify-content: center;
       font-size: 2rem;
       cursor: default;
-      transition: transform 0.2s;
+      position: relative;
+      transition: transform 0.2s, background 0.3s;
       box-shadow: var(--border-glow);
     }
+
     .box.active {
       cursor: pointer;
+      background: var(--gold);
     }
+
     .box.revealed {
-      background: rgba(0, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.1);
     }
+
+    .box::before {
+      content: "★";
+      position: absolute;
+      font-size: 4rem;
+      color: rgba(255, 255, 255, 0.05);
+      top: 5px;
+      left: 10px;
+    }
+
     #message {
       margin-top: 20px;
       font-size: 1.2rem;
       text-align: center;
     }
+
     #playBtn {
       margin-top: 30px;
       padding: 10px 25px;
@@ -75,6 +96,24 @@
       border-radius: 5px;
       cursor: pointer;
       box-shadow: var(--border-glow);
+      transition: 0.3s ease;
+    }
+
+    #playBtn.disabled {
+      background: gray;
+      color: #ddd;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .payout-table {
+      margin-top: 20px;
+      font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--primary);
+      padding: 10px 20px;
+      border-radius: 10px;
+      text-align: center;
     }
   </style>
 </head>
@@ -84,6 +123,10 @@
   <div class="grid" id="boxGrid"></div>
   <div id="message"></div>
   <button id="playBtn">Play for $0.500</button>
+  <div class="payout-table">
+    Get <strong>3 same ones</strong> right and you win <strong>$2.500</strong><br>
+    Entry Cost: $0.500 — Win: $3.000
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -145,6 +188,16 @@
       });
     }
 
+    function revealAllBoxes() {
+      const boxEls = document.querySelectorAll('.box');
+      boxEls.forEach((box, i) => {
+        if (!box.classList.contains('revealed')) {
+          box.classList.add('revealed');
+          box.textContent = currentBoxes[i];
+        }
+      });
+    }
+
     function checkResult() {
       gameActive = false;
       const win = picked.every(val => val === picked[0]);
@@ -154,10 +207,14 @@
         balance += 3;
         update(ref(db, `users/${user.uid}`), { balance });
       } else {
-        message.textContent = "You lost. Try again!";
+        message.textContent = "You lost. Here's what was inside:";
         message.style.color = "var(--lose)";
+        revealAllBoxes();
       }
       updateBalanceDisplay();
+      playBtn.textContent = "Play for $0.500";
+      playBtn.classList.remove("disabled");
+      playBtn.disabled = false;
     }
 
     playBtn.onclick = () => {
@@ -171,7 +228,13 @@
       updateBalanceDisplay();
       message.textContent = '';
       gameActive = true;
-      renderBoxes(true); // Make boxes active
+
+      // Set button state
+      playBtn.disabled = true;
+      playBtn.textContent = "Playing...";
+      playBtn.classList.add("disabled");
+
+      renderBoxes(true); // Make boxes active/gold
     };
 
     onAuthStateChanged(auth, async (u) => {
