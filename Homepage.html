@@ -296,7 +296,7 @@ text-align: center;
 <script>  
   setInterval(() => {  
     location.reload();  
-  }, 100000); // 100000ms = 100 seconds  
+  }, 60000); // 60000ms = 60 seconds  
 </script>  
  <body>  
  <header>    
@@ -402,20 +402,32 @@ db.ref("users").orderByChild("clicks").limitToLast(10).on("value", snap => {
   });  
 });  
 
-// GLOBAL ANNOUNCEMENT BAR  
-const announcementRef = db.ref("globalAnnouncements/latest");  
-const announcementBar = document.getElementById("announcementBar");  
-if (announcementBar) {  
-  announcementRef.on("value", snapshot => {  
-    const text = snapshot.val();  
-    if (text) {  
-      announcementBar.textContent = text;  
-      announcementBar.style.display = "block";  
-    } else {  
-      announcementBar.style.display = "none";  
-    }  
-  });  
-}
+const announcementRef = db.ref("globalAnnouncements/latest");
+const announcementBar = document.getElementById("announcementBar");
+
+announcementRef.on("value", snapshot => {
+  const text = snapshot.val();
+  if (!text || !announcementBar) return;
+
+  const key = `announcementSeen_${currentUser.uid}_${btoa(text)}`;
+
+  // If not seen, show it for 5 seconds
+  if (!localStorage.getItem(key)) {
+    announcementBar.textContent = text;
+    announcementBar.style.display = "block";
+
+    // Mark as seen
+    localStorage.setItem(key, "true");
+
+    // Hide after 5 seconds
+    setTimeout(() => {
+      announcementBar.style.display = "none";
+    }, 5000);
+  } else {
+    // Already seen
+    announcementBar.style.display = "none";
+  }
+});
 
 });
 
