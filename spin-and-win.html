@@ -1,228 +1,283 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Spin to Win</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    :root {
-      --glass-bg: rgba(0, 0, 0, 0.6);
-      --primary: #00ffff;
-      --accent: #ff00ff;
-      --border-glow: 0 0 8px var(--primary);
-    }
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <title>Spin to Win - Cyberpunk Edition</title>  
+  <style>  
+    /* Root variables for theme colors */  
+    :root {  
+      --primary-color: #00fff7;  
+      --accent-color: #ff007c;  
+      --background-color: #0f0f0f;  
+      --glass-bg: rgba(15, 15, 15, 0.85);  
+      --border-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);  
+    }  /* Global styles */  
+body {  
+  margin: 0;  
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;  
+  background: var(--background-color);  
+  color: #fff;  
+  overflow-x: hidden;  
+}  
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #0e0e10;
-      color: white;
-      text-align: center;
-      user-select: none;
-    }
+.container {  
+  text-align: center;  
+  padding: 2rem;  
+}  
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--glass-bg);
-      padding: 10px 20px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      border-bottom: 1px solid var(--primary);
-    }
+h1 {  
+  color: var(--primary-color);  
+  text-shadow: var(--border-glow);  
+}  
 
-    .profile {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+/* User profile and balance display */  
+.profile {  
+  display: flex;  
+  justify-content: center;  
+  align-items: center;  
+  margin-bottom: 2rem;  
+}  
 
-    #username, #balance {
-      font-weight: bold;
-      color: var(--primary);
-    }
+.profile img {  
+  width: 50px;  
+  height: 50px;  
+  border-radius: 50%;  
+  margin-right: 1rem;  
+  border: 2px solid var(--accent-color);  
+}  
 
-    .wheel-container {
-      margin-top: 60px;
-      position: relative;
-    }
+.profile-info {  
+  text-align: left;  
+}  
 
-    .wheel {
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      border: 10px solid var(--primary);
-      box-shadow: var(--border-glow);
-      margin: 0 auto;
-      background: conic-gradient(
-        #0ff 0deg 45deg,
-        #f0f 45deg 90deg,
-        #0ff 90deg 135deg,
-        #f0f 135deg 180deg,
-        #0ff 180deg 225deg,
-        #f0f 225deg 270deg,
-        #0ff 270deg 315deg,
-        #f0f 315deg 360deg
-      );
-      transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
-    }
+.profile-info h2 {  
+  margin: 0;  
+  font-size: 1.5rem;  
+  color: var(--primary-color);  
+}  
 
-    .pointer {
-      width: 0; height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-bottom: 30px solid var(--accent);
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+.profile-info p {  
+  margin: 0.2rem 0;  
+  color: #ccc;  
+}  
 
-    #spinBtn {
-      margin-top: 40px;
-      padding: 15px 30px;
-      font-size: 18px;
-      background: var(--accent);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      cursor: pointer;
-      box-shadow: 0 0 10px var(--accent);
-      transition: 0.3s;
-    }
+/* Spin wheel styles */  
+#wheel {  
+  width: 300px;  
+  height: 300px;  
+  border: 8px solid var(--primary-color);  
+  border-radius: 50%;  
+  margin: 2rem auto;  
+  background: conic-gradient(  
+    #111 0% 20%,  
+    var(--accent-color) 20% 40%,  
+    #111 40% 60%,  
+    var(--primary-color) 60% 80%,  
+    #111 80% 100%  
+  );  
+  transition: transform 4s ease-out;  
+}  
 
-    #spinBtn:disabled {
-      background: gray;
-      box-shadow: none;
-      cursor: not-allowed;
-    }
+button {  
+  padding: 1rem 2rem;  
+  background: var(--accent-color);  
+  border: none;  
+  color: #fff;  
+  font-size: 1.2rem;  
+  border-radius: 8px;  
+  cursor: pointer;  
+  box-shadow: var(--border-glow);  
+  margin-top: 1rem;  
+}  
 
-    #result {
-      margin-top: 25px;
-      font-size: 20px;
-      color: #0f0;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
+#result {  
+  margin-top: 1rem;  
+  font-size: 1.2rem;  
+}  
 
-  <div class="header">
-    <div class="profile">
-      <span>Welcome, <span id="username">Loading...</span></span>
-    </div>
-    <div class="profile">
-      Balance: <span id="balance">Loading...</span>
-    </div>
-  </div>
+/* Popup overlay styles */  
+.popup-overlay {  
+  position: fixed;  
+  top: 0; left: 0;  
+  width: 100%; height: 100%;  
+  background: rgba(0, 0, 0, 0.5);  
+  backdrop-filter: blur(10px);  
+  display: flex;  
+  justify-content: center;  
+  align-items: center;  
+  z-index: 9999;  
+}  
 
-  <div class="wheel-container">
-    <div class="pointer"></div>
-    <div class="wheel" id="wheel"></div>
-    <button id="spinBtn">SPIN</button>
-    <div id="result"></div>
-  </div>
+.popup {  
+  background: var(--glass-bg);  
+  padding: 2rem;  
+  border-radius: 12px;  
+  box-shadow: 0 0 20px var(--primary-color);  
+  max-width: 350px;  
+  text-align: center;  
+}  
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+.popup h2 {  
+  color: var(--primary-color);  
+}  
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+.popup p {  
+  color: #ccc;  
+  margin: 0.5rem 0;  
+}  
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+.popup button {  
+  background: var(--accent-color);  
+  margin-top: 1.5rem;  
+}
 
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const resultText = document.getElementById("result");
-    const usernameEl = document.getElementById("username");
-    const balanceEl = document.getElementById("balance");
+  </style>  
+</head>  
+<body>  
+  <div class="container">  
+    <h1>Spin to Win</h1>  <!-- User Profile Section -->  
+<div class="profile">  
+  <img id="userAvatar" src="default-avatar.png" alt="User Avatar">  
+  <div class="profile-info">  
+    <h2 id="userName">Guest</h2>  
+    <p>Balance: $<span id="userBalance">0.00</span></p>  
+  </div>  
+</div>  
 
-    let userData = null;
+<!-- Spin Wheel -->  
+<div id="wheel"></div>  
+<button id="spinBtn">SPIN</button>  
+<div id="result"></div>
 
-    const prizes = [0.05, 0.1, 0.05, 0.1, 0.25, 0.5, 1, 3];
-    const weights = [25, 25, 20, 20, 5, 3, 1.5, 0.5];
-
-    function getWeightedPrize() {
-      const total = weights.reduce((a, b) => a + b, 0);
-      const rand = Math.random() * total;
-      let cumulative = 0;
-      for (let i = 0; i < prizes.length; i++) {
-        cumulative += weights[i];
-        if (rand < cumulative) return prizes[i];
-      }
-      return 0.05;
-    }
-
-    onAuthStateChanged(auth, user => {
-      if (!user) return (window.location.href = "login.html");
-      const uid = user.uid;
-
-      const userRef = ref(db, "users/" + uid);
-      onValue(userRef, snapshot => {
-        if (snapshot.exists()) {
-          userData = snapshot.val();
-          usernameEl.textContent = userData.username || user.email;
-          balanceEl.textContent = `$${(userData.earnings || 0).toFixed(2)}`;
-        } else {
-          // Init user if missing
-          set(userRef, {
-            email: user.email,
-            username: user.email.split('@')[0],
-            earnings: 0,
-            joinedAt: Date.now()
-          });
-        }
-      });
-
-      spinBtn.onclick = () => {
-  if ((userData.earnings || 0) < 0.1) {
-    resultText.textContent = "Not enough balance to spin. You need $0.10.";
-    return;
-  }
-
-  spinBtn.disabled = true;
-  resultText.textContent = "";
-
-  // Deduct $0.10 immediately
-  const currentEarnings = (userData.earnings || 0) - 0.10;
-  update(ref(db, "users/" + uid), {
-    earnings: currentEarnings
-  });
-
-  balanceEl.textContent = `$${currentEarnings.toFixed(2)}`;
-
-  const degree = 3600 + Math.floor(Math.random() * 360);
-  const prize = getWeightedPrize();
-  wheel.style.transform = `rotate(${degree}deg)`;
-
-  setTimeout(() => {
-    resultText.textContent = `You won $${prize.toFixed(2)}!`;
-
-    const newEarnings = currentEarnings + prize;
-    update(ref(db, "users/" + uid), {
-      earnings: newEarnings
-    });
-
-    balanceEl.textContent = `$${newEarnings.toFixed(2)}`;
-    spinBtn.disabled = false;
-  }, 4000);
-};
-
-  </script>
-
-</body>
+  </div>    <!-- On-load Odds Popup -->    <div id="oddsPopup" class="popup-overlay">  
+    <div class="popup">  
+      <h2>Spin Odds</h2>  
+      <p>$1 → 50%</p>  
+      <p>$2 → 30%</p>  
+      <p>$3 → 20%</p>  
+      <p style="color:gold;">$5 JACKPOT → 5%</p>  
+      <p style="color:var(--accent-color);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>  
+      <button id="oddsOkayBtn">Let’s Go</button>  
+    </div>  
+  </div>    <!-- Break Reminder Popup -->    <div id="breakPopup" class="popup-overlay" style="display:none;">  
+    <div class="popup">  
+      <h2>Take a Short Break</h2>  
+      <p>Click OK to continue spinning and support us by visiting a sponsor.</p>  
+      <button onclick="window.location.href='https://whoushex.top/4/7950037'">OK</button>  
+    </div>  
+  </div>    <!-- Firebase Setup -->    <script type="module">  
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";  
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";  
+  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";  
+  
+  const firebaseConfig = {  
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",  
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",  
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",  
+    projectId: "itzhoyoo-f9f7e",  
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",  
+    messagingSenderId: "1094792075584",  
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",  
+    measurementId: "G-LLT6F9WRKH"  
+  };  
+  
+  const app = initializeApp(firebaseConfig);  
+  const auth = getAuth(app);  
+  const db = getDatabase(app);  
+  
+  const userName = document.getElementById('userName');  
+  const userBalance = document.getElementById('userBalance');  
+  const spinBtn = document.getElementById('spinBtn');  
+  const wheel = document.getElementById('wheel');  
+  const result = document.getElementById('result');  
+  
+  let currentUser = null;  
+  let spinCount = 0;  
+  
+  onAuthStateChanged(auth, user => {  
+    if (user) {  
+      currentUser = user;  
+      const email = user.email;  
+      const uid = user.uid;  
+      const username = email.split('@')[0];  
+      userName.textContent = username;  
+      document.getElementById("userAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;  
+  
+      const userRef = ref(db, `users/${uid}`);  
+      get(userRef).then(snapshot => {  
+        if (!snapshot.exists()) {  
+          set(userRef, {  
+            email,  
+            username,  
+            balance: 0,  
+            joinedAt: Date.now()  
+          });  
+        } else {  
+          const data = snapshot.val();  
+          userBalance.textContent = parseFloat(data.balance).toFixed(2);  
+        }  
+      });  
+    }  
+  });  
+  
+  function getRandomPrize() {  
+    const rand = Math.random();  
+    if (rand < 0.05) return 5;  
+    else if (rand < 0.20) return 3;  
+    else if (rand < 0.50) return 2;  
+    else if (rand < 1.00) return Math.random() < 0.9 ? 0.25 : 1;  
+  }  
+  
+  function spinWheel() {  
+    const degrees = 3600 + Math.floor(Math.random() * 360);  
+    wheel.style.transform = `rotate(${degrees}deg)`;  
+  }  
+  
+  spinBtn.addEventListener("click", () => {  
+    if (!currentUser) {  
+      alert("Please login to spin.");  
+      return;  
+    }  
+  
+    const userRef = ref(db, `users/${currentUser.uid}`);  
+    get(userRef).then(snapshot => {  
+      const userData = snapshot.val();  
+      let balance = parseFloat(userData.balance) || 0;  
+  
+      if (balance < 0.25) {  
+        alert("You need at least $0.25 to spin.");  
+        return;  
+      }  
+  
+      // Deduct $0.25  
+      const newBalance = (balance - 0.25).toFixed(2);  
+      update(userRef, { balance: newBalance });  
+      userBalance.textContent = newBalance;  
+  
+      spinBtn.disabled = true;  
+      spinWheel();  
+  
+      setTimeout(() => {  
+        const prize = getRandomPrize();  
+        result.textContent = `You won $${prize.toFixed(2)}!`;  
+  
+        const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);  
+        update(userRef, { balance: finalBalance });  
+        userBalance.textContent = finalBalance;  
+  
+        spinCount++;  
+        if (spinCount % 5 === 0) {  
+          document.getElementById('breakPopup').style.display = 'flex';  
+        }  
+  
+        spinBtn.disabled = false;  
+      }, 4000);  
+    });  
+  });  
+  
+  // Odds popup "Let's Go" button handler  
+  document.getElementById('oddsOkayBtn').addEventListener('click', () => {  
+    document.getElementById('oddsPopup').style.display = 'none';  
+  });  
+</script>    </script>  
+</body>  
 </html>
