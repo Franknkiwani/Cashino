@@ -1,170 +1,297 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Account - Cashify</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <!-- Styling -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cashout</title>
   <style>
-    :root {
-      --bg: #0d0d0d;
-      --card-bg: #1a1a1a;
-      --primary: #00ffc8;
-      --accent: #ff0077;
-      --text: #ffffff;
-      --muted: #999999;
-      --glass: rgba(255, 255, 255, 0.05);
-    }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
+
     body {
-      background-color: var(--bg);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--text);
-      padding: 2rem;
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f10;
+      color: #f1f1f1;
       display: flex;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      justify-content: center;
+      height: 100vh;
     }
-    .container {
-      background: var(--glass);
-      border: 1px solid var(--primary);
-      border-radius: 12px;
+
+    .cashout-container {
+      background: #1b1c20;
       padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       width: 100%;
-      max-width: 500px;
-      box-shadow: 0 0 20px var(--primary);
+      max-width: 420px;
+      position: relative;
     }
+
+    .profile-header {
+      position: absolute;
+      top: -60px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-header img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #6c63ff;
+    }
+
+    .email {
+      font-size: 0.9rem;
+      word-break: break-word;
+    }
+
     h2 {
-      margin-bottom: 1rem;
       text-align: center;
-      color: var(--primary);
-    }
-    .info-group {
+      font-size: 1.7rem;
       margin-bottom: 1.2rem;
     }
-    .label {
-      font-size: 0.9rem;
-      color: var(--muted);
+
+    #balance-display {
+      text-align: center;
+      font-size: 1.6rem;
+      color: #55ff99;
+      margin-bottom: 1rem;
     }
-    .value {
-      font-size: 1.1rem;
-      margin-top: 0.3rem;
-      color: var(--text);
+
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+      color: #ccc;
     }
-    .actions {
-      margin-top: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    button {
-      background: var(--primary);
-      color: #000;
-      border: none;
-      padding: 0.75rem;
-      font-size: 1rem;
+
+    input, select {
+      width: 100%;
+      padding: 0.7rem;
+      margin-bottom: 1rem;
+      background: #2a2c30;
+      color: #fff;
+      border: 1px solid #444;
       border-radius: 8px;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #6c63ff;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 0.9rem;
+      background: #6c63ff;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
       cursor: pointer;
-      transition: 0.2s ease;
+      transition: 0.3s;
     }
+
     button:hover {
-      background: var(--accent);
-      color: white;
+      background: #5a54e0;
     }
-    .logout {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--accent);
+
+    .footer-note {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      text-align: center;
+      color: #666;
     }
-    .logout:hover {
-      background: var(--accent);
-      color: #000;
+
+    .error-message {
+      color: red;
+      text-align: center;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    .success-message {
+      color: #4fd88c;
+      text-align: center;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
+  <div class="cashout-container">
+    <div class="profile-header">
+      <img id="avatar" src="" alt="User Avatar">
+      <div class="email" id="user-email">Loading...</div>
+    </div>
 
-<div class="container">
-  <h2>My Account</h2>
-  <div class="info-group">
-    <div class="label">Username</div>
-    <div class="value" id="username">Loading...</div>
+    <h2>Cash Out</h2>
+    <div id="balance-display">Balance: $0.000</div>
+
+    <form id="cashout-form">
+      <label for="amount">Amount</label>
+      <input type="number" id="amount" min="15" max="100" placeholder="$15 - $100" required />
+      <div class="note">Minimum $15 | Max $100 per day</div>
+
+      <label for="method">Payment Method</label>
+      <select id="method" required>
+        <option value="" disabled selected>Select method</option>
+        <option value="paypal">PayPal</option>
+        <option value="bank">Bank Transfer</option>
+        <option value="crypto">Crypto Wallet</option>
+      </select>
+
+      <div id="method-fields"></div>
+
+      <button type="submit">Confirm Cashout</button>
+    </form>
+
+    <div class="footer-note">All transactions are encrypted & secure.</div>
+    <div class="error-message" id="error-message"></div>
+    <div class="success-message" id="success-message"></div>
   </div>
-  <div class="info-group">
-    <div class="label">Email</div>
-    <div class="value" id="email">Loading...</div>
-  </div>
-  <div class="actions">
-    <button id="resetPasswordBtn">Reset Password</button>
-    <button class="logout" id="logoutBtn">Log Out</button>
-  </div>
-</div>
 
-<!-- Firebase Logic -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  const usernameEl = document.getElementById("username");
-  const emailEl = document.getElementById("email");
-  const resetPasswordBtn = document.getElementById("resetPasswordBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
+    const methodSelect = document.getElementById("method");
+    const methodFields = document.getElementById("method-fields");
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      emailEl.textContent = user.email;
-      const name = user.email.split('@')[0];
-      usernameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
-    } else {
-      window.location.href = "index.html"; // redirect if not logged in
-    }
-  });
+    const createInput = (id, placeholder) => {
+      return `<input type="text" id="${id}" placeholder="${placeholder}" required />`;
+    };
 
-  resetPasswordBtn.addEventListener("click", () => {
-    const user = auth.currentUser;
-    if (user) {
-      sendPasswordResetEmail(auth, user.email)
-        .then(() => {
-          alert("Password reset email sent to " + user.email);
-        })
-        .catch(error => {
-          alert("Error: " + error.message);
-        });
-    }
-  });
-
-  logoutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-      window.location.href = "index.html";
-    }).catch(error => {
-      alert("Logout error: " + error.message);
+    methodSelect.addEventListener("change", () => {
+      methodFields.innerHTML = "";
+      if (methodSelect.value === "paypal") {
+        methodFields.innerHTML += createInput("paypal-name", "PayPal Name");
+        methodFields.innerHTML += createInput("paypal-email", "PayPal Email");
+      } else if (methodSelect.value === "bank") {
+        methodFields.innerHTML += createInput("bank-holder", "Account Holder Name");
+        methodFields.innerHTML += createInput("bank-number", "Account Number");
+      } else if (methodSelect.value === "crypto") {
+        methodFields.innerHTML += createInput("crypto-name", "Crypto Wallet Name");
+        methodFields.innerHTML += createInput("crypto-id", "Wallet Address / ID");
+      }
     });
-  });
-</script>
 
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const email = user.email || "No email";
+        document.getElementById("user-email").textContent = email;
+        document.getElementById("avatar").src = user.photoURL || `https://ui-avatars.com/api/?name=${email}&background=6c63ff&color=fff`;
+
+        const uid = user.uid;
+        try {
+          const snapshot = await get(child(ref(db), `users/${uid}/balance`));
+          const balance = snapshot.exists() ? parseFloat(snapshot.val()).toFixed(3) : "0.000";
+          document.getElementById("balance-display").textContent = `Balance: $${balance}`;
+        } catch {
+          document.getElementById("balance-display").textContent = "Balance: $0.000";
+        }
+
+        document.getElementById("cashout-form").onsubmit = async (e) => {
+          e.preventDefault();
+          const amount = parseFloat(document.getElementById("amount").value);
+          const balance = parseFloat(document.getElementById("balance-display").textContent.replace("Balance: $", ""));
+          const method = methodSelect.value;
+
+          const errorMessage = document.getElementById("error-message");
+          const successMessage = document.getElementById("success-message");
+          errorMessage.textContent = "";
+          successMessage.textContent = "";
+
+          if (amount < 15 || amount > 100) {
+            errorMessage.textContent = "Amount must be between $15 and $100.";
+            return;
+          }
+
+          if (amount > balance) {
+            errorMessage.textContent = "Insufficient balance.";
+            return;
+          }
+
+          let details = {};
+          if (method === "paypal") {
+            details = {
+              name: document.getElementById("paypal-name").value,
+              email: document.getElementById("paypal-email").value
+            };
+          } else if (method === "bank") {
+            details = {
+              holder: document.getElementById("bank-holder").value,
+              number: document.getElementById("bank-number").value
+            };
+          } else if (method === "crypto") {
+            details = {
+              name: document.getElementById("crypto-name").value,
+              wallet: document.getElementById("crypto-id").value
+            };
+          } else {
+            errorMessage.textContent = "Please select a valid payment method.";
+            return;
+          }
+
+          if (Object.values(details).some(v => !v.trim())) {
+            errorMessage.textContent = "All fields are required for the selected method.";
+            return;
+          }
+
+          try {
+            const newBalance = balance - amount;
+            await set(ref(db, `users/${uid}/balance`), newBalance);
+            await set(ref(db, `transactions/${uid}/${Date.now()}`), {
+              amount,
+              method,
+              details,
+              timestamp: Date.now()
+            });
+
+            document.getElementById("balance-display").textContent = `Balance: $${newBalance.toFixed(3)}`;
+            successMessage.textContent = `Cashed out $${amount.toFixed(2)} successfully!`;
+            document.getElementById("cashout-form").reset();
+            methodFields.innerHTML = "";
+          } catch (err) {
+            console.error(err);
+            errorMessage.textContent = "Cashout failed. Try again.";
+          }
+        };
+      } else {
+        document.getElementById("user-email").textContent = "Not logged in";
+        document.getElementById("balance-display").textContent = "Balance: $0.000";
+      }
+    });
+  </script>
 </body>
 </html>
