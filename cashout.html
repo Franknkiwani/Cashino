@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cashout</title>
   <style>
     * {
@@ -13,8 +13,8 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f5f7fa;
-      color: #333;
+      background: #0f0f10;
+      color: #f1f1f1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -22,23 +22,18 @@
     }
 
     .cashout-container {
-      background: #fff;
-      padding: 2.5rem;
+      background: #1b1c20;
+      padding: 2rem;
       border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.07);
-      max-width: 400px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       width: 100%;
-      transition: all 0.3s ease-in-out;
+      max-width: 420px;
       position: relative;
-    }
-
-    .cashout-container:hover {
-      transform: scale(1.01);
     }
 
     .profile-header {
       position: absolute;
-      top: -70px;
+      top: -60px;
       left: 20px;
       display: flex;
       align-items: center;
@@ -46,99 +41,102 @@
     }
 
     .profile-header img {
-      width: 50px;
-      height: 50px;
+      width: 48px;
+      height: 48px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid #6c63ff;
     }
 
     .email {
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: #444;
-      max-width: 200px;
-      word-break: break-all;
+      font-size: 0.9rem;
+      word-break: break-word;
     }
 
     h2 {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
       text-align: center;
-      color: #111;
+      font-size: 1.7rem;
+      margin-bottom: 1.2rem;
     }
 
     #balance-display {
       text-align: center;
-      font-size: 2rem; /* Larger font size */
-      color: lightgreen;
-      margin-bottom: 1.5rem;
+      font-size: 1.6rem;
+      color: #55ff99;
+      margin-bottom: 1rem;
     }
 
     label {
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.4rem;
       font-weight: 600;
+      color: #ccc;
     }
 
     input, select {
       width: 100%;
-      padding: 0.75rem;
-      margin-bottom: 1.25rem;
-      border: 1px solid #ddd;
+      padding: 0.7rem;
+      margin-bottom: 1rem;
+      background: #2a2c30;
+      color: #fff;
+      border: 1px solid #444;
       border-radius: 8px;
-      font-size: 1rem;
-      transition: border 0.2s;
     }
 
     input:focus, select:focus {
-      border-color: #6c63ff;
       outline: none;
+      border-color: #6c63ff;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-bottom: 1rem;
     }
 
     button {
       width: 100%;
       padding: 0.9rem;
-      background-color: #6c63ff;
+      background: #6c63ff;
       color: #fff;
       border: none;
       border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1rem;
+      font-weight: bold;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: 0.3s;
     }
 
     button:hover {
-      background-color: #5752d3;
+      background: #5a54e0;
     }
 
     .footer-note {
       margin-top: 1rem;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: center;
-      color: #777;
+      color: #666;
     }
 
     .error-message {
       color: red;
       text-align: center;
-      margin-top: 1rem;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
     }
 
     .success-message {
-      color: green;
+      color: #4fd88c;
       text-align: center;
-      margin-top: 1rem;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
     }
   </style>
 </head>
 <body>
   <div class="cashout-container">
     <div class="profile-header">
-      <img id="avatar" src="https://ui-avatars.com/api/?name=User&background=6c63ff&color=fff" alt="User Avatar">
+      <img id="avatar" src="" alt="User Avatar">
       <div class="email" id="user-email">Loading...</div>
     </div>
 
@@ -147,36 +145,32 @@
 
     <form id="cashout-form">
       <label for="amount">Amount</label>
-      <input type="number" id="amount" name="amount" placeholder="$0.00" required min="15" />
+      <input type="number" id="amount" min="15" max="100" placeholder="$15 - $100" required />
+      <div class="note">Minimum $15 | Max $100 per day</div>
 
       <label for="method">Payment Method</label>
-      <select id="method" name="method" required>
+      <select id="method" required>
         <option value="" disabled selected>Select method</option>
         <option value="paypal">PayPal</option>
         <option value="bank">Bank Transfer</option>
         <option value="crypto">Crypto Wallet</option>
       </select>
 
-      <label for="details" id="details-label">Account Details</label>
-      <input type="text" id="details" name="details" placeholder="Enter account details" required />
+      <div id="method-fields"></div>
 
       <button type="submit">Confirm Cashout</button>
     </form>
-    <div class="footer-note">
-      Your transaction is encrypted & secure.
-    </div>
 
+    <div class="footer-note">All transactions are encrypted & secure.</div>
     <div class="error-message" id="error-message"></div>
     <div class="success-message" id="success-message"></div>
   </div>
 
   <script type="module">
-    // Firebase imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getDatabase, ref, get, set, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -184,128 +178,118 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Auth state
+    const methodSelect = document.getElementById("method");
+    const methodFields = document.getElementById("method-fields");
+
+    const createInput = (id, placeholder) => {
+      return `<input type="text" id="${id}" placeholder="${placeholder}" required />`;
+    };
+
+    methodSelect.addEventListener("change", () => {
+      methodFields.innerHTML = "";
+      if (methodSelect.value === "paypal") {
+        methodFields.innerHTML += createInput("paypal-name", "PayPal Name");
+        methodFields.innerHTML += createInput("paypal-email", "PayPal Email");
+      } else if (methodSelect.value === "bank") {
+        methodFields.innerHTML += createInput("bank-holder", "Account Holder Name");
+        methodFields.innerHTML += createInput("bank-number", "Account Number");
+      } else if (methodSelect.value === "crypto") {
+        methodFields.innerHTML += createInput("crypto-name", "Crypto Wallet Name");
+        methodFields.innerHTML += createInput("crypto-id", "Wallet Address / ID");
+      }
+    });
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const email = user.email || "No email";
         document.getElementById("user-email").textContent = email;
+        document.getElementById("avatar").src = user.photoURL || `https://ui-avatars.com/api/?name=${email}&background=6c63ff&color=fff`;
 
-        const avatar = user.photoURL
-          ? user.photoURL
-          : `https://ui-avatars.com/api/?name=${email}&background=6c63ff&color=fff`;
-        document.getElementById("avatar").src = avatar;
-
-        // Fetch balance from Firebase
         const uid = user.uid;
-        const balanceRef = ref(db);
         try {
-          const snapshot = await get(child(balanceRef, `users/${uid}/balance`));
-          if (snapshot.exists()) {
-            const balance = parseFloat(snapshot.val()).toFixed(3);
-            document.getElementById("balance-display").textContent = `Balance: $${balance}`;
-          } else {
-            document.getElementById("balance-display").textContent = `Balance: $0.000`;
-          }
-        } catch (error) {
-          console.error("Error fetching balance:", error);
-          document.getElementById("balance-display").textContent = `Balance: $0.000`;
+          const snapshot = await get(child(ref(db), `users/${uid}/balance`));
+          const balance = snapshot.exists() ? parseFloat(snapshot.val()).toFixed(3) : "0.000";
+          document.getElementById("balance-display").textContent = `Balance: $${balance}`;
+        } catch {
+          document.getElementById("balance-display").textContent = "Balance: $0.000";
         }
 
-        // Cashout Form Submit
         document.getElementById("cashout-form").onsubmit = async (e) => {
           e.preventDefault();
-
           const amount = parseFloat(document.getElementById("amount").value);
-          const balance = parseFloat(document.getElementById("balance-display").textContent.replace('Balance: $', ''));
-
-          const method = document.getElementById("method").value;
-          const details = document.getElementById("details").value;
+          const balance = parseFloat(document.getElementById("balance-display").textContent.replace("Balance: $", ""));
+          const method = methodSelect.value;
 
           const errorMessage = document.getElementById("error-message");
           const successMessage = document.getElementById("success-message");
-
-          // Reset messages
           errorMessage.textContent = "";
           successMessage.textContent = "";
-// Check if the amount is greater than $15
-          if (amount < 15) {
-            errorMessage.textContent = "Cashout amount must be at least $15.";
+
+          if (amount < 15 || amount > 100) {
+            errorMessage.textContent = "Amount must be between $15 and $100.";
             return;
           }
 
-          // Check if there is enough balance
           if (amount > balance) {
-            errorMessage.textContent = "Insufficient balance!";
+            errorMessage.textContent = "Insufficient balance.";
             return;
           }
 
-          // Validate details based on payment method
-          if (!details) {
-            errorMessage.textContent = "Account details are required.";
+          let details = {};
+          if (method === "paypal") {
+            details = {
+              name: document.getElementById("paypal-name").value,
+              email: document.getElementById("paypal-email").value
+            };
+          } else if (method === "bank") {
+            details = {
+              holder: document.getElementById("bank-holder").value,
+              number: document.getElementById("bank-number").value
+            };
+          } else if (method === "crypto") {
+            details = {
+              name: document.getElementById("crypto-name").value,
+              wallet: document.getElementById("crypto-id").value
+            };
+          } else {
+            errorMessage.textContent = "Please select a valid payment method.";
             return;
           }
 
-          // Handle different payment methods
-          let paymentMessage = "";
-          switch (method) {
-            case "paypal":
-              paymentMessage = "PayPal email entered.";
-              break;
-            case "bank":
-              paymentMessage = "Bank account holder details entered.";
-              break;
-            case "crypto":
-              paymentMessage = "Crypto wallet ID entered.";
-              break;
-            default:
-              errorMessage.textContent = "Please select a payment method.";
-              return;
+          if (Object.values(details).some(v => !v.trim())) {
+            errorMessage.textContent = "All fields are required for the selected method.";
+            return;
           }
 
-          // If everything is valid, proceed with cashout
           try {
-            // Deduct the amount from Firebase (assuming balance is stored under `users/${uid}/balance`)
-            const userBalanceRef = ref(db, `users/${user.uid}/balance`);
             const newBalance = balance - amount;
-
-            // Update the balance in Firebase
-            await set(userBalanceRef, newBalance);
-
-            // Show success message and update UI
-            successMessage.textContent = `Successfully cashed out $${amount.toFixed(3)}. Remaining balance: $${newBalance.toFixed(3)}.`;
-            document.getElementById("balance-display").textContent = `Balance: $${newBalance.toFixed(3)}`;
-
-            // Optionally, you can store the transaction in Firebase as well
-            const transactionRef = ref(db, `transactions/${user.uid}/${Date.now()}`);
-            await set(transactionRef, {
+            await set(ref(db, `users/${uid}/balance`), newBalance);
+            await set(ref(db, `transactions/${uid}/${Date.now()}`), {
               amount,
               method,
               details,
-              timestamp: Date.now(),
+              timestamp: Date.now()
             });
 
-            // Clear the form
+            document.getElementById("balance-display").textContent = `Balance: $${newBalance.toFixed(3)}`;
+            successMessage.textContent = `Cashed out $${amount.toFixed(2)} successfully!`;
             document.getElementById("cashout-form").reset();
-
-            // Optionally redirect to a success page
-            // window.location.href = "/success"; // Or something else
-          } catch (error) {
-            console.error("Error during cashout:", error);
-            errorMessage.textContent = "There was an error processing your cashout. Please try again.";
+            methodFields.innerHTML = "";
+          } catch (err) {
+            console.error(err);
+            errorMessage.textContent = "Cashout failed. Try again.";
           }
         };
       } else {
         document.getElementById("user-email").textContent = "Not logged in";
-        document.getElementById("balance-display").textContent = `Balance: $0.000`;
+        document.getElementById("balance-display").textContent = "Balance: $0.000";
       }
     });
   </script>
