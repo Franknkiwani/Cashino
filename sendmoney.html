@@ -6,75 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- EmailJS -->
   <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <style>
-    * {
-      -webkit-user-select: none;
-      user-select: none;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #222, #111);
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-
-    h2 {
-      margin-bottom: 30px;
-      font-size: 24px;
-      color: #00ffcc;
-    }
-
-    input {
-      padding: 12px 16px;
-      margin: 10px;
-      border-radius: 8px;
-      border: none;
-      width: 260px;
-      outline: none;
-      font-size: 16px;
-      background: #333;
-      color: #fff;
-    }
-
-    button#sendBtn {
-      background-color: #00ffcc;
-      color: #000;
-      font-weight: bold;
-      padding: 12px 24px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 15px;
-      transition: all 0.2s ease;
-    }
-
-    button#sendBtn:hover {
-      background-color: #00e6b8;
-      transform: scale(1.05);
-    }
-  </style>
-</head>
-<body>
-  <h2>Your Earnings: <span id="balance">$0.00</span></h2>
-  <input id="emailInput" type="email" placeholder="Recipient Email">
-  <input id="amountInput" type="number" placeholder="Amount to Send">
-  <button id="sendBtn">Send</button>
-
-  <!-- Firebase & App Logic -->
+  <!-- Firebase -->
   <script type="module">
+    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, update, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
+    // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -86,10 +25,12 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    // Initialize EmailJS
     window.addEventListener("DOMContentLoaded", () => {
       emailjs.init("SMeLjyyZsaSoBWGgZ");
 
@@ -97,6 +38,7 @@
       const sendBtn = document.getElementById("sendBtn");
       const emailInput = document.getElementById("emailInput");
       const amountInput = document.getElementById("amountInput");
+      const onlineUsersList = document.getElementById("onlineUsers");
 
       let currentUserEmail = "";
       let currentUserUID = "";
@@ -109,6 +51,27 @@
           onValue(earningsRef, snap => {
             const balance = snap.val() || 0;
             balanceEl.textContent = `$${balance.toFixed(2)}`;
+          });
+
+          // Fetch online users
+          const onlineUsersRef = ref(db, 'onlineUsers');
+          onValue(onlineUsersRef, snapshot => {
+            onlineUsersList.innerHTML = ''; // Clear the list
+            let count = 0;
+            snapshot.forEach(childSnapshot => {
+              if (count < 5) {
+                const userData = childSnapshot.val();
+                if (userData.email !== currentUserEmail) {
+                  const listItem = document.createElement('li');
+                  listItem.textContent = userData.email;
+                  listItem.addEventListener('click', () => {
+                    emailInput.value = userData.email;
+                  });
+                  onlineUsersList.appendChild(listItem);
+                  count++;
+                }
+              }
+            });
           });
         } else {
           alert("You're not logged in.");
@@ -174,5 +137,27 @@
       });
     });
   </script>
-</body>
-</html>
+  <!-- Styles -->
+  <style>
+    * {
+      -webkit-user-select: none;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: url('https://images.unsplash.com/photo-1565372912017-1a47a7b0b0c4') no-repeat center center fixed;
+      background-size: cover;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+    }
+
+    .container {
+      background: rgba(255, 255, 255,20
