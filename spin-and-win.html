@@ -245,35 +245,47 @@
       wheel.style.transform = `rotate(${degrees}deg)`;
     }
 
-    spinBtn.addEventListener('click', () => {
-      if (!currentUser) return alert("Please login to spin.");
-      spinBtn.disabled = true;
-      spinWheel();
+   spinBtn.addEventListener("click", () => {
+  if (!currentUser) {
+    alert("Please login to spin.");
+    return;
+  }
 
-      setTimeout(() => {
-        const prize = getRandomPrize();
-        result.textContent = `You won $${prize.toFixed(2)}!`;
+  const userRef = ref(db, `users/${currentUser.uid}`);
+  get(userRef).then(snapshot => {
+    const userData = snapshot.val();
+    let balance = parseFloat(userData.balance) || 0;
 
-        const userRef = ref(db, `users/${currentUser.uid}`);
-        get(userRef).then(snapshot => {
-          const currentBal = snapshot.val().balance || 0;
-          const newBal = (parseFloat(currentBal) + prize).toFixed(2);
-          update(userRef, { balance: newBal });
-          userBalance.textContent = newBal;
-        });
+    if (balance < 0.25) {
+      alert("You need at least $0.25 to spin.");
+      return;
+    }
 
-        spinCount++;
-        if (spinCount % 5 === 0) {
-          document.getElementById('breakPopup').style.display = 'flex';
-        }
+    // Deduct $0.25
+    const newBalance = (balance - 0.25).toFixed(2);
+    update(userRef, { balance: newBalance });
+    userBalance.textContent = newBalance;
 
-        spinBtn.disabled = false;
-      }, 4000);
-    });
+    spinBtn.disabled = true;
+    spinWheel();
 
-    document.getElementById('oddsOkayBtn').addEventListener('click', () => {
-      document.getElementById('oddsPopup').style.display = 'none';
-    });
+    setTimeout(() => {
+      const prize = getRandomPrize();
+      result.textContent = `You won $${prize.toFixed(2)}!`;
+
+      const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);
+      update(userRef, { balance: finalBalance });
+      userBalance.textContent = finalBalance;
+
+      spinCount++;
+      if (spinCount % 5 === 0) {
+        document.getElementById('breakPopup').style.display = 'flex';
+      }
+
+      spinBtn.disabled = false;
+    }, 4000);
+  });
+}); 
   </script>
 </body>
 </html>
