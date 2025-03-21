@@ -1,5 +1,5 @@
-This s how it is now <!DOCTYPE html>  <html lang="en">
-
+<!DOCTYPE html> 
+<html lang="en">
 <head>    
   <meta charset="UTF-8" />    
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>    
@@ -285,21 +285,10 @@ font-weight: bold;
 display: block;
 text-align: center;
 }
-.glass-announcement {
-background: var(--glass-bg);
-border: 1px solid var(--border-glow);
-color: var(--accent);
-padding: 10px 20px;
-margin: 15px 0;
-border-radius: 10px;
-font-size: 14px;
-text-align: center;
-animation: pulse 3s infinite;
-user-select: none;
-}
-@keyframes pulse {
-0%, 100% { opacity: 1; }
-50% { opacity: 0.7; }
+#autoPopup {
+  display: none;
+  opacity: 1;
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 </style>
 
@@ -307,7 +296,7 @@ user-select: none;
 <script>  
   setInterval(() => {  
     location.reload();  
-  }, 40000); // 40000ms = 40 seconds  
+  }, 100000); // 100000ms = 100 seconds  
 </script>  
  <body>  
  <header>    
@@ -366,7 +355,6 @@ border-radius: 8px; box-shadow: 0 0 10px var(--accent); z-index: 9999;"></div>
   <p>Our app may detect auto-clicks. You may <strong>lose all your balance</strong> or be <strong>banned</strong> for abuse.</p>  
   <p>Closing in <span class="countdown" id="countdown">10</span> seconds...</p>  
 </div>  
-<div id="announcementBar" class="glass-announcement">Loading announcement...</div>  
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>  
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>  
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>  
@@ -491,24 +479,36 @@ document.getElementById("profileOverlay").style.display = "none";
 setTimeout(() => location.href = url, 300);
 }
 
-// AUTO POPUP COUNTDOWN (assumes #countdown and #autoPopup exist)
+// AUTO POPUP COUNTDOWN (appears once every 3 refreshes)
 let seconds = 10;
 const countdownEl = document.getElementById('countdown');
 const popup = document.getElementById('autoPopup');
 
-if (countdownEl && popup) {
-const countdown = setInterval(() => {
-seconds--;
-if (seconds <= 0) {
-clearInterval(countdown);
-popup.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-popup.style.opacity = '0';
-popup.style.transform = 'translateY(-20px)';
-setTimeout(() => popup.remove(), 400);
-} else {
-countdownEl.textContent = seconds;
-}
-}, 1000);
+// Track refresh count in localStorage
+let refreshCount = parseInt(localStorage.getItem('popupRefreshCount') || '0', 10);
+refreshCount++;
+localStorage.setItem('popupRefreshCount', refreshCount);
+
+// Only show popup on every 3rd refresh
+if (refreshCount >=2 && countdownEl && popup) {
+  popup.style.display = 'block'; // Show the popup
+  countdownEl.textContent = seconds; // Set initial countdown value
+
+  const countdown = setInterval(() => {
+    seconds--;
+    if (seconds <= 0) {
+      clearInterval(countdown);
+      popup.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      popup.style.opacity = '0';
+      popup.style.transform = 'translateY(-20px)';
+      setTimeout(() => popup.remove(), 400);
+    } else {
+      countdownEl.textContent = seconds;
+    }
+  }, 1000);
+
+  // Reset refresh count after showing the popup
+  localStorage.setItem('popupRefreshCount', 0);
 }
 </script>
 
