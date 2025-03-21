@@ -193,6 +193,18 @@ button {
 
   let currentUser = null;
   let spinCount = 0;
+  let lastPrize = null;
+
+  const prizePool = [
+    0.10, 0.10, 0.10, 0.10, 0.10, // 5x low
+    0.25, 0.25, 0.25,
+    0.50, 0.50,
+    0.75,
+    0.90,
+    1.00,
+    2.00,
+    5.00
+  ];
 
   onAuthStateChanged(auth, user => {
     if (user) {
@@ -220,17 +232,11 @@ button {
     }
   });
 
-  function getRandomPrize() {
-    const rand = Math.random();
-
-    if (rand < 0.35) return 0.10;
-    else if (rand < 0.65) return 0.25;
-    else if (rand < 0.80) return 0.50;
-    else if (rand < 0.92) return 0.75;
-    else if (rand < 0.97) return 0.90;
-    else if (rand < 0.985) return 1.00;
-    else if (rand < 0.995) return 2.00;
-    else return 5.00; // JACKPOT (ultra rare)
+  function getNonRepeatingPrize() {
+    let filtered = prizePool.filter(p => p !== lastPrize);
+    let selected = filtered[Math.floor(Math.random() * filtered.length)];
+    lastPrize = selected;
+    return selected;
   }
 
   function spinWheel() {
@@ -262,7 +268,7 @@ button {
       spinWheel();
 
       setTimeout(() => {
-        const prize = getRandomPrize();
+        const prize = getNonRepeatingPrize();
         result.textContent = `You won $${prize.toFixed(2)}!`;
 
         const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);
@@ -282,6 +288,7 @@ button {
   document.getElementById('oddsOkayBtn').addEventListener('click', () => {
     document.getElementById('oddsPopup').style.display = 'none';
   });
+</script>
 </script>
 </body>  
 </html>
