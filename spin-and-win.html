@@ -4,17 +4,20 @@
   <meta charset="UTF-8">
   <title>Spin to Win - Cyberpunk Edition</title>
   <style>
+    /* Root variables for theme colors */
     :root {
-      --primary: #00fff7;
-      --accent: #ff007c;
-      --glass-bg: rgba(0, 0, 0, 0.7);
-      --border-glow: 0 0 10px var(--primary), 0 0 20px var(--primary);
+      --primary-color: #00fff7;
+      --accent-color: #ff007c;
+      --background-color: #0f0f0f;
+      --glass-bg: rgba(15, 15, 15, 0.85);
+      --border-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
     }
 
+    /* Global styles */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #0f0f0f;
+      background: var(--background-color);
       color: #fff;
       overflow-x: hidden;
     }
@@ -25,21 +28,53 @@
     }
 
     h1 {
-      color: var(--primary);
+      color: var(--primary-color);
       text-shadow: var(--border-glow);
     }
 
+    /* User profile and balance display */
+    .profile {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .profile img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 1rem;
+      border: 2px solid var(--accent-color);
+    }
+
+    .profile-info {
+      text-align: left;
+    }
+
+    .profile-info h2 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .profile-info p {
+      margin: 0.2rem 0;
+      color: #ccc;
+    }
+
+    /* Spin wheel styles */
     #wheel {
       width: 300px;
       height: 300px;
-      border: 8px solid var(--primary);
+      border: 8px solid var(--primary-color);
       border-radius: 50%;
       margin: 2rem auto;
       background: conic-gradient(
         #111 0% 20%,
-        var(--accent) 20% 40%,
+        var(--accent-color) 20% 40%,
         #111 40% 60%,
-        var(--primary) 60% 80%,
+        var(--primary-color) 60% 80%,
         #111 80% 100%
       );
       transition: transform 4s ease-out;
@@ -47,7 +82,7 @@
 
     button {
       padding: 1rem 2rem;
-      background: var(--accent);
+      background: var(--accent-color);
       border: none;
       color: #fff;
       font-size: 1.2rem;
@@ -62,6 +97,7 @@
       font-size: 1.2rem;
     }
 
+    /* Popup overlay styles */
     .popup-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -78,13 +114,13 @@
       background: var(--glass-bg);
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 0 20px var(--primary);
+      box-shadow: 0 0 20px var(--primary-color);
       max-width: 350px;
       text-align: center;
     }
 
     .popup h2 {
-      color: var(--primary);
+      color: var(--primary-color);
     }
 
     .popup p {
@@ -93,7 +129,7 @@
     }
 
     .popup button {
-      background: var(--accent);
+      background: var(--accent-color);
       margin-top: 1.5rem;
     }
   </style>
@@ -101,6 +137,17 @@
 <body>
   <div class="container">
     <h1>Spin to Win</h1>
+
+    <!-- User Profile Section -->
+    <div class="profile">
+      <img id="userAvatar" src="default-avatar.png" alt="User Avatar">
+      <div class="profile-info">
+        <h2 id="userName">Guest</h2>
+        <p>Balance: $<span id="userBalance">0.00</span></p>
+      </div>
+    </div>
+
+    <!-- Spin Wheel -->
     <div id="wheel"></div>
     <button id="spinBtn">SPIN</button>
     <div id="result"></div>
@@ -114,7 +161,7 @@
       <p>$2 → 30%</p>
       <p>$3 → 20%</p>
       <p style="color:gold;">$5 JACKPOT → 5%</p>
-      <p style="color:var(--accent);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>
+      <p style="color:var(--accent-color);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>
       <button id="oddsOkayBtn">Let’s Go</button>
     </div>
   </div>
@@ -130,9 +177,10 @@
 
   <!-- Firebase Setup -->
   <script type="module">
+    // Import Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -146,80 +194,86 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    const wheel = document.getElementById('wheel');
+    const userName = document.getElementById('userName');
+    const userBalance = document.getElementById('userBalance');
     const spinBtn = document.getElementById('spinBtn');
-    const resultDiv = document.getElementById('result');
+    const wheel = document.getElementById('wheel');
+    const result = document.getElementById('result');
 
+    let currentUser = null;
     let spinCount = 0;
 
-    const updateBalance = async (uid, amount) => {
-      const userRef = ref(db, 'users/' + uid);
-      const snap = await get(userRef);
-      if (snap.exists()) {
-        const data = snap.val();
-        const newBalance = (data.balance || 0) + amount;
-        update(userRef, { balance: newBalance });
-      }
-    };
-
-    const rotateWheel = () => {
-      const outcomes = [
-        { prize: 1, chance: 50 },
-        { prize: 2, chance: 30 },
-        { prize: 3, chance: 20 },
-        { prize: 5, chance: 5 },
-        { prize: 0, chance: 80 }
-      ];
-
-      const rand = Math.random() * 100;
-      let sum = 0;
-      let prize = 0;
-
-      for (const o of outcomes) {
-        sum += o.chance;
-        if (rand < sum) {
-          prize = o.prize;
-          break;
-        }
-      }
-
-      const degrees = Math.floor(Math.random() * 3600) + 1080;
-      wheel.style.transform = `rotate(${degrees}deg)`;
-
-      return prize;
-    };
-
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, user => {
       if (user) {
+        currentUser = user;
+        const email = user.email;
         const uid = user.uid;
+        const username = email.split('@')[0];
+        userName.textContent = username;
+        document.getElementById("userAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;
 
-        spinBtn.onclick = () => {
-          const prize = rotateWheel();
-          spinCount++;
-
-          setTimeout(() => {
-            resultDiv.innerHTML = prize > 0 ? `You won $${prize.toFixed(2)}!` : "No prize this time.";
-            if (prize > 0) updateBalance(uid, prize);
-            if (prize === 5) resultDiv.innerHTML += "<br><span style='color:gold;'>JACKPOT! $5 WIN!</span>";
-            if (spinCount % 5 === 0) {
-              document.getElementById("breakPopup").style.display = "flex";
-            }
-          }, 4000);
-        };
-      } else {
-        resultDiv.innerText = "Please sign in to play.";
+        const userRef = ref(db, `users/${uid}`);
+        get(userRef).then(snapshot => {
+          if (!snapshot.exists()) {
+            set(userRef, {
+              email,
+              username,
+              balance: 0,
+              joinedAt: Date.now()
+            });
+          } else {
+            const data = snapshot.val();
+            userBalance.textContent = parseFloat(data.balance).toFixed(2);
+          }
+        });
       }
     });
 
-    window.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('oddsPopup').style.display = 'flex';
+    function getRandomPrize() {
+      const rand = Math.random();
+      if (rand < 0.05) return 5;
+      else if (rand < 0.20) return 3;
+      else if (rand < 0.50) return 2;
+      else if (rand < 1.00) return Math.random() < 0.9 ? 0.25 : 1;
+    }
+
+    function spinWheel() {
+      const degrees = 3600 + Math.floor(Math.random() * 360);
+      wheel.style.transform = `rotate(${degrees}deg)`;
+    }
+
+    spinBtn.addEventListener('click', () => {
+      if (!currentUser) return alert("Please login to spin.");
+      spinBtn.disabled = true;
+      spinWheel();
+
+      setTimeout(() => {
+        const prize = getRandomPrize();
+        result.textContent = `You won $${prize.toFixed(2)}!`;
+
+        const userRef = ref(db, `users/${currentUser.uid}`);
+        get(userRef).then(snapshot => {
+          const currentBal = snapshot.val().balance || 0;
+          const newBal = (parseFloat(currentBal) + prize).toFixed(2);
+          update(userRef, { balance: newBal });
+          userBalance.textContent = newBal;
+        });
+
+        spinCount++;
+        if (spinCount % 5 === 0) {
+          document.getElementById('breakPopup').style.display = 'flex';
+        }
+
+        spinBtn.disabled = false;
+      }, 4000);
     });
-    document.getElementById('oddsOkayBtn').onclick = () => {
+
+    document.getElementById('oddsOkayBtn').addEventListener('click', () => {
       document.getElementById('oddsPopup').style.display = 'none';
-    };
+    });
   </script>
 </body>
 </html>
