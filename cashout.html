@@ -206,99 +206,93 @@
   });
 
   onAuthStateChanged(auth, async (user) => {
-    if (!user) return;
+    if (user) {
+      const email = user.email || "No email";
+      document.getElementById("user-email").textContent = email;
+      document.getElementById("avatar").src = user.photoURL || `https://ui-avatars.com/api/?name=${email}&background=6c63ff&color=fff`;
 
-    const uid = user.uid;
-    const email = user.email || "No email";
-    document.getElementById("user-email").textContent = email;
-    document.getElementById("avatar").src = user.photoURL || `https://ui-avatars.com/api/?name=${email}&background=6c63ff&color=fff`;
+      const uid = user.uid;
+      try {
+        const snapshot = await get(child(ref(db), `users/${uid}/balance`));
+        const balance = snapshot.exists() ? parseFloat(snapshot.val()).toFixed(3) : "0.000";
+        document.getElementById("balance-display").textContent = `Balance: $${balance}`;
+      } catch {
+        document.getElementById("balance-display").textContent = "Balance: $0.000";
+      }
 
-    try {
-      const snapshot = await get(child(ref(db), `users/${uid}/balance`));
-      const balance = snapshot.exists() ? parseFloat(snapshot.val()).toFixed(3) : "0.000";
-      document.getElementById("balance-display").textContent = `Balance: $${balance}`;
-    } catch {
+      document.getElementById("cashout-form").onsubmit = async (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById("amount").value);
+        const balance = parseFloat(document.getElementById("balance-display").textContent.replace("Balance: $", ""));
+        const method = methodSelect.value;
+
+        const errorMessage = document.getElementById("error-message");
+        const successMessage = document.getElementById("success-message");
+        errorMessage.textContent = "";
+        successMessage.textContent = "";
+
+        if (amount < 15 || amount > 100) {
+          errorMessage.textContent = "Amount must be between $15 and $100.";
+          return;
+        }
+
+        if (amount > balance) {
+          errorMessage.textContent = "Insufficient balance.";
+          return;
+        }
+
+        let details = {};
+        if (method === "paypal") {
+          details = {
+            name: document.getElementById("paypal-name").value,
+            email: document.getElementById("paypal-email").value
+          };
+        } else if (method === "bank") {
+          details = {
+            holder: document.getElementById("bank-holder").value,
+            number: document.getElementById("bank-number").value
+          };
+        } else if (method === "crypto") {
+          details = {
+            name: document.getElementById("crypto-name").value,
+            wallet: document.getElementById("crypto-id").value
+          };
+        } else {
+          errorMessage.textContent = "Please select a valid payment method.";
+          return;
+        }
+
+        if (Object.values(details).some(v => !v.trim())) {
+          errorMessage.textContent = "All fields are required for the selected method.";
+          return;
+        }
+
+        try {
+          const newBalance = balance - amount;
+          await set(ref(db, `users/${uid}/balance`), newBalance);
+
+          await set(ref(db, `transactions/${uid}/${Date.now()}`), {
+            amount,
+            method,
+            details,
+            timestamp: Date.now(),
+            status: "pending"
+          });
+
+          document.getElementById("balance-display").textContent = `Balance: $${newBalance.toFixed(3)}`;
+          successMessage.textContent = `Cashed out $${amount.toFixed(2)} successfully!`;
+          document.getElementById("cashout-form").reset();
+          methodFields.innerHTML = "";
+        } catch (err) {
+          console.error(err);
+          errorMessage.textContent = "Cashout failed. Try again.";
+        }
+      };
+    } else {
+      document.getElementById("user-email").textContent = "Not logged in";
       document.getElementById("balance-display").textContent = "Balance: $0.000";
     }
-
-    document.getElementById("cashout-form").onsubmit = async (e) => {
-      e.preventDefault();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const currentBalance = parseFloat(document.getElementById("balance-display").textContent.replace("Balance: $", ""));
-      const method = methodSelect.value;
-
-      const errorMessage = document.getElementById("error-message");
-      const successMessage = document.getElementById("success-message");
-      errorMessage.textContent = "";
-      successMessage.textContent = "";
-
-      if (amount < 15 || amount > 100) {
-        errorMessage.textContent = "Amount must be between $15 and $100.";
-        return;
-      }
-
-      if (amount > currentBalance) {
-        errorMessage.textContent = "Insufficient balance.";
-        return;
-      }
-
-      let details = {};
-      if (method === "paypal") {
-        details = {
-          name: document.getElementById("paypal-name").value,
-          email: document.getElementById("paypal-email").value
-        };
-      } else if (method === "bank") {
-        details = {
-          holder: document.getElementById("bank-holder").value,
-          number: document.getElementById("bank-number").value
-        };
-      } else if (method === "crypto") {
-        details = {
-          name: document.getElementById("crypto-name").value,
-          wallet: document.getElementById("crypto-id").value
-        };
-      } else {
-        errorMessage.textContent = "Please select a valid payment method.";
-        return;
-      }
-
-      if (Object.values(details).some(v => !v.trim())) {
-        errorMessage.textContent = "All fields are required for the selected method.";
-        return;
-      }
-
-      try {
-        const newBalance = currentBalance - amount;
-        const txId = Date.now();
-        const txData = {
-          amount,
-          method,
-          details,
-          timestamp: txId
-        };
-
-        await set(ref(db, `users/${uid}/balance`), newBalance);
-        await set(ref(db, `transactions/${uid}/${txId}`), txData);
-
-        // Write to shared history for cross-page access
-        await set(ref(db, `history/${uid}/${txId}`), {
-          type: "cashout",
-          amount,
-          method,
-          timestamp: txId
-        });
-
-        document.getElementById("balance-display").textContent = `Balance: $${newBalance.toFixed(3)}`;
-        successMessage.textContent = `Cashed out $${amount.toFixed(2)} successfully!`;
-        document.getElementById("cashout-form").reset();
-        methodFields.innerHTML = "";
-      } catch (err) {
-        console.error(err);
-        errorMessage.textContent = "Cashout failed. Try again.";
-      }
-    };
-  });  
-  </script>
+  });
+</script>
 </body>
 </html>
