@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lucky Box - Cashify</title>
+  <style>
+    :root {
+      --glass-bg: rgba(0, 0, 0, 0.6);
+      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
+      --primary: #0ff;
+      --accent: #f0f;
+      --win: #0f0;
+      --lose: #f00;
+    }
+    body {
+      margin: 0;
+      background: #050505;
+      font-family: 'Segoe UI', sans-serif;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      user-select: none;
+    }
+    h1 {
+      margin-top: 20px;
+      color: var(--primary);
+      text-shadow: var(--border-glow);
+    }
+    #balance {
+      margin: 10px 0 20px;
+      font-size: 1.2rem;
+      color: var(--accent);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      gap: 15px;
+    }
+    .box {
+      background: var(--glass-bg);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      height: 100px;
+      width: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: default;
+      transition: transform 0.2s;
+      box-shadow: var(--border-glow);
+    }
+    .box.active {
+      cursor: pointer;
+    }
+    .box.revealed {
+      background: rgba(0, 255, 255, 0.1);
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    #playBtn {
+      margin-top: 30px;
+      padding: 10px 25px;
+      background: var(--primary);
+      border: none;
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: var(--border-glow);
+    }
+  </style>
+</head>
+<body>
+  <h1>Lucky Box</h1>
+  <div id="balance">Balance: Loading...</div>
+  <div class="grid" id="boxGrid"></div>
+  <div id="message"></div>
+  <button id="playBtn">Play for $0.500</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+
+    const balanceEl = document.getElementById('balance');
+    const grid = document.getElementById('boxGrid');
+    const message = document.getElementById('message');
+    const playBtn = document.getElementById('playBtn');
+
+    let user, balance = 0, picked = [], symbols = ["💎", "💰", "🔥", "💵", "⭐", "🎯"];
+    let currentBoxes = [], gameActive = false;
+
+    function updateBalanceDisplay() {
+      balanceEl.textContent = `Balance: $${balance.toFixed(3)}`;
+    }
+
+    function generateBoxes() {
+      const set = [];
+      for (let i = 0; i < 9; i++) {
+        set.push(symbols[Math.floor(Math.random() * symbols.length)]);
+      }
+      return set;
+    }
+
+    function renderBoxes(enable = false) {
+      grid.innerHTML = '';
+      picked = [];
+      currentBoxes = generateBoxes();
+      currentBoxes.forEach((symbol, idx) => {
+        const box = document.createElement('div');
+        box.classList.add('box');
+        if (enable) box.classList.add('active');
+        box.dataset.index = idx;
+        box.onclick = () => {
+          if (!gameActive || picked.length >= 3 || box.classList.contains('revealed')) return;
+          box.classList.add('revealed');
+          box.textContent = symbol;
+          picked.push(symbol);
+          if (picked.length === 3) checkResult();
+        };
+        grid.appendChild(box);
+      });
+    }
+
+    function checkResult() {
+      gameActive = false;
+      const win = picked.every(val => val === picked[0]);
+      if (win) {
+        message.textContent = "You WON $3!";
+        message.style.color = "var(--win)";
+        balance += 3;
+        update(ref(db, `users/${user.uid}`), { balance });
+      } else {
+        message.textContent = "You lost. Try again!";
+        message.style.color = "var(--lose)";
+      }
+      updateBalanceDisplay();
+    }
+
+    playBtn.onclick = () => {
+      if (balance < 0.5) {
+        message.textContent = "Insufficient balance.";
+        message.style.color = "var(--lose)";
+        return;
+      }
+      balance -= 0.5;
+      update(ref(db, `users/${user.uid}`), { balance });
+      updateBalanceDisplay();
+      message.textContent = '';
+      gameActive = true;
+      renderBoxes(true); // Make boxes active
+    };
+
+    onAuthStateChanged(auth, async (u) => {
+      if (u) {
+        user = u;
+        const snap = await get(ref(db, `users/${user.uid}/balance`));
+        balance = snap.exists() ? snap.val() : 0;
+        updateBalanceDisplay();
+        renderBoxes(false); // Render boxes but inactive initially
+      } else {
+        alert("You're not logged in.");
+        window.location.href = "login.html";
+      }
+    });
+  </script>
+</body>
+</html>
