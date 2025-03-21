@@ -1,303 +1,276 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Spin to Win - Cyberpunk Edition</title>
-  <style>
-    :root {
-      --primary-color: #00fff7;
-      --accent-color: #ff007c;
-      --background-color: #0f0f0f;
-      --glass-bg: rgba(15, 15, 15, 0.85);
-      --border-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
-    }
+<!DOCTYPE html>  <html lang="en">    <head>    
+  <meta charset="UTF-8">    
+  <title>Spin to Win - Cyberpunk Edition</title>    
+  <style>    
+    /* Root variables for theme colors */    
+    :root {    
+      --primary-color: #00fff7;    
+      --accent-color: #ff007c;    
+      --background-color: #0f0f0f;    
+      --glass-bg: rgba(15, 15, 15, 0.85);    
+      --border-glow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);    
+    }  /* Global styles */    
+body {    
+  margin: 0;    
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;    
+  background: var(--background-color);    
+  color: #fff;    
+  overflow-x: hidden;    
+}    .container {
+text-align: center;
+padding: 2rem;
+}
 
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--background-color);
-      color: #fff;
-      overflow-x: hidden;
-    }
+h1 {
+color: var(--primary-color);
+text-shadow: var(--border-glow);
+}
 
-    .container {
-      text-align: center;
-      padding: 2rem;
-    }
+/* User profile and balance display */
+.profile {
+display: flex;
+justify-content: center;
+align-items: center;
+margin-bottom: 2rem;
+}
 
-    h1 {
-      color: var(--primary-color);
-      text-shadow: var(--border-glow);
-    }
+.profile img {
+width: 50px;
+height: 50px;
+border-radius: 50%;
+margin-right: 1rem;
+border: 2px solid var(--accent-color);
+}
 
-    .profile {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
+.profile-info {
+text-align: left;
+}
 
-    .profile img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      margin-right: 1rem;
-      border: 2px solid var(--accent-color);
-    }
+.profile-info h2 {
+margin: 0;
+font-size: 1.5rem;
+color: var(--primary-color);
+}
 
-    .profile-info {
-      text-align: left;
-    }
+.profile-info p {
+margin: 0.2rem 0;
+color: #ccc;
+}
 
-    .profile-info h2 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--primary-color);
-    }
+/* Spin wheel styles */
+#wheel {
+width: 300px;
+height: 300px;
+border: 8px solid var(--primary-color);
+border-radius: 50%;
+margin: 2rem auto;
+background: conic-gradient(
+#111 0% 20%,
+var(--accent-color) 20% 40%,
+#111 40% 60%,
+var(--primary-color) 60% 80%,
+#111 80% 100%
+);
+transition: transform 4s ease-out;
+}
 
-    .profile-info p {
-      margin: 0.2rem 0;
-      color: #ccc;
-    }
+button {
+padding: 1rem 2rem;
+background: var(--accent-color);
+border: none;
+color: #fff;
+font-size: 1.2rem;
+border-radius: 8px;
+cursor: pointer;
+box-shadow: var(--border-glow);
+margin-top: 1rem;
+}
 
-    #wheel {
-      width: 300px;
-      height: 300px;
-      border: 8px solid var(--primary-color);
-      border-radius: 50%;
-      margin: 2rem auto;
-      background: conic-gradient(
-        #111 0% 20%,
-        var(--accent-color) 20% 40%,
-        #111 40% 60%,
-        var(--primary-color) 60% 80%,
-        #111 80% 100%
-      );
-      transition: transform 4s ease-out;
-    }
+#result {
+margin-top: 1rem;
+font-size: 1.2rem;
+}
 
-    button {
-      padding: 1rem 2rem;
-      background: var(--accent-color);
-      border: none;
-      color: #fff;
-      font-size: 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: var(--border-glow);
-      margin-top: 1rem;
-    }
+/* Popup overlay styles */
+.popup-overlay {
+position: fixed;
+top: 0; left: 0;
+width: 100%; height: 100%;
+background: rgba(0, 0, 0, 0.5);
+backdrop-filter: blur(10px);
+display: flex;
+justify-content: center;
+align-items: center;
+z-index: 9999;
+}
 
-    #result {
-      margin-top: 1rem;
-      font-size: 1.2rem;
-    }
+.popup {
+background: var(--glass-bg);
+padding: 2rem;
+border-radius: 12px;
+box-shadow: 0 0 20px var(--primary-color);
+max-width: 350px;
+text-align: center;
+}
 
-    .popup-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(10px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
+.popup h2 {
+color: var(--primary-color);
+}
 
-    .popup {
-      background: var(--glass-bg);
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 0 20px var(--primary-color);
-      max-width: 350px;
-      text-align: center;
-    }
+.popup p {
+color: #ccc;
+margin: 0.5rem 0;
+}
 
-    .popup h2 {
-      color: var(--primary-color);
-    }
+.popup button {
+background: var(--accent-color);
+margin-top: 1.5rem;
+}
 
-    .popup p {
-      color: #ccc;
-      margin: 0.5rem 0;
-    }
+  </style>    
+</head>    
+<body>    
+  <div class="container">    
+    <h1>Spin to Win</h1>  <!-- User Profile Section -->    
+<div class="profile">    
+  <img id="userAvatar" src="default-avatar.png" alt="User Avatar">    
+  <div class="profile-info">    
+    <h2 id="userName">Guest</h2>    
+    <p>Balance: $<span id="userBalance">0.00</span></p>    
+  </div>    
+</div>    <!-- Spin Wheel -->    <div id="wheel"></div>    
+<button id="spinBtn">SPIN</button>    
+<div id="result"></div>    </div>    <!-- On-load Odds Popup -->    <div id="oddsPopup" class="popup-overlay">    
+    <div class="popup">    
+      <h2>Spin Odds</h2>    
+      <p>$1 → 50%</p>    
+      <p>$2 → 30%</p>    
+      <p>$3 → 20%</p>    
+      <p style="color:gold;">$5 JACKPOT → 5%</p>    
+      <p style="color:var(--accent-color);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>    
+      <button id="oddsOkayBtn">Let’s Go</button>    
+    </div>    
+  </div>    <!-- Break Reminder Popup -->    <div id="breakPopup" class="popup-overlay" style="display:none;">    
+    <div class="popup">    
+      <h2>Take a Short Break</h2>    
+      <p>Click OK to continue spinning and support us by visiting a sponsor.</p>    
+      <button onclick="window.location.href='https://whoushex.top/4/7950037'">OK</button>    
+    </div>    
+  </div>    <!-- Firebase Setup -->    <script type="module">    
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";    
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";    
+  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";    const firebaseConfig = {
+apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+projectId: "itzhoyoo-f9f7e",
+storageBucket: "itzhoyoo-f9f7e.appspot.com",
+messagingSenderId: "1094792075584",
+appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+measurementId: "G-LLT6F9WRKH"
+};
 
-    .popup button {
-      background: var(--accent-color);
-      margin-top: 1.5rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Spin to Win</h1>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    <div class="profile">
-      <img id="userAvatar" src="default-avatar.png" alt="User Avatar">
-      <div class="profile-info">
-        <h2 id="userName">Guest</h2>
-        <p>Balance: $<span id="userBalance">0.00</span></p>
-      </div>
-    </div>
+const userName = document.getElementById('userName');
+const userBalance = document.getElementById('userBalance');
+const spinBtn = document.getElementById('spinBtn');
+const wheel = document.getElementById('wheel');
+const result = document.getElementById('result');
 
-    <div id="wheel"></div>
-    <button id="spinBtn">SPIN</button>
-    <div id="result"></div>
-  </div>
+let currentUser = null;
+let spinCount = 0;
 
-  <!-- On-load Odds Popup -->
-  <div id="oddsPopup" class="popup-overlay">
-    <div class="popup">
-      <h2>Spin Odds</h2>
-      <p>$0.10 → 30%</p>
-      <p>$0.20 → 35%</p>
-      <p>$0.25 → 10%</p>
-      <p>$0.50 → 10%</p>
-      <p>$0.75 → 5%</p>
-      <p>$1.00 → 4%</p>
-      <p>$1.50 → 3%</p>
-      <p style="color:gold;">$2.50 JACKPOT → 1%</p>
-      <p style="color:var(--accent-color);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>
-      <button id="oddsOkayBtn">Let’s Go</button>
-    </div>
-  </div>
+onAuthStateChanged(auth, user => {
+if (user) {
+currentUser = user;
+const email = user.email;
+const uid = user.uid;
+const username = email.split('@')[0];
+userName.textContent = username;
+document.getElementById("userAvatar").src = https://api.dicebear.com/7.x/pixel-art/svg?seed=${username};
 
-  <!-- Break Reminder Popup -->
-  <div id="breakPopup" class="popup-overlay" style="display:none;">
-    <div class="popup">
-      <h2>Take a Short Break</h2>
-      <p>Click OK to continue spinning and support us by visiting a sponsor.</p>
-      <button onclick="window.location.href='https://whoushex.top/4/7950037'">OK</button>
-    </div>
-  </div>
+const userRef = ref(db, `users/${uid}`);    
+  get(userRef).then(snapshot => {    
+    if (!snapshot.exists()) {    
+      set(userRef, {    
+        email,    
+        username,    
+        balance: 0,    
+        joinedAt: Date.now()    
+      });    
+    } else {    
+      const data = snapshot.val();    
+      userBalance.textContent = parseFloat(data.balance).toFixed(2);    
+    }    
+  });    
+}
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+});
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+function getRandomPrize() {
+const rand = Math.random();
+if (rand < 0.05) return 5;
+else if (rand < 0.20) return 3;
+else if (rand < 0.50) return 2;
+else if (rand < 1.00) return Math.random() < 0.9 ? 0.25 : 1;
+}
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+function spinWheel() {
+const degrees = 3600 + Math.floor(Math.random() * 360);
+wheel.style.transform = rotate(${degrees}deg);
+}
 
-    let currentUser = null;
-    let lastPrize = null;
+spinBtn.addEventListener("click", () => {
+if (!currentUser) {
+alert("Please login to spin.");
+return;
+}
 
-    const spinBtn = document.getElementById("spinBtn");
-    const wheel = document.getElementById("wheel");
-    const result = document.getElementById("result");
-    const balanceEl = document.getElementById("userBalance");
-    const userNameEl = document.getElementById("userName");
-    const oddsOkayBtn = document.getElementById("oddsOkayBtn");
+const userRef = ref(db, `users/${currentUser.uid}`);    
+get(userRef).then(snapshot => {    
+  const userData = snapshot.val();    
+  let balance = parseFloat(userData.balance) || 0;    
 
-    oddsOkayBtn.addEventListener("click", () => {
-      document.getElementById("oddsPopup").style.display = "none";
-    });
+  if (balance < 0.25) {    
+    alert("You need at least $0.25 to spin.");    
+    return;    
+  }    
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        const userRef = ref(db, "users/" + user.uid);
-        const snapshot = await get(userRef);
-        if (!snapshot.exists()) {
-          set(userRef, {
-            email: user.email,
-            username: user.email.split('@')[0],
-            balance: 0,
-            totalSpins: 0,
-            totalEarned: 0,
-            joinedAt: Date.now()
-          });
-        } else {
-          const data = snapshot.val();
-          balanceEl.textContent = data.balance.toFixed(2);
-          userNameEl.textContent = data.username || user.email.split('@')[0];
-        }
-      } else {
-        window.location.href = "login.html";
-      }
-    });
+  // Deduct $0.25    
+  const newBalance = (balance - 0.25).toFixed(2);    
+  update(userRef, { balance: newBalance });    
+  userBalance.textContent = newBalance;    
 
-    function getWeightedPrize() {
-      const prizeOptions = [
-        { amount: 0.10, weight: 30 },
-        { amount: 0.20, weight: 35 },
-        { amount: 0.25, weight: 10 },
-        { amount: 0.50, weight: 10 },
-        { amount: 0.75, weight: 5 },
-        { amount: 1.00, weight: 4 },
-        { amount: 1.50, weight: 3 },
-        { amount: 2.50, weight: 1 }
-      ];
+  spinBtn.disabled = true;    
+  spinWheel();    
 
-      let filtered = prizeOptions.filter(p => p.amount !== lastPrize);
-      const totalWeight = filtered.reduce((sum, p) => sum + p.weight, 0);
-      let rand = Math.random() * totalWeight;
+  setTimeout(() => {    
+    const prize = getRandomPrize();    
+    result.textContent = `You won $${prize.toFixed(2)}!`;    
 
-      for (let i = 0; i < filtered.length; i++) {
-        rand -= filtered[i].weight;
-        if (rand <= 0) {
-          lastPrize = filtered[i].amount;
-          return filtered[i].amount;
-        }
-      }
-      return 0.10;
-    }
+    const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);    
+    update(userRef, { balance: finalBalance });    
+    userBalance.textContent = finalBalance;    
 
-    function spinWheel(prize) {
-      const segmentCount = 8;
-      const anglePerSegment = 360 / segmentCount;
-      const segments = [0.10, 0.20, 0.25, 0.50, 0.75, 1.00, 1.50, 2.50];
-      const prizeIndex = segments.indexOf(prize);
-      const randomOffset = Math.floor(Math.random() * anglePerSegment);
-      const rotateTo = (360 * 5) + (prizeIndex * anglePerSegment) + randomOffset;
+    spinCount++;    
+    if (spinCount % 5 === 0) {    
+      document.getElementById('breakPopup').style.display = 'flex';    
+    }    
 
-      wheel.style.transition = "transform 4s ease-out";
-      wheel.style.transform = `rotate(${rotateTo}deg)`;
+    spinBtn.disabled = false;    
+  }, 4000);    
+});
 
-      return new Promise(resolve => setTimeout(resolve, 4000));
-    }
+});
 
-    spinBtn.addEventListener("click", async () => {
-      if (!currentUser) return;
+// Odds popup "Let's Go" button handler
+document.getElementById('oddsOkayBtn').addEventListener('click', () => {
+document.getElementById('oddsPopup').style.display = 'none';
+});
+</script>    </script>
 
-      spinBtn.disabled = true;
-      result.textContent = "Spinning...";
-
-      const prize = getWeightedPrize();
-      await spinWheel(prize);
-
-      const userRef = ref(db, "users/" + currentUser.uid);
-      const snapshot = await get(userRef);
-      let data = snapshot.val();
-
-      data.balance = (data.balance || 0) + prize;
-      data.totalSpins = (data.totalSpins || 0) + 1;
-      data.totalEarned = (data.totalEarned || 0) + prize;
-
-      await update(userRef, {
-        balance: data.balance,
-        totalSpins: data.totalSpins,
-        totalEarned: data.totalEarned
-      });
-
-      balanceEl.textContent = data.balance.toFixed(2);
-      result.textContent = `You won $${prize.toFixed(2)}!`;
-
-      spinBtn.disabled = false;
-    });
-  </script>
-</body>
+</body>    
 </html>
