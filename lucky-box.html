@@ -161,12 +161,29 @@
     }
 
     function generateBoxes() {
-      const set = [];
-      for (let i = 0; i < 9; i++) {
-        set.push(symbols[Math.floor(Math.random() * symbols.length)]);
-      }
-      return set;
+  const result = [];
+  const winningSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+
+  // Add 3 of the winning symbol
+  for (let i = 0; i < 3; i++) result.push(winningSymbol);
+
+  // Fill the rest with different symbols
+  while (result.length < 9) {
+    const random = symbols[Math.floor(Math.random() * symbols.length)];
+    // Avoid adding too many of the same symbol
+    if (random !== winningSymbol || result.filter(s => s === winningSymbol).length < 3) {
+      result.push(random);
     }
+  }
+
+  // Shuffle it
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
 
     function renderBoxes(enable = false) {
       grid.innerHTML = '';
