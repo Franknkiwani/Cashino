@@ -2,157 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spin to Win - Cyberpunk</title>
+  <title>Spin to Win - Cyberpunk Edition</title>
   <style>
     :root {
-      --primary: #00f0ff;
-      --accent: #ff2cdf;
-      --danger: #ff4e4e;
-      --win: #7bff91;
-      --glass-bg: rgba(0, 0, 0, 0.6);
+      --primary: #00fff7;
+      --accent: #ff007c;
+      --glass-bg: rgba(0, 0, 0, 0.7);
+      --border-glow: 0 0 10px var(--primary), 0 0 20px var(--primary);
     }
 
     body {
       margin: 0;
-      background: #0e0e0e;
-      font-family: 'Segoe UI', sans-serif;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .container {
+      text-align: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      color: var(--primary);
+      text-shadow: var(--border-glow);
     }
 
     #wheel {
       width: 300px;
       height: 300px;
-      border-radius: 50%;
       border: 8px solid var(--primary);
-      position: relative;
-      margin-bottom: 20px;
-      overflow: hidden;
-      box-shadow: 0 0 30px var(--primary);
-    }
-
-    .segment {
-      width: 50%;
-      height: 50%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform-origin: 0 0;
-      background: var(--glass-bg);
-      border: 1px solid var(--accent);
-      box-shadow: inset 0 0 5px var(--accent);
-    }
-
-    #pointer {
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 0;
-      height: 0;
-      border-left: 15px solid transparent;
-      border-right: 15px solid transparent;
-      border-bottom: 25px solid var(--accent);
-      z-index: 10;
-    }
-
-    #result {
-      margin-top: 10px;
-      font-size: 1.2rem;
+      border-radius: 50%;
+      margin: 2rem auto;
+      background: conic-gradient(
+        #111 0% 20%,
+        var(--accent) 20% 40%,
+        #111 40% 60%,
+        var(--primary) 60% 80%,
+        #111 80% 100%
+      );
+      transition: transform 4s ease-out;
     }
 
     button {
-      padding: 0.7rem 1.4rem;
+      padding: 1rem 2rem;
       background: var(--accent);
       border: none;
-      border-radius: 5px;
-      font-weight: bold;
+      color: #fff;
+      font-size: 1.2rem;
+      border-radius: 8px;
       cursor: pointer;
-      color: black;
-      box-shadow: 0 0 10px var(--accent);
+      box-shadow: var(--border-glow);
+      margin-top: 1rem;
     }
 
-    #popupOverlay, #oddsPopup {
+    #result {
+      margin-top: 1rem;
+      font-size: 1.2rem;
+    }
+
+    .popup-overlay {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      display: flex;
       justify-content: center;
       align-items: center;
-      backdrop-filter: blur(10px);
-      background: rgba(0, 0, 0, 0.6);
       z-index: 9999;
     }
 
-    .popupBox {
-      background: rgba(15, 15, 15, 0.95);
+    .popup {
+      background: var(--glass-bg);
       padding: 2rem;
       border-radius: 12px;
-      box-shadow: 0 0 25px var(--accent);
+      box-shadow: 0 0 20px var(--primary);
       max-width: 350px;
       text-align: center;
     }
 
-    .popupBox h2 {
+    .popup h2 {
       color: var(--primary);
     }
 
-    .popupBox p, .popupBox ul {
+    .popup p {
       color: #ccc;
+      margin: 0.5rem 0;
     }
 
-    .popupBox ul {
-      list-style: none;
-      padding: 0;
-      margin: 1rem 0;
-      text-align: left;
-    }
-
-    .popupBox button {
-      margin-top: 1rem;
+    .popup button {
+      background: var(--accent);
+      margin-top: 1.5rem;
     }
   </style>
 </head>
 <body>
-  <div id="pointer"></div>
-  <div id="wheel"></div>
-  <button id="spinBtn">Spin</button>
-  <div id="result"></div>
+  <div class="container">
+    <h1>Spin to Win</h1>
+    <div id="wheel"></div>
+    <button id="spinBtn">SPIN</button>
+    <div id="result"></div>
+  </div>
 
-  <!-- Prize Odds Popup -->
-  <div id="oddsPopup">
-    <div class="popupBox">
-      <h2>Prize Chances</h2>
-      <ul>
-        <li>$1 — <strong>50%</strong></li>
-        <li>$2 — <strong>30%</strong></li>
-        <li>$3 — <strong>20%</strong></li>
-        <li>$5 Jackpot — <strong>1%</strong></li>
-      </ul>
-      <p><em>Test your luck — you never know...</em></p>
-      <button id="oddsOkay">Got it!</button>
+  <!-- On-load Odds Popup -->
+  <div id="oddsPopup" class="popup-overlay">
+    <div class="popup">
+      <h2>Spin Odds</h2>
+      <p>$1 → 50%</p>
+      <p>$2 → 30%</p>
+      <p>$3 → 20%</p>
+      <p style="color:gold;">$5 JACKPOT → 5%</p>
+      <p style="color:var(--accent);margin-top:1rem;font-style:italic;">Test your luck — you never know!</p>
+      <button id="oddsOkayBtn">Let’s Go</button>
     </div>
   </div>
 
-  <!-- Break Popup -->
-  <div id="popupOverlay">
-    <div class="popupBox">
+  <!-- Break Reminder Popup -->
+  <div id="breakPopup" class="popup-overlay" style="display:none;">
+    <div class="popup">
       <h2>Take a Short Break</h2>
-      <p>Clear your head. Stretch. Click okay to continue.</p>
-      <button id="popupOkay">Okay</button>
+      <p>Click OK to continue spinning and support us by visiting a sponsor.</p>
+      <button onclick="window.location.href='https://whoushex.top/4/7950037'">OK</button>
     </div>
   </div>
 
+  <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -168,122 +147,79 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth();
+    const auth = getAuth(app);
 
     const wheel = document.getElementById('wheel');
     const spinBtn = document.getElementById('spinBtn');
     const resultDiv = document.getElementById('result');
-    const segments = [1, 1, 1, 2, 2, 3, 3, 0, 0, 0];
-    let currentUser, isSpinning = false, spinCount = 0;
 
-    // Build wheel
-    segments.forEach((value, i) => {
-      const segment = document.createElement('div');
-      segment.className = 'segment';
-      const angle = (360 / segments.length) * i;
-      segment.style.transform = `rotate(${angle}deg) skewY(-60deg)`;
-      segment.innerHTML = `<div style="transform:skewY(60deg) rotate(${360 / segments.length / 2}deg);position:absolute;top:10px;left:10px;">$${value}</div>`;
-      wheel.appendChild(segment);
-    });
+    let spinCount = 0;
 
-    // Prize Odds Popup
-    window.addEventListener('load', () => {
-      document.getElementById('oddsPopup').style.display = 'flex';
-      document.getElementById('oddsOkay').onclick = () => {
-        document.getElementById('oddsPopup').style.display = 'none';
-      };
-    });
-
-    // Break popup after 5 spins
-    document.getElementById('popupOkay').onclick = () => {
-      document.getElementById('popupOverlay').style.display = 'none';
-      window.location.href = 'https://whoushex.top/4/7950037';
-    };
-
-    function updateBalance(uid, amount) {
+    const updateBalance = async (uid, amount) => {
       const userRef = ref(db, 'users/' + uid);
-      get(userRef).then(snapshot => {
-        const user = snapshot.val();
-        const currentBalance = user?.balance || 0;
-        update(userRef, {
-          balance: currentBalance + amount
-        });
-      });
-    }
-
-    function rotateWheel() {
-      const index = Math.floor(Math.random() * segments.length);
-      const angle = 3600 + (360 / segments.length) * index;
-      wheel.style.transition = 'transform 4s ease-out';
-      wheel.style.transform = `rotate(${angle}deg)`;
-      return { index, prize: segments[index] };
-    }
-
-    function tryJackpot(uid) {
-      if (Math.random() < 0.01) {
-        updateBalance(uid, 5);
-        resultDiv.innerHTML += `<br><span style="color:gold;font-weight:bold;">JACKPOT! You won $5!</span>`;
+      const snap = await get(userRef);
+      if (snap.exists()) {
+        const data = snap.val();
+        const newBalance = (data.balance || 0) + amount;
+        update(userRef, { balance: newBalance });
       }
-    }
-
-    spinBtn.onclick = () => {
-      if (isSpinning) return;
-      isSpinning = true;
-      spinBtn.disabled = true;
-      const cost = 0.25;
-
-      const userRef = ref(db, 'users/' + currentUser.uid);
-      get(userRef).then(snapshot => {
-        const user = snapshot.val();
-        const bal = user?.balance || 0;
-        if (bal < cost) {
-          resultDiv.textContent = 'Not enough balance.';
-          isSpinning = false;
-          spinBtn.disabled = false;
-          return;
-        }
-
-        updateBalance(currentUser.uid, -cost);
-        const { prize } = rotateWheel();
-
-        setTimeout(() => {
-          spinCount++;
-          if (prize > 0) {
-            updateBalance(currentUser.uid, prize);
-            resultDiv.innerHTML = `<span style="color:var(--win)">You won $${prize.toFixed(2)}!</span>`;
-          } else {
-            resultDiv.innerHTML = `<span style="color:var(--danger)">Try again!</span>`;
-          }
-
-          tryJackpot(currentUser.uid);
-
-          if (spinCount % 5 === 0) {
-            document.getElementById('popupOverlay').style.display = 'flex';
-          }
-
-          isSpinning = false;
-          spinBtn.disabled = false;
-        }, 4200);
-      });
     };
 
-    onAuthStateChanged(auth, user => {
+    const rotateWheel = () => {
+      const outcomes = [
+        { prize: 1, chance: 50 },
+        { prize: 2, chance: 30 },
+        { prize: 3, chance: 20 },
+        { prize: 5, chance: 5 },
+        { prize: 0, chance: 80 }
+      ];
+
+      const rand = Math.random() * 100;
+      let sum = 0;
+      let prize = 0;
+
+      for (const o of outcomes) {
+        sum += o.chance;
+        if (rand < sum) {
+          prize = o.prize;
+          break;
+        }
+      }
+
+      const degrees = Math.floor(Math.random() * 3600) + 1080;
+      wheel.style.transform = `rotate(${degrees}deg)`;
+
+      return prize;
+    };
+
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        currentUser = user;
-        const userRef = ref(db, 'users/' + user.uid);
-        get(userRef).then(snapshot => {
-          if (!snapshot.exists()) {
-            set(userRef, {
-              email: user.email,
-              balance: 2,
-              joinedAt: Date.now()
-            });
-          }
-        });
+        const uid = user.uid;
+
+        spinBtn.onclick = () => {
+          const prize = rotateWheel();
+          spinCount++;
+
+          setTimeout(() => {
+            resultDiv.innerHTML = prize > 0 ? `You won $${prize.toFixed(2)}!` : "No prize this time.";
+            if (prize > 0) updateBalance(uid, prize);
+            if (prize === 5) resultDiv.innerHTML += "<br><span style='color:gold;'>JACKPOT! $5 WIN!</span>";
+            if (spinCount % 5 === 0) {
+              document.getElementById("breakPopup").style.display = "flex";
+            }
+          }, 4000);
+        };
       } else {
-        window.location.href = "login.html";
+        resultDiv.innerText = "Please sign in to play.";
       }
     });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('oddsPopup').style.display = 'flex';
+    });
+    document.getElementById('oddsOkayBtn').onclick = () => {
+      document.getElementById('oddsPopup').style.display = 'none';
+    };
   </script>
 </body>
 </html>
