@@ -2,187 +2,256 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Cyberpunk Spin to Win</title>
+  <title>Spin to Win | Cashify</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
+    :root {
+      --glass-bg: rgba(0, 0, 0, 0.6);
+      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
+      --primary: #0ff;
+      --accent: #f0f;
+      --danger: #f00;
+      --win: #0f0;
+    }
+    * {
       margin: 0;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      background: radial-gradient(circle at top, #0f0f0f, #000);
       font-family: 'Segoe UI', sans-serif;
       color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      overflow: hidden;
+      padding: 2rem;
     }
-
-    .wheel {
-      width: 260px;
-      height: 260px;
-      border-radius: 50%;
-      border: 8px solid #00ffe1;
-      box-shadow: 0 0 25px #00ffe1, 0 0 50px #ff00ff inset;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: bold;
-      text-shadow: 0 0 10px #fff;
-      transition: background 0.1s ease-in-out;
-      user-select: none;
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 5px var(--primary);
     }
-
-    #spinBtn {
-      margin-top: 30px;
-      padding: 14px 28px;
-      font-size: 18px;
-      background: #ff00ff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff00ff, 0 0 25px #00ffe1;
-      transition: all 0.2s ease;
-    }
-
-    #spinBtn:active {
-      transform: scale(0.96);
-      box-shadow: 0 0 5px #ff00ff;
-    }
-
-    #resultText {
-      margin-top: 20px;
-      font-size: 22px;
-      font-weight: bold;
-    }
-
     #balance {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid var(--primary);
+      box-shadow: var(--border-glow);
+    }
+    #wheel {
+      width: 100%;
+      height: 100%;
+      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
+      background: conic-gradient(
+        #222 0% 12.5%, #0ff 12.5% 25%, #222 25% 37.5%, #0f0 37.5% 50%,
+        #222 50% 62.5%, #ff0 62.5% 75%, #222 75% 87.5%, #f0f 87.5% 100%
+      );
+    }
+    .pointer {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 16px;
-      background: #111;
-      color: #0f0;
-      padding: 8px 14px;
-      border-radius: 6px;
-      box-shadow: 0 0 10px #00ffcc;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 20px solid var(--accent);
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      background: var(--primary);
+      color: #000;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      box-shadow: var(--border-glow);
+      transition: 0.3s;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 1.5rem;
+      font-size: 1.2rem;
+    }
+    #leaderboard {
+      margin-top: 3rem;
+      width: 90%;
+      max-width: 400px;
+      background: var(--glass-bg);
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: var(--border-glow);
+    }
+    #leaderboard h2 {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .leaderboard-entry {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--primary);
+      padding-bottom: 0.3rem;
     }
   </style>
 </head>
 <body>
+  <h1>Spin to Win</h1>
+  <div id="balance">Balance: Loading...</div>
 
-  <div id="balance">Balance: $0.000</div>
-  <div class="wheel" id="wheel">SPIN</div>
-  <button id="spinBtn">SPIN for $0.100</button>
-  <div id="resultText"></div>
+  <div class="wheel-container">
+    <div class="pointer"></div>
+    <div id="wheel"></div>
+  </div>
+
+  <button id="spinBtn">SPIN ($0.25)</button>
+  <div id="result"></div>
+
+  <div id="leaderboard">
+    <h2>Top Spinners</h2>
+    <div id="topUsers">Loading...</div>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
       measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth();
+    const db = getDatabase();
 
-    const wheel = document.getElementById("wheel");
-    const spinBtn = document.getElementById("spinBtn");
-    const resultText = document.getElementById("resultText");
-    const balanceEl = document.getElementById("balance");
+    const wheel = document.getElementById('wheel');
+    const spinBtn = document.getElementById('spinBtn');
+    const resultDiv = document.getElementById('result');
+    const balanceDiv = document.getElementById('balance');
+    const topUsersDiv = document.getElementById('topUsers');
 
-    let uid = null;
-    let currentBalance = 0;
-    let spinning = false;
+    const prizes = [0, 0.1, 0.25, 0.5, 1, 2, 5, 0];
+    let currentUser = null;
+    let isSpinning = false;
 
-    const prizePool = [
-      0.000, 0.010, 0.020, 0.030, 0.050, 0.070, 0.090,
-      0.100, 0.150, 0.200, 0.250, 0.300,
-      0.750, 0.900, 1.000
-    ];
-    const weights = [
-      20, 15, 15, 10, 8, 6, 5,
-      4, 3, 2, 1.5, 1,
-      0.5, 0.2, 0.1
-    ];
+    const rotateWheel = () => {
+      const index = Math.floor(Math.random() * prizes.length);
+      const degrees = 360 * 5 + (index * 45);
+      wheel.style.transform = `rotate(${degrees}deg)`;
+      return { prize: prizes[index], index };
+    };
 
-    const colors = ['#ff00ff', '#00ffe1', '#0f0', '#ff6600', '#00f', '#ff0000'];
+    const updateBalance = (uid, change) => {
+      const userRef = ref(db, 'users/' + uid);
+      get(userRef).then(snapshot => {
+        const user = snapshot.val();
+        let newBalance = (user?.balance || 0) + change;
+        newBalance = Math.max(0, newBalance);
+        update(userRef, {
+          balance: parseFloat(newBalance.toFixed(2)),
+          profit: (user?.profit || 0) + change,
+          spins: (user?.spins || 0) + 1
+        });
+      });
+    };
+
+    const showBalance = (uid) => {
+      onValue(ref(db, 'users/' + uid), snap => {
+        const bal = snap.val()?.balance || 0;
+        balanceDiv.textContent = `Balance: $${bal.toFixed(2)}`;
+      });
+    };
+
+    const loadLeaderboard = () => {
+      const usersRef = ref(db, 'users');
+      onValue(usersRef, snap => {
+        const users = snap.val() || {};
+        const sorted = Object.entries(users)
+          .filter(([_, v]) => v.spins)
+          .sort((a, b) => (b[1].profit || 0) - (a[1].profit || 0))
+          .slice(0, 5);
+        topUsersDiv.innerHTML = sorted.map(([_, u]) =>
+          `<div class="leaderboard-entry"><span>${u.email}</span><span>$${(u.profit || 0).toFixed(2)}</span></div>`
+        ).join('');
+      });
+    };
+
+    spinBtn.onclick = () => {
+      if (isSpinning) return;
+      isSpinning = true;
+      spinBtn.disabled = true;
+      const cost = 0.25;
+
+      const userRef = ref(db, 'users/' + currentUser.uid);
+      get(userRef).then(snapshot => {
+        const user = snapshot.val();
+        const bal = user?.balance || 0;
+        if (bal < cost) {
+          resultDiv.textContent = 'Not enough balance.';
+          isSpinning = false;
+          spinBtn.disabled = false;
+          return;
+        }
+        updateBalance(currentUser.uid, -cost);
+        const { prize } = rotateWheel();
+
+        setTimeout(() => {
+          if (prize > 0) {
+            updateBalance(currentUser.uid, prize);
+            resultDiv.innerHTML = `<span style="color:var(--win)">You won $${prize.toFixed(2)}!</span>`;
+          } else {
+            resultDiv.innerHTML = `<span style="color:var(--danger)">Try again!</span>`;
+          }
+          isSpinning = false;
+          spinBtn.disabled = false;
+        }, 4200);
+      });
+    };
 
     onAuthStateChanged(auth, user => {
       if (user) {
-        uid = user.uid;
-        const balanceRef = ref(db, 'users/' + uid + '/balance');
-        onValue(balanceRef, snapshot => {
-          currentBalance = parseFloat(snapshot.val()) || 0;
-          balanceEl.textContent = `Balance: $${currentBalance.toFixed(3)}`;
+        currentUser = user;
+        const userRef = ref(db, 'users/' + user.uid);
+        get(userRef).then(snapshot => {
+          if (!snapshot.exists()) {
+            set(userRef, {
+              email: user.email,
+              balance: 2,
+              profit: 0,
+              spins: 0,
+              joinedAt: Date.now()
+            });
+          }
         });
+        showBalance(user.uid);
+        loadLeaderboard();
       } else {
-        alert("You must be logged in to play.");
+        const provider = new GoogleAuthProvider();
+        signInWithPopup(auth, provider).catch(console.error);
       }
     });
-
-    function updateBalance(amount) {
-      const newBal = parseFloat(amount.toFixed(3));
-      set(ref(db, 'users/' + uid + '/balance'), newBal);
-    }
-
-    function getRandomPrize() {
-      const totalWeight = weights.reduce((a, b) => a + b, 0);
-      let rnd = Math.random() * totalWeight;
-      for (let i = 0; i < prizePool.length; i++) {
-        if (rnd < weights[i]) return prizePool[i];
-        rnd -= weights[i];
-      }
-      return 0;
-    }
-
-    spinBtn.onclick = () => {
-      if (spinning) return;
-      if (currentBalance < 0.100) {
-        resultText.textContent = "Not enough balance to spin.";
-        return;
-      }
-
-      spinning = true;
-      resultText.textContent = '';
-      wheel.textContent = '';
-
-      updateBalance(currentBalance - 0.100);
-
-      let flashes = 0;
-      const spinInterval = setInterval(() => {
-        wheel.style.background = colors[Math.floor(Math.random() * colors.length)];
-        flashes++;
-      }, 80);
-
-      setTimeout(() => {
-        clearInterval(spinInterval);
-        const prize = getRandomPrize();
-        wheel.style.background = prize === 0 ? '#111' : '#00ff99';
-        wheel.textContent = `$${prize.toFixed(3)}`;
-
-        if (prize > 0) {
-          updateBalance(currentBalance - 0.100 + prize);
-          resultText.textContent = `You won $${prize.toFixed(3)}!`;
-        } else {
-          resultText.textContent = "You lost. Better luck next spin!";
-        }
-
-        spinning = false;
-      }, 2500);
-    };
   </script>
 </body>
 </html>
