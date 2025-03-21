@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CutePay</title>
+  <style>
+    :root {
+      --primary: #ffb6b9;
+      --secondary: #fae3d9;
+      --accent: #bbded6;
+      --text: #333;
+      --radius: 12px;
+      --font: 'Poppins', sans-serif;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--secondary);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-top: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: var(--radius);
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .online-users {
+      margin-top: 10px;
+    }
+    .success {
+      color: green;
+      margin-top: 10px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>CutePay</h1>
+  <div class="card">
+    <p><strong>Email:</strong> <span id="user-email">Loading...</span></p>
+    <p><strong>Balance:</strong> $<span id="balance">0.00</span></p>
+  </div>
+
+  <div class="card">
+    <h2>Send Money</h2>
+    <input type="email" id="recipientEmail" placeholder="Recipient Email" />
+    <select id="onlineUsers">
+      <option value="">Select Online User</option>
+    </select>
+    <input type="number" id="amount" placeholder="Amount (USD)" min="0.01" step="0.01" />
+    <button id="sendBtn">Send</button>
+    <div class="success" id="successMsg"></div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue, get, update, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        const userRef = ref(db, `users/${user.uid}`);
+        onValue(userRef, (snapshot) => {
+          const data = snapshot.val();
+          document.getElementById('user-email').textContent = data.email || user.email;
+          document.getElementById('balance').textContent = (data.balance || 0).toFixed(2);
+        });
+
+        // Set online true
+        set(ref(db, `users/${user.uid}/online`), true);
+
+        loadOnlineUsers(user.uid);
+      } else {
+        alert("You're not logged in!");
+        window.location.href = "login.html"; // Change this as needed
+      }
+    });
+
+    function loadOnlineUsers(currentUid) {
+      const usersRef = ref(db, 'users');
+      onValue(usersRef, (snapshot) => {
+        const users = snapshot.val();
+        const select = document.getElementById('onlineUsers');
+        select.innerHTML = `<option value="">Select Online User</option>`;
+        let count = 0;
+
+        for (let uid in users) {
+          if (uid !== currentUid && users[uid].online && count < 5) {
+            const email = users[uid].email;
+            const option = document.createElement('option');
+            option.value = email;
+            option.textContent = email;
+            select.appendChild(option);
+            count++;
+          }
+        }
+      });
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', async () => {
+      const recipientEmail = document.getElementById('recipientEmail').value.trim() || document.getElementById('onlineUsers').value;
+      const amount = parseFloat(document.getElementById('amount').value);
+      const successMsg = document.getElementById('successMsg');
+      const errorMsg = document.getElementById('errorMsg');
+      successMsg.textContent = '';
+      errorMsg.textContent = '';
+
+      if (!recipientEmail || isNaN(amount) || amount <= 0) {
+        errorMsg.textContent = 'Enter valid email and amount.';
+        return;
+      }
+
+      const senderRef = ref(db, `users/${currentUser.uid}`);
+      const senderSnap = await get(senderRef);
+      const senderData = senderSnap.val();
+      const senderBalance = senderData.balance || 0;
+
+      if (senderBalance < amount) {
+        errorMsg.textContent = 'Insufficient balance.';
+        return;
+      }
+
+      // Find recipient by email
+      const usersRef = ref(db, 'users');
+      const usersSnap = await get(usersRef);
+      let recipientUid = null;
+
+      for (let uid in usersSnap.val()) {
+        if (usersSnap.val()[uid].email === recipientEmail) {
+          recipientUid = uid;
+          break;
+        }
+      }
+
+      if (!recipientUid) {
+        errorMsg.textContent = 'Recipient not found.';
+        return;
+      }
+
+      const recipientRef = ref(db, `users/${recipientUid}`);
+      const recipientSnap = await get(recipientRef);
+      const recipientData = recipientSnap.val();
+      const recipientBalance = recipientData.balance || 0;
+
+      // Update balances
+      await update(senderRef, { balance: senderBalance - amount });
+      await update(recipientRef, { balance: recipientBalance + amount });
+
+      successMsg.textContent = `Sent $${amount.toFixed(2)} to ${recipientEmail}`;
+      document.getElementById('recipientEmail').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('onlineUsers').value = '';
+    });
+
+    // Optional: cleanup on unload
+    window.addEventListener('beforeunload', () => {
+      if (currentUser) {
+        set(ref(db, `users/${currentUser.uid}/online`), false);
+      }
+    });
+  </script>
+</body>
+</html>
