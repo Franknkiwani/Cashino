@@ -1,85 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Cashout History</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    :root {
-      --glass-bg: rgba(20, 20, 30, 0.65);
-      --border-glow: 0 0 8px #6c63ff;
-      --primary: #6c63ff;
-      --accent: #00ffcc;
-    }
-
     body {
-      margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #0d0d1f, #1a1a2e);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px 20px;
+      background: #0d0d0d;
+      color: white;
+      padding: 20px;
+      margin: 0;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
 
     h1 {
-      margin-bottom: 20px;
-      font-size: 28px;
-      color: var(--primary);
+      color: #6c63ff;
+      text-align: center;
+      margin-bottom: 30px;
     }
 
-    #history-table {
-      width: 100%;
-      max-width: 800px;
-      border-collapse: collapse;
-      background: var(--glass-bg);
-      border: 1px solid var(--primary);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: var(--border-glow);
-    }
-
-    #history-table th,
-    #history-table td {
-      padding: 12px 16px;
-      text-align: left;
-    }
-
-    #history-table th {
-      background: rgba(108, 99, 255, 0.15);
-      color: var(--accent);
-    }
-
-    #history-table tr:not(:first-child):hover {
+    .history-entry {
       background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #6c63ff;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      transition: 0.3s;
     }
 
-    #empty-msg {
-      margin-top: 40px;
-      color: #888;
-      font-style: italic;
+    .history-entry:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .entry-label {
+      font-weight: bold;
+      color: #aaa;
+    }
+
+    .entry-value {
+      color: #fff;
+    }
+
+    #history-container {
+      max-width: 600px;
+      margin: auto;
+    }
+
+    .status {
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .pending {
+      color: orange;
+    }
+
+    .approved {
+      color: lime;
+    }
+
+    .rejected {
+      color: red;
     }
   </style>
 </head>
 <body>
-  <h1>Cashout History</h1>
-  <table id="history-table" style="display: none;">
-    <thead>
-      <tr>
-        <th>Amount</th>
-        <th>Method</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody id="history-body"></tbody>
-  </table>
-  <div id="empty-msg">Loading history...</div>
+  <h1>My Cashout History</h1>
+  <div id="history-container">Loading your history...</div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, child, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -95,49 +90,46 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const table = document.getElementById("history-table");
-    const tbody = document.getElementById("history-body");
-    const emptyMsg = document.getElementById("empty-msg");
-
-    const formatDate = (ts) => {
-      const d = new Date(ts);
-      return d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-    };
+    const container = document.getElementById("history-container");
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        emptyMsg.textContent = "You must be logged in to view your history.";
+        container.innerHTML = "You must be logged in to view your history.";
         return;
       }
 
       const uid = user.uid;
+      const historyRef = ref(db, `history/${uid}`);
+
       try {
-        const snap = await get(child(ref(db), `history/${uid}`));
-        if (!snap.exists()) {
-          emptyMsg.textContent = "No cashouts yet.";
+        const snapshot = await get(historyRef);
+
+        if (!snapshot.exists()) {
+          container.innerHTML = "No cashout history yet.";
           return;
         }
 
-        const data = snap.val();
-        const entries = Object.entries(data).sort((a, b) => b[0] - a[0]); // latest first
+        const data = snapshot.val();
+        container.innerHTML = "";
 
-        tbody.innerHTML = "";
-        for (const [txId, entry] of entries) {
-          if (entry.type !== "cashout") continue;
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>$${parseFloat(entry.amount).toFixed(2)}</td>
-            <td>${entry.method}</td>
-            <td>${formatDate(entry.timestamp)}</td>
+        const entries = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+
+        for (const item of entries) {
+          const date = new Date(item.timestamp);
+          const statusClass = item.status || "pending";
+
+          container.innerHTML += `
+            <div class="history-entry">
+              <div><span class="entry-label">Amount:</span> <span class="entry-value">$${item.amount.toFixed(2)}</span></div>
+              <div><span class="entry-label">Method:</span> <span class="entry-value">${item.method}</span></div>
+              <div><span class="entry-label">Date:</span> <span class="entry-value">${date.toLocaleString()}</span></div>
+              <div><span class="entry-label">Status:</span> <span class="entry-value status ${statusClass}">${statusClass}</span></div>
+            </div>
           `;
-          tbody.appendChild(row);
         }
-
-        table.style.display = "table";
-        emptyMsg.style.display = "none";
       } catch (err) {
         console.error(err);
-        emptyMsg.textContent = "Failed to load history.";
+        container.innerHTML = "Failed to load history.";
       }
     });
   </script>
