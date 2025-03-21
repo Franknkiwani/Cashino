@@ -1,4 +1,5 @@
-<!DOCTYPE html>  <html lang="en">  
+This s how it is now <!DOCTYPE html>  <html lang="en">
+
 <head>  
   <meta charset="UTF-8" />  
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>  
@@ -224,84 +225,25 @@
       --border-glow: #00ffff80;
       --primary: #0ff;
       --accent: #ffffff;
-    }
-
-    body {
-      margin: 0;
-      background: #111;
-      font-family: 'Orbitron', sans-serif;
-    }
-
-   
-    html, body, *, *::before, *::after {
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-  user-select: none !important;
-}
-.popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.95);
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-glow);
-  color: var(--accent);
-  padding: 20px 24px;
-  border-radius: 16px;
-  box-shadow: 0 0 30px var(--primary);
-  max-width: 320px;
-  z-index: 9999;
-  font-size: 14px;
-  opacity: 0;
-  animation: fadeInCenter 0.4s ease forwards;
+    }body {
+  margin: 0;
+  background: #111;
+  font-family: 'Orbitron', sans-serif;
 }
 
-@keyframes fadeInCenter {
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
 
-.popup h3 {
-  margin: 0 0 10px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--primary);
-  text-align: center;
-}
+html, body, *, *::before, *::after {
 
-.popup p {
-  margin: 0 0 10px;
-  line-height: 1.5;
-  text-align: center;
-}
+-webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; } .popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--border-glow); color: var(--accent); padding: 20px 24px; border-radius: 16px; box-shadow: 0 0 30px var(--primary); max-width: 320px; z-index: 9999; font-size: 14px; opacity: 0; animation: fadeInCenter 0.4s ease forwards; }
 
-.countdown {
-  color: var(--primary);
-  font-weight: bold;
-  display: block;
-  text-align: center;
-}
-.glass-announcement {
-  background: var(--glass-bg);
-  border: 1px solid var(--border-glow);
-  color: var(--accent);
-  padding: 10px 20px;
-  margin: 15px 0;
-  border-radius: 10px;
-  font-size: 14px;
-  text-align: center;
-  animation: pulse 3s infinite;
-  user-select: none;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-</style>
+@keyframes fadeInCenter { to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+
+.popup h3 { margin: 0 0 10px; font-size: 18px; font-weight: 600; color: var(--primary); text-align: center; }
+
+.popup p { margin: 0 0 10px; line-height: 1.5; text-align: center; }
+
+.countdown { color: var(--primary); font-weight: bold; display: block; text-align: center; } .glass-announcement { background: var(--glass-bg); border: 1px solid var(--border-glow); color: var(--accent); padding: 10px 20px; margin: 15px 0; border-radius: 10px; font-size: 14px; text-align: center; animation: pulse 3s infinite; user-select: none; } @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } } </style>
+
 </head> 
 <script>
   setInterval(() => {
@@ -397,38 +339,39 @@ border-radius: 8px; box-shadow: 0 0 10px var(--accent); z-index: 9999;"></div>
       document.getElementById("balanceDisplay").textContent = "Balance: $" + (parseFloat(data.balance) || 0).toFixed(3);
     });
 
+    // Leaderboard
     db.ref("users").orderByChild("clicks").limitToLast(10).on("value", snap => {
       const rows = [];
-      snap.forEach(child => {
-        const d = child.val();
-        rows.unshift(d);
-      });
+      snap.forEach(child => rows.unshift(child.val()));
       const tbody = document.getElementById("leaderboardBody");
       tbody.innerHTML = "";
       rows.forEach((d, i) => {
         const tr = document.createElement("tr");
-        if (i === 0) tr.className = "gold";
-        else if (i === 1) tr.className = "silver";
-        else if (i === 2) tr.className = "bronze";
+        tr.className = i === 0 ? "gold" : i === 1 ? "silver" : i === 2 ? "bronze" : "";
         tr.innerHTML = `<td>${d.username || "User"}</td><td>${d.clicks || 0}</td><td>$${(d.earnings || 0).toFixed(3)}</td>`;
         tbody.appendChild(tr);
       });
     });
 
-    // GLOBAL ANNOUNCEMENT BAR
-    const announcementRef = db.ref("globalAnnouncements/latest");
+    // Global Announcement Bar
     const announcementBar = document.getElementById("announcementBar");
-    if (announcementBar) {
-      announcementRef.on("value", snapshot => {
-        const text = snapshot.val();
-        if (text) {
-          announcementBar.textContent = text;
-          announcementBar.style.display = "block";
-        } else {
+    const announcementRef = db.ref("globalAnnouncements/latest");
+
+    announcementRef.on("value", snapshot => {
+      const text = snapshot.val();
+      if (!text || !announcementBar || !currentUser) return;
+      const key = `announcementSeen_${currentUser.uid}_${btoa(text)}`;
+      if (!localStorage.getItem(key)) {
+        announcementBar.textContent = text;
+        announcementBar.style.display = "block";
+        localStorage.setItem(key, "true");
+        setTimeout(() => {
           announcementBar.style.display = "none";
-        }
-      });
-    }
+        }, 5000);
+      } else {
+        announcementBar.style.display = "none";
+      }
+    });
   });
 
   function earnMoney(button, amount, url = null) {
@@ -490,7 +433,7 @@ border-radius: 8px; box-shadow: 0 0 10px var(--accent); z-index: 9999;"></div>
     setTimeout(() => location.href = url, 300);
   }
 
-  // AUTO POPUP COUNTDOWN (assumes #countdown and #autoPopup exist)
+  // Auto Popup Countdown
   let seconds = 10;
   const countdownEl = document.getElementById('countdown');
   const popup = document.getElementById('autoPopup');
