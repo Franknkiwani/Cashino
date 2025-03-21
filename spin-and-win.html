@@ -156,121 +156,130 @@ margin-top: 1.5rem;
       <p>Click OK to continue spinning and support us by visiting a sponsor.</p>    
       <button onclick="window.location.href='https://whoushex.top/4/7950037'">OK</button>    
     </div>    
-  </div>    <!-- Firebase Setup -->    <script type="module">    
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";    
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";    
-  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";    const firebaseConfig = {
-apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-projectId: "itzhoyoo-f9f7e",
-storageBucket: "itzhoyoo-f9f7e.appspot.com",
-messagingSenderId: "1094792075584",
-appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-measurementId: "G-LLT6F9WRKH"
-};
+  </div>    <!-- Firebase Setup --> 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-const userName = document.getElementById('userName');
-const userBalance = document.getElementById('userBalance');
-const spinBtn = document.getElementById('spinBtn');
-const wheel = document.getElementById('wheel');
-const result = document.getElementById('result');
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-let currentUser = null;
-let spinCount = 0;
+  const userName = document.getElementById('userName');
+  const userBalance = document.getElementById('userBalance');
+  const spinBtn = document.getElementById('spinBtn');
+  const wheel = document.getElementById('wheel');
+  const result = document.getElementById('result');
 
-onAuthStateChanged(auth, user => {
-if (user) {
-currentUser = user;
-const email = user.email;
-const uid = user.uid;
-const username = email.split('@')[0];
-userName.textContent = username;
-document.getElementById("userAvatar").src = https://api.dicebear.com/7.x/pixel-art/svg?seed=${username};
+  let currentUser = null;
+  let spinCount = 0;
+  let lastPrize = null;
 
-const userRef = ref(db, `users/${uid}`);    
-  get(userRef).then(snapshot => {    
-    if (!snapshot.exists()) {    
-      set(userRef, {    
-        email,    
-        username,    
-        balance: 0,    
-        joinedAt: Date.now()    
-      });    
-    } else {    
-      const data = snapshot.val();    
-      userBalance.textContent = parseFloat(data.balance).toFixed(2);    
-    }    
-  });    
-}
+  const prizePool = [
+    0.10, 0.10, 0.10, 0.10, 0.10, // 5x low
+    0.25, 0.25, 0.25,
+    0.50, 0.50,
+    0.75,
+    0.90,
+    1.00,
+    2.00,
+    5.00
+  ];
 
-});
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUser = user;
+      const email = user.email;
+      const uid = user.uid;
+      const username = email.split('@')[0];
+      userName.textContent = username;
+      document.getElementById("userAvatar").src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;
 
-function getRandomPrize() {
-const rand = Math.random();
-if (rand < 0.05) return 5;
-else if (rand < 0.20) return 3;
-else if (rand < 0.50) return 2;
-else if (rand < 1.00) return Math.random() < 0.9 ? 0.25 : 1;
-}
+      const userRef = ref(db, `users/${uid}`);
+      get(userRef).then(snapshot => {
+        if (!snapshot.exists()) {
+          set(userRef, {
+            email,
+            username,
+            balance: 0,
+            joinedAt: Date.now()
+          });
+        } else {
+          const data = snapshot.val();
+          userBalance.textContent = parseFloat(data.balance).toFixed(2);
+        }
+      });
+    }
+  });
 
-function spinWheel() {
-const degrees = 3600 + Math.floor(Math.random() * 360);
-wheel.style.transform = rotate(${degrees}deg);
-}
+  function getNonRepeatingPrize() {
+    let filtered = prizePool.filter(p => p !== lastPrize);
+    let selected = filtered[Math.floor(Math.random() * filtered.length)];
+    lastPrize = selected;
+    return selected;
+  }
 
-spinBtn.addEventListener("click", () => {
-if (!currentUser) {
-alert("Please login to spin.");
-return;
-}
+  function spinWheel() {
+    const degrees = 3600 + Math.floor(Math.random() * 360);
+    wheel.style.transform = `rotate(${degrees}deg)`;
+  }
 
-const userRef = ref(db, `users/${currentUser.uid}`);    
-get(userRef).then(snapshot => {    
-  const userData = snapshot.val();    
-  let balance = parseFloat(userData.balance) || 0;    
+  spinBtn.addEventListener("click", () => {
+    if (!currentUser) {
+      alert("Please login to spin.");
+      return;
+    }
 
-  if (balance < 0.25) {    
-    alert("You need at least $0.25 to spin.");    
-    return;    
-  }    
+    const userRef = ref(db, `users/${currentUser.uid}`);
+    get(userRef).then(snapshot => {
+      const userData = snapshot.val();
+      let balance = parseFloat(userData.balance) || 0;
 
-  // Deduct $0.25    
-  const newBalance = (balance - 0.25).toFixed(2);    
-  update(userRef, { balance: newBalance });    
-  userBalance.textContent = newBalance;    
+      if (balance < 0.25) {
+        alert("You need at least $0.25 to spin.");
+        return;
+      }
 
-  spinBtn.disabled = true;    
-  spinWheel();    
+      const newBalance = (balance - 0.25).toFixed(2);
+      update(userRef, { balance: newBalance });
+      userBalance.textContent = newBalance;
 
-  setTimeout(() => {    
-    const prize = getRandomPrize();    
-    result.textContent = `You won $${prize.toFixed(2)}!`;    
+      spinBtn.disabled = true;
+      spinWheel();
 
-    const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);    
-    update(userRef, { balance: finalBalance });    
-    userBalance.textContent = finalBalance;    
+      setTimeout(() => {
+        const prize = getNonRepeatingPrize();
+        result.textContent = `You won $${prize.toFixed(2)}!`;
 
-    spinCount++;    
-    if (spinCount % 5 === 0) {    
-      document.getElementById('breakPopup').style.display = 'flex';    
-    }    
+        const finalBalance = (parseFloat(newBalance) + prize).toFixed(2);
+        update(userRef, { balance: finalBalance });
+        userBalance.textContent = finalBalance;
 
-    spinBtn.disabled = false;    
-  }, 4000);    
-});
+        spinCount++;
+        if (spinCount % 5 === 0) {
+          document.getElementById('breakPopup').style.display = 'flex';
+        }
 
-});
+        spinBtn.disabled = false;
+      }, 4000);
+    });
+  });
 
-// Odds popup "Let's Go" button handler
-document.getElementById('oddsOkayBtn').addEventListener('click', () => {
-document.getElementById('oddsPopup').style.display = 'none';
-});
-</script>    </script>
-
+  document.getElementById('oddsOkayBtn').addEventListener('click', () => {
+    document.getElementById('oddsPopup').style.display = 'none';
+  });
+</script>
 </body>    
 </html>
