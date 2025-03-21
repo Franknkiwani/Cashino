@@ -131,13 +131,14 @@
     import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID",
-      databaseURL: "https://YOUR_PROJECT.firebaseio.com"
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -152,8 +153,8 @@
 
     let userData = null;
 
-    const prizes = [0.05, 0.1, 0.05, 0.1, 0.25, 0.5, 1, 3]; // weighted
-    const weights = [25, 25, 20, 20, 5, 3, 1.5, 0.5]; // matches prizes
+    const prizes = [0.05, 0.1, 0.05, 0.1, 0.25, 0.5, 1, 3];
+    const weights = [25, 25, 20, 20, 5, 3, 1.5, 0.5];
 
     function getWeightedPrize() {
       const total = weights.reduce((a, b) => a + b, 0);
@@ -163,7 +164,7 @@
         cumulative += weights[i];
         if (rand < cumulative) return prizes[i];
       }
-      return 0.05; // fallback
+      return 0.05;
     }
 
     onAuthStateChanged(auth, user => {
@@ -174,29 +175,37 @@
       onValue(userRef, snapshot => {
         if (snapshot.exists()) {
           userData = snapshot.val();
-          usernameEl.textContent = userData.username || "Unknown";
+          usernameEl.textContent = userData.username || user.email;
           balanceEl.textContent = `$${(userData.earnings || 0).toFixed(2)}`;
+        } else {
+          // Init user if missing
+          set(userRef, {
+            email: user.email,
+            username: user.email.split('@')[0],
+            earnings: 0,
+            joinedAt: Date.now()
+          });
         }
       });
 
       spinBtn.onclick = () => {
         spinBtn.disabled = true;
-        const degree = 3600 + Math.floor(Math.random() * 360); // fast spin
+        resultText.textContent = "";
+        const degree = 3600 + Math.floor(Math.random() * 360);
         const prize = getWeightedPrize();
         wheel.style.transform = `rotate(${degree}deg)`;
 
         setTimeout(() => {
           resultText.textContent = `You won $${prize.toFixed(2)}!`;
 
-          // update user balance
           const newEarnings = (userData.earnings || 0) + prize;
           update(ref(db, "users/" + uid), {
-            earnings: newEarnings,
+            earnings: newEarnings
           });
 
           balanceEl.textContent = `$${newEarnings.toFixed(2)}`;
           spinBtn.disabled = false;
-        }, 4000); // match transition duration
+        }, 4000);
       };
     });
   </script>
