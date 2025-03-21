@@ -1,19 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CyberPay</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- EmailJS -->
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
-  <!-- Firebase -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CutePay</title>
+  <style>
+    :root {
+      --primary: #ff69b4;
+      --accent: #ff8fab;
+      --bg: #fff0f5;
+      --glass: rgba(255, 255, 255, 0.6);
+      --blur: blur(8px);
+      --text: #333;
+      --radius: 14px;
+      --font: 'Poppins', sans-serif;
+    }
+    * {
+      font-family: var(--font);
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+    body {
+      background: var(--bg);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    h1 {
+      margin-top: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      margin: 20px auto;
+      text-align: center;
+    }
+    input, button, select {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    button {
+      background: var(--primary);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--accent);
+      transition: 0.2s ease;
+    }
+    button:hover {
+      opacity: 0.95;
+      transform: scale(1.02);
+    }
+    .success {
+      color: green;
+      margin-top: 10px;
+    }
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: var(--blur);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .popup {
+      background: var(--glass);
+      padding: 25px;
+      border-radius: var(--radius);
+      text-align: center;
+      box-shadow: 0 0 30px rgba(0,0,0,0.2);
+    }
+    .popup p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .popup button {
+      background: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <h1>CutePay</h1>
+
+  <div class="card">
+    <p><strong>Email:</strong> <span id="user-email">Loading...</span></p>
+    <p><strong>Earnings:</strong> $<span id="earnings">0.00</span></p>
+  </div>
+
+  <div class="card">
+    <h2>Send Money</h2>
+    <input type="email" id="recipientEmail" placeholder="Recipient Email" />
+    <select id="onlineUsers">
+      <option value="">Select Online User</option>
+    </select>
+    <input type="number" id="amount" placeholder="Amount (USD)" min="0.01" step="0.01" />
+    <button id="sendBtn">Send</button>
+    <div class="success" id="successMsg"></div>
+    <div class="error" id="errorMsg"></div>
+  </div>
+
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup">
+      <p id="popupMessage">...</p>
+      <button onclick="document.getElementById('popupOverlay').style.display='none'">Okay</button>
+    </div>
+  </div>
+
   <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, update, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, onValue, get, set, update, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    // Your web app's Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -22,233 +141,121 @@
       storageBucket: "itzhoyoo-f9f7e.appspot.com",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    const auth = getAuth();
+    const db = getDatabase();
 
-    // Initialize EmailJS
-    window.addEventListener("DOMContentLoaded", () => {
-      emailjs.init("SMeLjyyZsaSoBWGgZ");
+    let currentUser = null;
 
-      const balanceEl = document.getElementById("balance");
-      const sendBtn = document.getElementById("sendBtn");
-      const emailInput = document.getElementById("emailInput");
-      const amountInput = document.getElementById("amountInput");
-      const onlineUsersList = document.getElementById("onlineUsers");
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return location.href = "login.html";
+      currentUser = user;
+      const uid = user.uid;
+      const userRef = ref(db, `users/${uid}`);
 
-      let currentUserEmail = "";
-      let currentUserUID = "";
+      set(ref(db, `users/${uid}/online`), true);
 
-      onAuthStateChanged(auth, user => {
-        if (user) {
-          currentUserEmail = user.email;
-          currentUserUID = user.uid;
-          const earningsRef = ref(db, `users/${user.uid}/earnings`);
-          onValue(earningsRef, snap => {
-            const balance = snap.val() || 0;
-            balanceEl.textContent = `$${balance.toFixed(2)}`;
-          });
+      onValue(userRef, (snap) => {
+        const data = snap.val() || {};
+        document.getElementById("user-email").textContent = data.email || user.email;
+        document.getElementById("earnings").textContent = (data.earnings || 0).toFixed(2);
 
-          // Fetch online users
-          const onlineUsersRef = ref(db, 'onlineUsers');
-          onValue(onlineUsersRef, snapshot => {
-            onlineUsersList.innerHTML = ''; // Clear the list
-            let count = 0;
-            snapshot.forEach(childSnapshot => {
-              if (count < 5) {
-                const userData = childSnapshot.val();
-                if (userData.email !== currentUserEmail) {
-                  const listItem = document.createElement('li');
-                  listItem.textContent = userData.email;
-                  listItem.addEventListener('click', () => {
-                    emailInput.value = userData.email;
-                  });
-                  onlineUsersList.appendChild(listItem);
-                  count++;
-                }
-              }
-            });
-          });
-        } else {
-          alert("You're not logged in.");
-          window.location.href = "/login.html";
+        if (data.popup) {
+          showPopup(data.popup);
+          set(ref(db, `users/${uid}/popup`), null); // Clear popup after showing
         }
       });
 
-      sendBtn.addEventListener("click", async () => {
-        const recipient = emailInput.value.trim();
-        const amount = parseFloat(amountInput.value);
+      loadOnlineUsers(uid);
+    });
 
-        if (!recipient || isNaN(amount) || amount <= 0) {
-          alert("Enter a valid email and amount.");
-          return;
+    function showPopup(msg) {
+      const popup = document.getElementById("popupOverlay");
+      document.getElementById("popupMessage").textContent = msg;
+      popup.style.display = "flex";
+    }
+
+    async function loadOnlineUsers(currentUid) {
+      const usersRef = ref(db, "users");
+      const snap = await get(usersRef);
+      const users = snap.val();
+      const select = document.getElementById("onlineUsers");
+      select.innerHTML = `<option value="">Select Online User</option>`;
+      let count = 0;
+      for (let uid in users) {
+        if (uid !== currentUid && users[uid].online && count < 5) {
+          const email = users[uid].email;
+          const option = document.createElement("option");
+          option.value = email;
+          option.textContent = email;
+          select.appendChild(option);
+          count++;
         }
+      }
+    }
 
-        const senderRef = ref(db, `users/${currentUserUID}/earnings`);
-        const senderSnap = await get(senderRef);
-        const senderBalance = senderSnap.val() || 0;
+    document.getElementById("sendBtn").addEventListener("click", async () => {
+      const toEmail = document.getElementById("recipientEmail").value.trim() || document.getElementById("onlineUsers").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+      errorMsg.textContent = "";
+      successMsg.textContent = "";
 
-        if (senderBalance < amount) {
-          alert("Insufficient earnings.");
-          return;
+      if (!toEmail || isNaN(amount) || amount <= 0) {
+        errorMsg.textContent = "Enter valid recipient and amount.";
+        return;
+      }
+
+      const usersSnap = await get(ref(db, "users"));
+      const users = usersSnap.val();
+      let recipientUid = null;
+      for (let uid in users) {
+        if (users[uid].email === toEmail) {
+          recipientUid = uid;
+          break;
         }
+      }
+      if (!recipientUid) {
+        errorMsg.textContent = "Recipient not found.";
+        return;
+      }
 
-        const usersRef = ref(db, "users");
-        const usersSnap = await get(usersRef);
-        let recipientUID = null;
+      const senderRef = ref(db, `users/${currentUser.uid}`);
+      const senderSnap = await get(senderRef);
+      const sender = senderSnap.val();
+      const senderEarnings = sender.earnings || 0;
 
-        usersSnap.forEach(child => {
-          if (child.val().email === recipient) {
-            recipientUID = child.key;
-          }
-        });
+      if (senderEarnings < amount) {
+        errorMsg.textContent = "Insufficient earnings.";
+        return;
+      }
 
-        if (!recipientUID) {
-          alert("Recipient not found.");
-          return;
-        }
+      const recipientRef = ref(db, `users/${recipientUid}`);
+      const recipientSnap = await get(recipientRef);
+      const recipient = recipientSnap.val();
+      const recipientEarnings = recipient.earnings || 0;
 
-        const recipientRef = ref(db, `users/${recipientUID}/earnings`);
-        const recipientSnap = await get(recipientRef);
-        const recipientBalance = recipientSnap.val() || 0;
+      await update(senderRef, { earnings: senderEarnings - amount });
+      await update(recipientRef, { earnings: recipientEarnings + amount });
 
-        const updates = {};
-        updates[`users/${currentUserUID}/earnings`] = senderBalance - amount;
-        updates[`users/${recipientUID}/earnings`] = recipientBalance + amount;
+      await set(ref(db, `users/${recipientUid}/popup`), `You received $${amount.toFixed(2)} from ${currentUser.email}`);
+      await set(ref(db, `users/${currentUser.uid}/popup`), `You sent $${amount.toFixed(2)} to ${toEmail}`);
 
-        await update(ref(db), updates);
+      document.getElementById("recipientEmail").value = "";
+      document.getElementById("amount").value = "";
+      document.getElementById("onlineUsers").value = "";
 
-        emailjs.send("service_r5vg9am", "template_3bpotxr", {
-          from_email: currentUserEmail,
-          to_email: recipient
-        }).then(() => {
-          console.log("Email sent!");
-        }).catch(err => {
-          console.error("Email error:", err);
-        });
+      successMsg.textContent = "Money sent!";
+    });
 
-        alert("Money sent successfully!");
-        emailInput.value = "";
-        amountInput.value = "";
-      });
+    window.addEventListener("beforeunload", () => {
+      if (currentUser) {
+        set(ref(db, `users/${currentUser.uid}/online`), false);
+      }
     });
   </script>
-  <!-- Styles -->
-  <style>
-    * {
-      -webkit-user-select: none;
-      user-select: none;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-      background: url('https://images.unsplash.com/photo-1565372912017-1a47a7b0b0c4') no-repeat center center fixed;
-      background-size: cover;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      flex-direction: column;
-    }
-
-    .container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 16px;
-      padding: 30px;
-      width: 90%;
-      max-width: 500px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2em;
-      margin-bottom: 20px;
-      color: #0ff;
-      text-shadow: 0 0 5px #0ff;
-    }
-
-    .balance {
-      text-align: center;
-      font-size: 1.5em;
-      margin-bottom: 30px;
-    }
-
-    input[type="email"],
-    input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 15px;
-      font-size: 1em;
-      background-color: rgba(255, 255, 255, 0.2);
-      color: #fff;
-      outline: none;
-    }
-
-    input::placeholder {
-      color: #ccc;
-    }
-
-    #sendBtn {
-      background-color: #0ff;
-      border: none;
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      font-size: 1.1em;
-      font-weight: bold;
-      color: #000;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    #sendBtn:hover {
-      background-color: #00cccc;
-    }
-
-    ul#onlineUsers {
-      list-style: none;
-      margin-top: 20px;
-      padding: 0;
-      max-height: 100px;
-      overflow-y: auto;
-    }
-
-    ul#onlineUsers li {
-      padding: 8px 10px;
-      background-color: rgba(255, 255, 255, 0.1);
-      margin-bottom: 8px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    ul#onlineUsers li:hover {
-      background-color: rgba(0, 255, 255, 0.2);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>CyberPay</h1>
-    <div class="balance">Earnings: <span id="balance">$0.00</span></div>
-    <input type="email" id="emailInput" placeholder="Enter recipient's email">
-    <input type="number" id="amountInput" placeholder="Enter amount to send" min="0.01" step="0.01">
-    <button id="sendBtn">Send Money</button>
-
-    <ul id="onlineUsers"></ul>
-  </div>
 </body>
 </html>
