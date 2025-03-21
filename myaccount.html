@@ -1,241 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>My Account - Cashify</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
-
-  <!-- Styles -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Account</title>
   <style>
     :root {
-      --bg: #0d0d0d;
+      --bg: #0e0e0e;
       --card-bg: #1a1a1a;
-      --primary: #00ffc8;
-      --accent: #ff0077;
+      --accent: #00ffc8;
       --text: #ffffff;
-      --muted: #999999;
+      --muted: #888;
       --glass: rgba(255, 255, 255, 0.05);
     }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-    }
-    body {
-      background-color: var(--bg);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: var(--text);
-      padding: 2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      position: relative;
-    }
-    .container {
-      background: var(--glass);
-      border: 1px solid var(--primary);
-      border-radius: 12px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 500px;
-      box-shadow: 0 0 20px var(--primary);
-      position: relative;
-      z-index: 1;
-    }
-    h2 {
-      margin-bottom: 1rem;
-      text-align: center;
-      color: var(--primary);
-    }
-    .info-group {
-      margin-bottom: 1.2rem;
-    }
-    .label {
-      font-size: 0.9rem;
-      color: var(--muted);
-    }
-    .value {
-      font-size: 1.1rem;
-      margin-top: 0.3rem;
-      color: var(--text);
-    }
-    .actions {
-      margin-top: 2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    button {
-      background: var(--primary);
-      color: #000;
-      border: none;
-      padding: 0.75rem;
-      font-size: 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-    button:hover {
-      background: var(--accent);
-      color: white;
-    }
-    .logout, .delete {
-      background: transparent;
-      color: var(--accent);
-      border: 1px solid var(--accent);
-    }
-    .logout:hover, .delete:hover {
-      background: var(--accent);
-      color: #000;
+      font-family: "Segoe UI", sans-serif;
     }
 
-    /* Toast Alert */
+    body {
+      background: var(--bg);
+      color: var(--text);
+      padding: 2rem;
+    }
+
+    .account-container {
+      max-width: 600px;
+      margin: auto;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 10px;
+      border: 1px solid var(--accent);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+    }
+
+    .info-group {
+      margin-bottom: 1rem;
+    }
+
+    .info-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+    }
+
+    .info-group span {
+      color: var(--muted);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #000;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 1rem;
+      transition: background 0.3s;
+    }
+
+    .btn:hover {
+      background: #00e6b3;
+    }
+
+    .danger {
+      background: #ff4d4d;
+      color: #fff;
+    }
+
     .toast {
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--card-bg);
-      color: var(--text);
-      border: 1px solid var(--primary);
+      color: var(--accent);
       padding: 1rem 2rem;
-      border-radius: 10px;
-      box-shadow: 0 0 15px var(--primary);
-      z-index: 9999;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
       display: none;
+      z-index: 9999;
     }
 
-    /* Logout Overlay */
-    .logout-overlay {
+    #logoutScreen {
+      display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(6px);
-      display: flex;
-      justify-content: center;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
       align-items: center;
-      color: white;
-      font-size: 1.8rem;
-      z-index: 9998;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 1.5rem;
+    }
+
+    /* Delete Modal */
+    #deleteModal {
       display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #deleteModal .modal-box {
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      border: 1px solid var(--accent);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    #deleteModal button {
+      margin: 0.5rem;
+      padding: 0.7rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #confirmDeleteBtn {
+      background: var(--accent);
+      color: #000;
+    }
+
+    #cancelDeleteBtn {
+      background: transparent;
+      border: 1px solid var(--muted);
+      color: var(--muted);
     }
   </style>
 </head>
 <body>
-
-<div class="toast" id="toast">Toast Message</div>
-<div class="logout-overlay" id="logoutOverlay">Logging out...</div>
-
-<div class="container">
-  <h2>My Account</h2>
-  <div class="info-group">
-    <div class="label">Username</div>
-    <div class="value" id="username">Loading...</div>
+  <div class="account-container">
+    <h2>My Account</h2>
+    <div class="info-group">
+      <label>Name:</label>
+      <span id="username">Loading...</span>
+    </div>
+    <div class="info-group">
+      <label>Email:</label>
+      <span id="email">Loading...</span>
+    </div>
+    <div class="info-group">
+      <label>Balance:</label>
+      <span id="balance">Loading...</span>
+    </div>
+    <button class="btn" id="resetPasswordBtn">Reset Password</button>
+    <button class="btn" id="logoutBtn">Logout</button>
+    <button class="btn danger" id="deleteAccountBtn">Delete Account</button>
   </div>
-  <div class="info-group">
-    <div class="label">Email</div>
-    <div class="value" id="email">Loading...</div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">Email sent</div>
+
+  <!-- Logging Out Screen -->
+  <div id="logoutScreen">Logging out...</div>
+
+  <!-- Delete Modal -->
+  <div id="deleteModal">
+    <div class="modal-box">
+      <h3 style="color: var(--accent); margin-bottom: 1rem;">Delete Your Account?</h3>
+      <p style="color: var(--muted); margin-bottom: 2rem;">This action is permanent. Are you sure?</p>
+      <div style="display: flex; gap: 1rem; justify-content: center;">
+        <button id="confirmDeleteBtn">Yes, Delete</button>
+        <button id="cancelDeleteBtn">Cancel</button>
+      </div>
+    </div>
   </div>
-  <div class="info-group">
-    <div class="label">Balance</div>
-    <div class="value" id="balance">Loading...</div>
-  </div>
-  <div class="actions">
-    <button id="resetPasswordBtn">Reset Password</button>
-    <button class="logout" id="logoutBtn">Log Out</button>
-    <button class="delete" id="deleteAccountBtn">Delete Account</button>
-  </div>
-</div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, sendPasswordResetEmail, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut, sendPasswordResetEmail, deleteUser } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.appspot.com",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
 
-  const usernameEl = document.getElementById("username");
-  const emailEl = document.getElementById("email");
-  const balanceEl = document.getElementById("balance");
-  const toast = document.getElementById("toast");
-  const logoutOverlay = document.getElementById("logoutOverlay");
+    const usernameEl = document.getElementById("username");
+    const emailEl = document.getElementById("email");
+    const balanceEl = document.getElementById("balance");
+    const toast = document.getElementById("toast");
+    const logoutScreen = document.getElementById("logoutScreen");
 
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      emailEl.textContent = user.email;
-      const name = user.email.split('@')[0];
-      usernameEl.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    const deleteModal = document.getElementById("deleteModal");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 
-      const userRef = ref(db, "users/" + user.uid + "/balance");
-      onValue(userRef, snapshot => {
-        balanceEl.textContent = "$" + (snapshot.val()?.toFixed(2) || "0.00");
-      });
-    } else {
-      window.location.href = "index.html";
-    }
-  });
-
-  // Show Toast
-  function showToast(message) {
-    toast.textContent = message;
-    toast.style.display = "block";
-    setTimeout(() => {
-      toast.style.display = "none";
-    }, 3000);
-  }
-
-  // Reset password
-  document.getElementById("resetPasswordBtn").addEventListener("click", () => {
-    const user = auth.currentUser;
-    if (user) {
-      sendPasswordResetEmail(auth, user.email)
-        .then(() => showToast("Reset email sent to " + user.email))
-        .catch(err => showToast("Error: " + err.message));
-    }
-  });
-
-  // Logout
-  document.getElementById("logoutBtn").addEventListener("click", () => {
-    logoutOverlay.style.display = "flex";
-    setTimeout(() => {
-      signOut(auth).then(() => {
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        emailEl.textContent = user.email;
+        const userId = user.uid;
+        const userRef = ref(db, "users/" + userId);
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          usernameEl.textContent = data.username || "Unknown";
+          balanceEl.textContent = `$${(data.balance || 0).toFixed(2)}`;
+        } else {
+          usernameEl.textContent = "Not found";
+          balanceEl.textContent = "$0.00";
+        }
+      } else {
         window.location.href = "index.html";
-      });
-    }, 3000);
-  });
+      }
+    });
 
-  // Delete account
-  document.getElementById("deleteAccountBtn").addEventListener("click", () => {
-    if (confirm("Are you sure you want to permanently delete your account? This cannot be undone.")) {
+    document.getElementById("resetPasswordBtn").addEventListener("click", () => {
+      const user = auth.currentUser;
+      if (user && user.email) {
+        sendPasswordResetEmail(auth, user.email).then(() => {
+          showToast("Password reset email sent");
+        }).catch((err) => {
+          showToast("Error: " + err.message);
+        });
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      logoutScreen.style.display = "flex";
+      setTimeout(() => {
+        signOut(auth).then(() => {
+          window.location.href = "index.html";
+        });
+      }, 3000);
+    });
+
+    document.getElementById("deleteAccountBtn").addEventListener("click", () => {
+      deleteModal.style.display = "flex";
+    });
+
+    cancelDeleteBtn.addEventListener("click", () => {
+      deleteModal.style.display = "none";
+    });
+
+    confirmDeleteBtn.addEventListener("click", () => {
       const user = auth.currentUser;
       if (user) {
         deleteUser(user).then(() => {
+          deleteModal.style.display = "none";
           showToast("Account deleted.");
           setTimeout(() => window.location.href = "index.html", 2000);
         }).catch(err => {
           showToast("Error: " + err.message);
+          deleteModal.style.display = "none";
         });
       }
+    });
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.style.display = "block";
+      setTimeout(() => {
+        toast.style.display = "none";
+      }, 3000);
     }
-  });
-</script>
+  </script>
 </body>
 </html>
