@@ -2,134 +2,158 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Spin to Win | Cashify</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spin to Win - Cyberpunk</title>
   <style>
     :root {
+      --primary: #00f0ff;
+      --accent: #ff2cdf;
+      --danger: #ff4e4e;
+      --win: #7bff91;
       --glass-bg: rgba(0, 0, 0, 0.6);
-      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
-      --primary: #0ff;
-      --accent: #f0f;
-      --danger: #f00;
-      --win: #0f0;
     }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-    }
+
     body {
-      background: radial-gradient(circle at top, #0f0f0f, #000);
+      margin: 0;
+      background: #0e0e0e;
       font-family: 'Segoe UI', sans-serif;
       color: white;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
     }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      text-shadow: 0 0 5px var(--primary);
-    }
-    #balance {
-      font-size: 1.2rem;
-      margin-bottom: 2rem;
-    }
-    .wheel-container {
-      position: relative;
+
+    #wheel {
       width: 300px;
       height: 300px;
       border-radius: 50%;
+      border: 8px solid var(--primary);
+      position: relative;
+      margin-bottom: 20px;
       overflow: hidden;
-      border: 4px solid var(--primary);
-      box-shadow: var(--border-glow);
+      box-shadow: 0 0 30px var(--primary);
     }
-    #wheel {
-      width: 100%;
-      height: 100%;
-      transition: transform 4s cubic-bezier(0.33, 1, 0.68, 1);
-      background: conic-gradient(
-        #222 0% 12.5%, #0ff 12.5% 25%, #222 25% 37.5%, #0f0 37.5% 50%,
-        #222 50% 62.5%, #ff0 62.5% 75%, #222 75% 87.5%, #f0f 87.5% 100%
-      );
+
+    .segment {
+      width: 50%;
+      height: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform-origin: 0 0;
+      background: var(--glass-bg);
+      border: 1px solid var(--accent);
+      box-shadow: inset 0 0 5px var(--accent);
     }
-    .pointer {
+
+    #pointer {
       position: absolute;
       top: -20px;
       left: 50%;
       transform: translateX(-50%);
       width: 0;
       height: 0;
-      border-left: 12px solid transparent;
-      border-right: 12px solid transparent;
-      border-bottom: 20px solid var(--accent);
+      border-left: 15px solid transparent;
+      border-right: 15px solid transparent;
+      border-bottom: 25px solid var(--accent);
+      z-index: 10;
     }
-    button {
-      margin-top: 2rem;
-      padding: 0.8rem 1.5rem;
-      border: none;
-      background: var(--primary);
-      color: #000;
-      font-weight: bold;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 5px;
-      box-shadow: var(--border-glow);
-      transition: 0.3s;
-    }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+
     #result {
-      margin-top: 1.5rem;
+      margin-top: 10px;
       font-size: 1.2rem;
     }
-    #leaderboard {
-      margin-top: 3rem;
-      width: 90%;
-      max-width: 400px;
-      background: var(--glass-bg);
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: var(--border-glow);
+
+    button {
+      padding: 0.7rem 1.4rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      color: black;
+      box-shadow: 0 0 10px var(--accent);
     }
-    #leaderboard h2 {
-      font-size: 1.3rem;
-      margin-bottom: 1rem;
+
+    #popupOverlay, #oddsPopup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 9999;
     }
-    .leaderboard-entry {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid var(--primary);
-      padding-bottom: 0.3rem;
+
+    .popupBox {
+      background: rgba(15, 15, 15, 0.95);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 25px var(--accent);
+      max-width: 350px;
+      text-align: center;
+    }
+
+    .popupBox h2 {
+      color: var(--primary);
+    }
+
+    .popupBox p, .popupBox ul {
+      color: #ccc;
+    }
+
+    .popupBox ul {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+      text-align: left;
+    }
+
+    .popupBox button {
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
-  <h1>Spin to Win</h1>
-  <div id="balance">Balance: Loading...</div>
-
-  <div class="wheel-container">
-    <div class="pointer"></div>
-    <div id="wheel"></div>
-  </div>
-
-  <button id="spinBtn">SPIN ($0.25)</button>
+  <div id="pointer"></div>
+  <div id="wheel"></div>
+  <button id="spinBtn">Spin</button>
   <div id="result"></div>
 
-  <div id="leaderboard">
-    <h2>Top Spinners</h2>
-    <div id="topUsers">Loading...</div>
+  <!-- Prize Odds Popup -->
+  <div id="oddsPopup">
+    <div class="popupBox">
+      <h2>Prize Chances</h2>
+      <ul>
+        <li>$1 — <strong>50%</strong></li>
+        <li>$2 — <strong>30%</strong></li>
+        <li>$3 — <strong>20%</strong></li>
+        <li>$5 Jackpot — <strong>1%</strong></li>
+      </ul>
+      <p><em>Test your luck — you never know...</em></p>
+      <button id="oddsOkay">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Break Popup -->
+  <div id="popupOverlay">
+    <div class="popupBox">
+      <h2>Take a Short Break</h2>
+      <p>Clear your head. Stretch. Click okay to continue.</p>
+      <button id="popupOkay">Okay</button>
+    </div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, update, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -143,60 +167,64 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
     const auth = getAuth();
-    const db = getDatabase();
 
     const wheel = document.getElementById('wheel');
     const spinBtn = document.getElementById('spinBtn');
     const resultDiv = document.getElementById('result');
-    const balanceDiv = document.getElementById('balance');
-    const topUsersDiv = document.getElementById('topUsers');
+    const segments = [1, 1, 1, 2, 2, 3, 3, 0, 0, 0];
+    let currentUser, isSpinning = false, spinCount = 0;
 
-    const prizes = [0, 0.1, 0.25, 0.5, 1, 2, 5, 0];
-    let currentUser = null;
-    let isSpinning = false;
+    // Build wheel
+    segments.forEach((value, i) => {
+      const segment = document.createElement('div');
+      segment.className = 'segment';
+      const angle = (360 / segments.length) * i;
+      segment.style.transform = `rotate(${angle}deg) skewY(-60deg)`;
+      segment.innerHTML = `<div style="transform:skewY(60deg) rotate(${360 / segments.length / 2}deg);position:absolute;top:10px;left:10px;">$${value}</div>`;
+      wheel.appendChild(segment);
+    });
 
-    const rotateWheel = () => {
-      const index = Math.floor(Math.random() * prizes.length);
-      const degrees = 360 * 5 + (index * 45);
-      wheel.style.transform = `rotate(${degrees}deg)`;
-      return { prize: prizes[index], index };
+    // Prize Odds Popup
+    window.addEventListener('load', () => {
+      document.getElementById('oddsPopup').style.display = 'flex';
+      document.getElementById('oddsOkay').onclick = () => {
+        document.getElementById('oddsPopup').style.display = 'none';
+      };
+    });
+
+    // Break popup after 5 spins
+    document.getElementById('popupOkay').onclick = () => {
+      document.getElementById('popupOverlay').style.display = 'none';
+      window.location.href = 'https://whoushex.top/4/7950037';
     };
 
-    const updateBalance = (uid, change) => {
+    function updateBalance(uid, amount) {
       const userRef = ref(db, 'users/' + uid);
       get(userRef).then(snapshot => {
         const user = snapshot.val();
-        let newBalance = (user?.balance || 0) + change;
-        newBalance = Math.max(0, newBalance);
+        const currentBalance = user?.balance || 0;
         update(userRef, {
-          balance: parseFloat(newBalance.toFixed(2)),
-          profit: (user?.profit || 0) + change,
-          spins: (user?.spins || 0) + 1
+          balance: currentBalance + amount
         });
       });
-    };
+    }
 
-    const showBalance = (uid) => {
-      onValue(ref(db, 'users/' + uid), snap => {
-        const bal = snap.val()?.balance || 0;
-        balanceDiv.textContent = `Balance: $${bal.toFixed(2)}`;
-      });
-    };
+    function rotateWheel() {
+      const index = Math.floor(Math.random() * segments.length);
+      const angle = 3600 + (360 / segments.length) * index;
+      wheel.style.transition = 'transform 4s ease-out';
+      wheel.style.transform = `rotate(${angle}deg)`;
+      return { index, prize: segments[index] };
+    }
 
-    const loadLeaderboard = () => {
-      const usersRef = ref(db, 'users');
-      onValue(usersRef, snap => {
-        const users = snap.val() || {};
-        const sorted = Object.entries(users)
-          .filter(([_, v]) => v.spins)
-          .sort((a, b) => (b[1].profit || 0) - (a[1].profit || 0))
-          .slice(0, 5);
-        topUsersDiv.innerHTML = sorted.map(([_, u]) =>
-          `<div class="leaderboard-entry"><span>${u.email}</span><span>$${(u.profit || 0).toFixed(2)}</span></div>`
-        ).join('');
-      });
-    };
+    function tryJackpot(uid) {
+      if (Math.random() < 0.01) {
+        updateBalance(uid, 5);
+        resultDiv.innerHTML += `<br><span style="color:gold;font-weight:bold;">JACKPOT! You won $5!</span>`;
+      }
+    }
 
     spinBtn.onclick = () => {
       if (isSpinning) return;
@@ -214,16 +242,25 @@
           spinBtn.disabled = false;
           return;
         }
+
         updateBalance(currentUser.uid, -cost);
         const { prize } = rotateWheel();
 
         setTimeout(() => {
+          spinCount++;
           if (prize > 0) {
             updateBalance(currentUser.uid, prize);
             resultDiv.innerHTML = `<span style="color:var(--win)">You won $${prize.toFixed(2)}!</span>`;
           } else {
             resultDiv.innerHTML = `<span style="color:var(--danger)">Try again!</span>`;
           }
+
+          tryJackpot(currentUser.uid);
+
+          if (spinCount % 5 === 0) {
+            document.getElementById('popupOverlay').style.display = 'flex';
+          }
+
           isSpinning = false;
           spinBtn.disabled = false;
         }, 4200);
@@ -239,17 +276,12 @@
             set(userRef, {
               email: user.email,
               balance: 2,
-              profit: 0,
-              spins: 0,
               joinedAt: Date.now()
             });
           }
         });
-        showBalance(user.uid);
-        loadLeaderboard();
       } else {
-        const provider = new GoogleAuthProvider();
-        signInWithPopup(auth, provider).catch(console.error);
+        window.location.href = "login.html";
       }
     });
   </script>
