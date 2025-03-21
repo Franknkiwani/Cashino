@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment Proofs</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --card-bg: #1a1a1a;
+      --text: #ffffffcc;
+      --accent: #ff66cc;
+      --success: #66ff99;
+      --glow: 0 0 8px #ff66cc66;
+      --rounded: 12px;
+      --shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 2rem;
+    }
+
+    .proof-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .proof-card {
+      background: var(--card-bg);
+      border-radius: var(--rounded);
+      box-shadow: var(--shadow);
+      padding: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    .proof-info {
+      flex: 1;
+    }
+
+    .username {
+      font-weight: bold;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .amount {
+      color: var(--success);
+      font-size: 1rem;
+      margin-top: 0.2rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    * {
+  -webkit-user-select: none;  /* Safari/Chrome */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* IE/Edge */
+  user-select: none;          /* Standard */
+}
+  </style>
+</head>
+<body>
+  <h1>Recent Cashouts</h1>
+  <div class="proof-container" id="proofContainer"></div>
+
+  <script>
+    const usernames = [
+      'Luna88', 'CashQueen', 'MiloZ', 'CryptoCat', 'PixiePay', 
+      'StarBucks23', 'NeoClicker', 'BubbleGum', 'FrostyChan', 'WinWitch',
+      'GlitchFame', 'CherryDrop', 'Hackerella', 'LootPixie', 'DreamCatcher'
+    ];
+
+    function getRandomAmount() {
+      const r = Math.random();
+      if (r < 0.7) return (Math.random() * 10 + 15).toFixed(2);        // $15–$25 (common)
+      else if (r < 0.95) return (Math.random() * 25 + 25).toFixed(2);   // $25–$50 (less common)
+      else return (Math.random() * 50 + 50).toFixed(2);                 // $50–$100 (rare)
+    }
+
+    function getRandomAvatar() {
+      const id = Math.floor(Math.random() * 70) + 1;
+      return `https://i.pravatar.cc/150?img=${id}`;
+    }
+
+    function getRandomUsername() {
+      return usernames[Math.floor(Math.random() * usernames.length)];
+    }
+
+    function createProofCard() {
+      const div = document.createElement('div');
+      div.className = 'proof-card';
+      div.innerHTML = `
+        <img class="avatar" src="${getRandomAvatar()}" alt="User Avatar">
+        <div class="proof-info">
+          <div class="username">${getRandomUsername()}</div>
+          <div class="amount">Cashed out $${getRandomAmount()}</div>
+        </div>
+      `;
+      return div;
+    }
+
+    const container = document.getElementById('proofContainer');
+    for (let i = 0; i < 24; i++) {
+      container.appendChild(createProofCard());
+    }
+
+    // Optional: Add new proof every few seconds
+    setInterval(() => {
+      const newCard = createProofCard();
+      container.insertBefore(newCard, container.firstChild);
+      if (container.children.length > 30) {
+        container.removeChild(container.lastChild);
+      }
+    }, 4000);
+  </script>
+</body>
+</html>
