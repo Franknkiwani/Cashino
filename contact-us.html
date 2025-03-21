@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Contact Us</title>
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
+      --primary: #00f0ff;
+      --accent: #ff00f7;
+    }
+
+    body {
+      background: #0a0a0a;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .contact-container {
+      background: var(--glass-bg);
+      border: 1px solid var(--primary);
+      border-radius: 12px;
+      padding: 30px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: var(--border-glow);
+      backdrop-filter: blur(8px);
+    }
+
+    .contact-container h2 {
+      margin-top: 0;
+      color: var(--primary);
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--accent);
+      padding: 15px;
+      color: white;
+      resize: none;
+      font-size: 16px;
+      outline: none;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    .email-label {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #aaa;
+      text-align: right;
+    }
+
+    button {
+      width: 100%;
+      margin-top: 20px;
+      padding: 12px;
+      background: var(--accent);
+      border: none;
+      color: black;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 12px var(--accent);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: white;
+      color: var(--accent);
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="contact-container">
+    <h2>Contact Us</h2>
+    <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+    <div class="email-label" id="userEmail">From: Loading...</div>
+    <button id="sendBtn">Send Message</button>
+    <div class="status" id="statusMsg"></div>
+  </div>
+
+  <script type="module">
+    // Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
+
+    const userEmailDiv = document.getElementById('userEmail');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUser = user;
+        userEmailDiv.textContent = `From: ${user.email}`;
+      } else {
+        userEmailDiv.textContent = 'From: Not logged in';
+        sendBtn.disabled = true;
+      }
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const message = messageInput.value.trim();
+
+      if (!currentUser) {
+        statusMsg.textContent = "You must be logged in to send a message.";
+        return;
+      }
+
+      if (!message) {
+        statusMsg.textContent = "Message can't be empty.";
+        return;
+      }
+
+      sendBtn.disabled = true;
+      statusMsg.textContent = "Sending...";
+
+      const contactRef = ref(db, 'contactUs');
+      push(contactRef, {
+        email: currentUser.email,
+        message: message,
+        timestamp: Date.now()
+      }).then(() => {
+        statusMsg.textContent = "Message sent!";
+        messageInput.value = '';
+        sendBtn.disabled = false;
+      }).catch(err => {
+        statusMsg.textContent = "Error sending message.";
+        console.error(err);
+        sendBtn.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>
