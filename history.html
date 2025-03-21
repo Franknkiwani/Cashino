@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Cashout History</title>
+  <style>
+    :root {
+      --bg: #1f1f2e;
+      --card: #2c2c3e;
+      --accent: #ff5e9c;
+      --success: #70ff9d;
+      --pending: #ffd570;
+      --text: #f2f2f2;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Segoe UI', sans-serif;
+      color: var(--text);
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .transaction-list {
+      max-width: 600px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--card);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(255, 94, 156, 0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .card-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .amount {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .date {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .status {
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .paid {
+      background-color: var(--success);
+      color: #000;
+    }
+
+    .pending {
+      background-color: var(--pending);
+      color: #000;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .loading {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 1.1rem;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Cashout History</h1>
+  <div class="transaction-list" id="transactionList"></div>
+  <div class="loading" id="loading">Loading your payment history...</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const transactionList = document.getElementById("transactionList");
+    const loading = document.getElementById("loading");
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const email = user.email;
+        const transactionsRef = ref(db, 'transactions');
+        onValue(transactionsRef, snapshot => {
+          const data = snapshot.val();
+          transactionList.innerHTML = '';
+          loading.style.display = 'none';
+
+          if (data) {
+            const userTransactions = Object.values(data).filter(tx => tx.email === email);
+            if (userTransactions.length === 0) {
+              transactionList.innerHTML = '<p style="text-align:center;">No transactions found.</p>';
+              return;
+            }
+
+            userTransactions.reverse().forEach(tx => {
+              const card = document.createElement('div');
+              card.className = 'card';
+
+              card.innerHTML = `
+                <div class="card-info">
+                  <div class="amount">$${parseFloat(tx.amount).toFixed(2)}</div>
+                  <div class="date">${tx.date || 'Unknown date'}</div>
+                </div>
+                <div class="status ${tx.status === 'paid' ? 'paid' : 'pending'}">
+                  ${tx.status}
+                </div>
+              `;
+
+              transactionList.appendChild(card);
+            });
+          } else {
+            transactionList.innerHTML = '<p style="text-align:center;">No transactions found.</p>';
+          }
+        });
+      } else {
+        loading.innerText = 'You are not logged in.';
+      }
+    });
+  </script>
+</body>
+</html>
