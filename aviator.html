@@ -2,229 +2,254 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aviator Betting Game</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-user-select: none; user-select: none; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #0f0f0f, #1a1a1a);
-      color: #fff;
-    }
-    header {
-      width: 100%;
-      padding: 15px 25px;
-      background: #0d0d0d;
+      font-family: Arial, sans-serif;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      border-bottom: 2px solid #0ff;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 20px;
     }
-    .logo {
+    #balance {
       font-size: 1.5em;
-      color: #0ff;
+      margin-bottom: 20px;
+    }
+    #multiplier {
+      font-size: 2em;
+      margin: 20px 0;
+    }
+    #status {
+      font-size: 1.5em;
       font-weight: bold;
-      letter-spacing: 1px;
+      margin: 20px 0;
+      color: #333;
     }
-    .hamburger {
-      font-size: 1.5em;
-      cursor: pointer;
-      color: #0ff;
+    #chartCanvas {
+      border: 2px solid #333;
+      background-color: #fff;
+      margin-bottom: 20px;
     }
-    .sidebar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 250px;
-      height: 100%;
-      background: #111;
-      border-right: 2px solid #0ff;
-      padding: 20px;
-      display: none;
-      flex-direction: column;
-      gap: 15px;
-      z-index: 10;
-    }
-    .sidebar.active { display: flex; }
-    .sidebar .close-btn {
-      align-self: flex-end;
-      font-size: 1.2em;
-      cursor: pointer;
-      color: #f00;
-    }
-    .sidebar h3 {
-      color: #0ff;
-      margin-bottom: 10px;
-    }
-    .sidebar button {
-      background: #222;
-      color: #fff;
-      border: 1px solid #0ff;
-      padding: 10px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .sidebar button:hover {
-      background: #0ff;
-      color: #000;
-    }
-    .dashboard {
-      width: 80%;
-      margin: 30px auto;
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .dash-box {
-      flex: 1 1 calc(25% - 20px);
-      background: #121212;
-      border: 2px solid #0ff;
-      border-radius: 8px;
-      padding: 20px;
-      min-width: 150px;
-      text-align: center;
-    }
-    .dash-box h2 {
-      font-size: 1em;
-      color: #0ff;
-      margin-bottom: 10px;
-    }
-    .dash-box p {
-      font-size: 1.5em;
-    }
-    .password-screen {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      color: #0ff;
+    #controls {
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      z-index: 100;
     }
-    .password-screen input {
-      background: #111;
-      color: #0ff;
-      border: 1px solid #0ff;
+    #betAmount, #autoCashout {
       padding: 10px;
       font-size: 1em;
-      margin-bottom: 15px;
+      margin: 5px 0;
+      width: 200px;
     }
-    .password-screen button {
+    #actionButton {
+      background-color: #800080; /* Purple */
+      color: #000; /* Black text */
       padding: 10px 20px;
-      background: #0ff;
+      font-size: 1em;
       border: none;
-      color: #000;
-      font-weight: bold;
       cursor: pointer;
+      margin-top: 10px;
+    }
+    #actionButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
     }
   </style>
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      databaseURL: "YOUR_DATABASE_URL",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    // Reference to the user's balance in the database
+    const balanceRef = ref(database, 'users/user1/balance');
+
+    // Function to update balance in the database
+    function updateBalanceInDB(newBalance) {
+      set(balanceRef, newBalance);
+    }
+
+    // Function to retrieve balance from the database
+    async function getBalanceFromDB() {
+      const snapshot = await get(balanceRef);
+      if (snapshot.exists()) {
+        return snapshot.val();
+      } else {
+        console.error("No balance data available");
+        return 100; // Default balance
+      }
+    }
+
+    // Function to listen for balance changes in the database
+    function listenForBalanceChanges(callback) {
+      onValue(balanceRef, (snapshot) => {
+        if (snapshot.exists()) {
+          callback(snapshot.val());
+        }
+      });
+    }
+
+    // Wait for the DOM to load before accessing elements
+    document.addEventListener("DOMContentLoaded", async () => {
+      const balanceEl = document.getElementById("balance");
+      const multiplierEl = document.getElementById("multiplier");
+      const statusEl = document.getElementById("status");
+      const canvas = document.getElementById("chartCanvas");
+      const ctx = canvas.getContext("2d");
+      const betInput = document.getElementById("betAmount");
+      const autoCashoutInput = document.getElementById("autoCashout");
+      const actionBtn = document.getElementById("actionButton");
+
+      let balance = await getBalanceFromDB();
+      let multiplier = 1;
+      let crashPoint = 0;
+      let interval;
+      let inGame = false;
+      let betPlaced = false;
+      let betAmount = 0;
+      let autoCashout = 0;
+      let chartPoints = [1];
+      let tick = 0;
+
+      function updateBalanceDisplay() {
+        balanceEl.textContent = `Balance: $${balance.toFixed(2)}`;
+      }
+
+      function drawChart() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (chartPoints.length < 2) return;
+
+        for (let i = 1; i < chartPoints.length; i++) {
+          const x1 = (i - 1) * 10;
+          const y1 = canvas.height - chartPoints[i - 1] * 10;
+          const x2 = i * 10;
+          const y2 = canvas.height - chartPoints[i] * 10;
+
+          ctx.strokeStyle = y2 < y1 ? "#f00" : "#0f0"; // Red if going down, green if up
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+      }
+
+      function startRound() {
+        multiplier = 1;
+        chartPoints = [1];
+        tick = 1;
+        crashPoint = parseFloat((Math.random() * 4 + 1).toFixed(2)); // 1x - 5x
+        inGame = true;
+        betPlaced = true;
+        statusEl.textContent = "Flying... Cash out before crash!";
+        actionBtn.textContent = "CASH OUT";
+        actionBtn.style.backgroundColor = "#ff0"; // Yellow
+        actionBtn.disabled = false;
+
+        interval = setInterval(() => {
+          if (multiplier >= crashPoint) return crash();
+
+          const volatility = Math.random() * 0.2 - 0.05; // -0.05 to +0.15
+          multiplier = Math.max(1, multiplier);
+          multiplier = parseFloat(multiplier.toFixed(2));
+          multiplierEl.textContent = `${multiplier.toFixed(2)}x`;
+
+          chartPoints.push(multiplier);
+          drawChart();
+
+          // Auto cashout logic
+          if (autoCashout > 0 && multiplier >= autoCashout && betPlaced) {
+            cashOut();
+          }
+        }, 300);
+      }
+
+      function crash() {
+        clearInterval(interval);
+        inGame = false;
+        statusEl.textContent = "CRASHED!";
+        statusEl.style.color = "red";
+        actionBtn.textContent = "Place Bet";
+        actionBtn.style.backgroundColor = "#800080"; // Purple
+        actionBtn.disabled = false;
+
+        // Player loses bet
+        if (betPlaced) {
+          betPlaced = false;
+          updateBalanceInDB(balance);
+        }
+      }
+
+      function cashOut() {
+        clearInterval(interval);
+        inGame = false;
+        const winnings = betAmount * multiplier;
+        balance += winnings;
+        updateBalanceInDB(balance);
+        updateBalanceDisplay();
+        statusEl.textContent = `Cashed Out at ${multiplier.toFixed(2)}x!`;
+        statusEl.style.color = "green";
+        actionBtn.textContent = "Place Bet";
+        actionBtn.style.backgroundColor = "#800080";
+        actionBtn.disabled = false;
+        betPlaced = false;
+      }
+
+      actionBtn.addEventListener("click", () => {
+        if (!inGame) {
+          betAmount = parseFloat(betInput.value);
+          autoCashout = parseFloat(autoCashoutInput.value);
+          if (isNaN(betAmount) || betAmount <= 0 || betAmount > balance) {
+            alert("Invalid bet amount");
+            return;
+          }
+          balance -= betAmount;
+          updateBalanceDisplay();
+          startRound();
+        } else {
+          if (betPlaced) cashOut();
+        }
+      });
+
+      // Initial balance display
+      updateBalanceDisplay();
+
+      // Live balance update if changed from another tab/device
+      listenForBalanceChanges((newBal) => {
+        balance = newBal;
+        updateBalanceDisplay();
+      });
+    });
+  </script>
 </head>
 <body>
+  <div id="balance">Balance: Loading...</div>
+  <canvas id="chartCanvas" width="600" height="300"></canvas>
+  <div id="multiplier">1.00x</div>
+  <div id="status">Waiting for bet...</div>
 
-<div class="password-screen">
-  <h1>Enter Admin Password</h1>
-  <input type="password" id="admin-pass" placeholder="Password">
-  <button onclick="checkPassword()">Enter</button>
-</div>
-
-<header>
-  <div class="logo">Admin Panel</div>
-  <div class="hamburger" onclick="toggleSidebar()">☰</div>
-</header>
-
-<div class="sidebar" id="sidebar">
-  <div class="close-btn" onclick="toggleSidebar()">✖</div>
-  <h3>Admin Tools</h3>
-  <button onclick="goTo('deleteusers')">Delete Users</button>
-  <button onclick="goTo('usersbalance')">Users Balance</button>
-  <button onclick="goTo('banusers')">Ban Users</button>
-  <button onclick="goTo('resetpasswords')">Reset Passwords</button>
-  <button onclick="goTo('sendmoney')">Send Money</button>
-  <button onclick="goTo('popupmessages')">Popup Messages</button>
-</div>
-
-<div class="dashboard">
-  <div class="dash-box"><h2>Users Balance</h2><p>$0.00</p></div>
-  <div class="dash-box"><h2>Users Online</h2><p>0</p></div>
-  <div class="dash-box"><h2>Cashout Requests</h2><p>0</p></div>
-  <div class="dash-box"><h2>Contact Requests</h2><p>0</p></div>
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const dbRef = ref(db);
-
-  function updateDashboard() {
-    get(child(dbRef, "users")).then(snapshot => {
-      let totalBalance = 0, online = 0;
-      if (snapshot.exists()) {
-        Object.values(snapshot.val()).forEach(user => {
-          totalBalance += parseFloat(user.balance) || 0;
-          if (user.online === true) online++;
-        });
-        document.querySelector(".dash-box:nth-child(1) p").textContent = `$${totalBalance.toFixed(2)}`;
-        document.querySelector(".dash-box:nth-child(2) p").textContent = online;
-      }
-    });
-
-    get(child(dbRef, "transactions")).then(snapshot => {
-      let cashouts = 0;
-      if (snapshot.exists()) {
-        Object.values(snapshot.val()).forEach(tx => {
-          if (tx.type?.toLowerCase() === "cashout") cashouts++;
-        });
-      }
-      document.querySelector(".dash-box:nth-child(3) p").textContent = cashouts;
-    });
-
-    get(child(dbRef, "contact_requests")).then(snapshot => {
-      const total = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-      document.querySelector(".dash-box:nth-child(4) p").textContent = total;
-    });
-  }
-
-  onValue(ref(db, "users"), updateDashboard);
-  onValue(ref(db, "transactions"), updateDashboard);
-  onValue(ref(db, "contact_requests"), updateDashboard);
-  updateDashboard();
-</script>
-
-<script>
-  function toggleSidebar() {
-    document.getElementById("sidebar").classList.toggle("active");
-  }
-
-  function goTo(page) {
-    window.location.href = `${page}.html`;
-  }
-
-  function checkPassword() {
-    const pass = document.getElementById("admin-pass").value;
-    if (pass === "FNK0804FNK") {
-      document.querySelector(".password-screen").style.display = "none";
-    } else {
-      alert("Wrong password!");
-    }
-  }
-</script>
-
+  <div id="controls">
+    <input id="betAmount" type="number" placeholder="Enter bet amount" />
+    <input id="autoCashout" type="number" placeholder="Auto cashout at..." />
+    <button id="actionButton">Place Bet</button>
+  </div>
 </body>
 </html>
