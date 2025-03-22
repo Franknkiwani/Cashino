@@ -2,233 +2,106 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Aviator Game</title>
+  <title>Aviator Launch Countdown</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    :root {
+      --glass-bg: rgba(0, 0, 0, 0.6);
+      --border-glow: 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+      --primary: #00f0ff;
+      --accent: #ff0055;
+      --text-glow: 0 0 5px #fff, 0 0 10px #00f0ff;
+      --blur: blur(10px);
+    }
+
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
+      user-select: none;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
     body {
-      margin: 0;
-      background: #0e0e0e;
-      color: white;
+      background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+      height: 100vh;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      padding: 30px;
+      justify-content: center;
+      overflow: hidden;
     }
+
+    .container {
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      padding: 40px;
+      border-radius: 20px;
+      border: 2px solid #00f0ff;
+      box-shadow: var(--border-glow);
+      text-align: center;
+      color: #fff;
+      max-width: 400px;
+      width: 90%;
+    }
+
     h1 {
-      color: #ff0040;
-      margin-bottom: 10px;
-    }
-    #balance {
-      font-size: 22px;
-      color: #00f9ff;
+      font-size: 1.5em;
+      color: var(--primary);
+      text-shadow: var(--text-glow);
       margin-bottom: 20px;
     }
-    #chartCanvas {
-      border: 2px solid #888;
-      background: #111;
-      width: 100%;
-      max-width: 600px;
-      height: 300px;
-    }
-    #controls {
-      margin-top: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: center;
-    }
-    input, select {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: none;
-      outline: none;
-    }
-    #actionButton {
-      padding: 12px 24px;
-      background: purple;
-      color: black;
+
+    .countdown {
+      font-size: 2em;
       font-weight: bold;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 18px;
+      color: var(--accent);
+      text-shadow: var(--text-glow);
     }
-    #actionButton:hover {
-      opacity: 0.9;
-    }
-    #notification {
-      margin-top: 30px;
-      font-size: 28px;
-      font-weight: bold;
-      background: rgba(255,255,255,0.05);
-      padding: 20px 40px;
-      border: 2px solid #ff0040;
-      border-radius: 10px;
-      color: #ff0040;
-      text-shadow: 1px 1px 2px #000;
+
+    .label {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #aaa;
+      text-shadow: 0 0 5px rgba(255,255,255,0.2);
     }
   </style>
 </head>
 <body>
-  <h1>Cyber Aviator</h1>
-  <div id="balance">Balance: Loading...</div>
-  <canvas id="chartCanvas" width="600" height="300"></canvas>
-
-  <div id="controls">
-    <input type="number" id="betAmount" placeholder="Bet amount ($)" min="0.1" step="0.1">
-    <input type="number" id="autoCashout" placeholder="Auto Cashout Multiplier (e.g. 2.5x)" step="0.1" min="1">
-    <button id="actionButton">PLACE BET</button>
+  <div class="container">
+    <h1>Aviator will be open to the public on<br><strong>25 March</strong></h1>
+    <div class="countdown" id="countdown">Loading...</div>
+    <div class="label">Stay tuned, pilot!</div>
   </div>
 
-  <div id="notification">Waiting to start...</div>
+  <script>
+    // Save current date in localStorage (first load only)
+    if (!localStorage.getItem("currentDate")) {
+      localStorage.setItem("currentDate", new Date().toISOString());
+    }
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    const countdownEl = document.getElementById("countdown");
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.appspot.com",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
-    };
+    const launchDate = new Date(new Date().getFullYear(), 2, 25, 0, 0, 0); // March = 2 (0-based)
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase();
-    const auth = getAuth();
+    function updateCountdown() {
+      const now = new Date();
+      const diff = launchDate - now;
 
-    let user = null;
-    let balance = 0;
-    let betAmount = 0;
-    let multiplier = 1;
-    let crashPoint = 0;
-    let interval = null;
-    let chartPoints = [];
-    let inGame = false;
-    let autoCashout = null;
-
-    const balanceEl = document.getElementById("balance");
-    const betInput = document.getElementById("betAmount");
-    const autoInput = document.getElementById("autoCashout");
-    const actionBtn = document.getElementById("actionButton");
-    const notifEl = document.getElementById("notification");
-    const canvas = document.getElementById("chartCanvas");
-    const ctx = canvas.getContext("2d");
-
-    function drawChart() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let i = 1; i < chartPoints.length; i++) {
-        const x1 = (i - 1) * 10;
-        const y1 = canvas.height - chartPoints[i - 1] * 10;
-        const x2 = i * 10;
-        const y2 = canvas.height - chartPoints[i] * 10;
-        ctx.strokeStyle = y2 < y1 ? "#f00" : "#0f0";
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
+      if (diff <= 0) {
+        countdownEl.textContent = "Now Live!";
+        return;
       }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const mins = Math.floor((diff / (1000 * 60)) % 60);
+      const secs = Math.floor((diff / 1000) % 60);
+
+      countdownEl.textContent = `${days}d ${hours}h ${mins}m ${secs}s`;
     }
 
-    function updateNotification(text, color = "#ff0040") {
-      notifEl.textContent = text;
-      notifEl.style.color = color;
-    }
-
-    function updateBalanceDisplay() {
-      balanceEl.textContent = `Balance: $${balance.toFixed(2)}`;
-    }
-
-    function startGame() {
-      multiplier = 1;
-      chartPoints = [1];
-      crashPoint = parseFloat((Math.random() * 4 + 1).toFixed(2));
-      inGame = true;
-      updateNotification("Flying...", "#00ffcc");
-      actionBtn.textContent = "CASH OUT";
-
-      interval = setInterval(() => {
-        if (multiplier >= crashPoint) {
-          return crash();
-        }
-
-        const change = Math.random() * 0.2 - 0.05;
-        multiplier += 0.05 + change;
-        multiplier = Math.max(1, multiplier);
-        chartPoints.push(multiplier);
-
-        drawChart();
-
-        // Auto cashout logic
-        if (autoCashout && multiplier >= autoCashout) {
-          cashOut();
-        }
-      }, 100);
-    }
-
-    function crash() {
-      clearInterval(interval);
-      updateNotification(`Crashed at ${crashPoint}x! You lost $${betAmount.toFixed(2)}.`, "#ff0040");
-      inGame = false;
-      set(ref(db, `users/${user.uid}/balance`), balance);
-      actionBtn.textContent = "PLACE BET";
-    }
-
-    function cashOut() {
-      clearInterval(interval);
-      const profit = betAmount * multiplier;
-      balance += profit;
-      updateNotification(`Cashed out at ${multiplier.toFixed(2)}x! Won $${profit.toFixed(2)}!`, "#00ff00");
-      inGame = false;
-      set(ref(db, `users/${user.uid}/balance`), balance);
-      updateBalanceDisplay();
-      actionBtn.textContent = "PLACE BET";
-    }
-
-    actionBtn.addEventListener("click", () => {
-      if (!inGame) {
-        const entered = parseFloat(betInput.value);
-        if (isNaN(entered) || entered <= 0 || entered > balance) {
-          updateNotification("Invalid bet.", "#ffcc00");
-          return;
-        }
-        autoCashout = parseFloat(autoInput.value) || null;
-        betAmount = entered;
-        balance -= betAmount;
-        updateBalanceDisplay();
-        startGame();
-      } else {
-        cashOut();
-      }
-    });
-
-    // Firebase Auth + Balance load
-    onAuthStateChanged(auth, (u) => {
-      if (u) {
-        user = u;
-        const balRef = ref(db, `users/${u.uid}/balance`);
-        onValue(balRef, (snap) => {
-          if (snap.exists()) {
-            balance = parseFloat(snap.val());
-            updateBalanceDisplay();
-          } else {
-            set(balRef, 100); // default starting balance
-            balance = 100;
-            updateBalanceDisplay();
-          }
-        });
-      } else {
-        updateNotification("User not logged in.", "#ffcc00");
-      }
-    });
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
   </script>
 </body>
 </html>
