@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberChat Ads</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background-color: #000;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+        }
+        .profile-container {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .profile-container:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .profile-container img {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 24px;
+        }
+        .create-ad {
+            display: flex;
+            align-items: center;
+            margin: 20px;
+            cursor: pointer;
+            color: #0f0;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        .create-ad:hover {
+            color: #0c0;
+        }
+        .create-ad .circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-right: 10px;
+            transition: background 0.3s;
+            color: #000;
+        }
+        .create-ad .circle:hover {
+            background: #0c0;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .stat-box {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .stat-value {
+            font-size: 24px;
+            margin-top: 5px;
+            color: #0f0;
+        }
+        .chart-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        CYBERCHAT ADS
+        <div class="profile-container" onclick="redirectToAccount()">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6DpSwBOOEA-qcIvGvtMZ48j7rezGPJ6cSzkMwwRbhfqf3URu8EkZxhJw&s=10" alt="Profile Picture">
+            <span>@profile</span>
+        </div>
+    </header>
+    <div class="create-ad" onclick="redirectToCampaign()">
+        <div class="circle">+</div>
+        <span>CREATE AD NOW</span>
+    </div>
+    <div class="stats">
+        <div class="stat-box">
+            <div>Ad Views</div>
+            <div class="stat-value">0</div>
+        </div>
+        <div class="stat-box">
+            <div>Ad Clicks</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+    <div class="chart-container">
+        <canvas id="adChart"></canvas>
+    </div>
+    <div class="loading-screen">Loading...</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+        projectId: "itzhoyoo-f9f7e",
+        storageBucket: "itzhoyoo-f9f7e.appspot.com",
+        messagingSenderId: "1094792075584",
+        appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+        measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Wait for user authentication
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            const userAdsRef = ref(db, `adscampaign/${user.uid}`);
+
+            // Initialize Chart.js
+            const ctx = document.getElementById('adChart').getContext('2d');
+            const adChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [
+                        {
+                            label: 'Ad Views',
+                            data: [0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#0f0',
+                            fill: false
+                        },
+                        {
+                            label: 'Ad Clicks',
+                            data: [0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#0ff',
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.1)' } },
+                        x: { grid: { color: 'rgba(255, 255, 255, 0.1)' } }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    }
+                }
+            });
+
+            // Listen for real-time updates
+            onValue(userAdsRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const views = data.ads_views || 0;
+                    const clicks = data.ads_clicks || 0;
+
+                    // Update HTML stats
+                    document.querySelector('.stat-box:nth-child(1) .stat-value').textContent = views;
+                    document.querySelector('.stat-box:nth-child(2) .stat-value').textContent = clicks;
+                    document.querySelector('.ad-status').textContent = data.ads_status || 'Unknown';
+
+                    // Update Chart.js graph
+                    adChart.data.datasets[0].data.push(views);
+                    adChart.data.datasets[0].data.shift();
+                    adChart.data.datasets[1].data.push(clicks);
+                    adChart.data.datasets[1].data.shift();
+                    adChart.update();
+                }
+            });
+        } else {
+            console.log("User not signed in.");
+        }
+    });
+</script>
+</body>
+</html>
