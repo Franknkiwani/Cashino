@@ -1,280 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Social Media for Gamers</title>
-  <style>
-    /* Disable text selection */
-    * {
-      user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Media for Gamers</title>
+    <style>
+        /* Disable text selection */
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
 
-    /* Remove blue highlight when clicking elements */
-    button,
-    input {
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
+        /* Remove blue highlight when clicking elements */
+        button, input {
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: #fff;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+        }
 
-    /* Keyframes for neon glow animation */
-    @keyframes neonGlow {
-      0% { box-shadow: 0 0 15px 5px rgba(0, 243, 255, 0.7); }
-      25% { box-shadow: 0 0 15px 5px rgba(255, 20, 147, 0.7); }
-      50% { box-shadow: 0 0 15px 5px rgba(255, 255, 0, 0.7); }
-      75% { box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7); }
-      100% { box-shadow: 0 0 15px 5px rgba(0, 243, 255, 0.7); }
-    }
+        /* Keyframes for neon glow animation */
+        @keyframes neonGlow {
+            0% { box-shadow: 0 0 15px 5px rgba(0, 243, 255, 0.7); } /* Cyan */
+            25% { box-shadow: 0 0 15px 5px rgba(255, 20, 147, 0.7); } /* Deep pink */
+            50% { box-shadow: 0 0 15px 5px rgba(255, 255, 0, 7); } /* Yellow */
+            75% { box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.7); } /* Green */
+            100% { box-shadow: 0 0 15px 5px rgba(0, 243, 255, 0.7); } /* Cyan */
+        }
 
-    /* Header styles */
-    header {
-      width: 90%;
-      margin: 20px auto;
-      padding: 15px;
-      background: #1c1c1c;
-      border-radius: 30px;
-      animation: neonGlow 4s ease-in-out infinite;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+        /* Header styles */
+        header {
+            width: 90%;
+            margin: 20px auto;
+            padding: 15px;
+            background: #1c1c1c;
+            border-radius: 30px;
+            animation: neonGlow 4s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-    /* Profile Section */
-    .profile {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+        /* Profile Section */
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
 
-    /* Profile Picture */
-    .profile-pic {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid rgba(0, 243, 255, 0.7);
-    }
+        /* Profile Picture */
+        .profile-pic {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(0, 243, 255, 0.7);
+        }
 
-    /* Username Container */
-    .username-container {
-      background: #292929;
-      padding: 8px 15px;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer; /* Make it clickable if needed */
-    }
+        /* Username Container */
+        .username-container {
+            background: #292929;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer; /* Make it clickable */
+        }
 
-    /* Balance Button */
-    .balance-btn {
-      background: #32cd32;
-      color: #fff;
-      font-weight: bold;
-      padding: 10px 20px;
-      border-radius: 15px;
-      border: none;
-      cursor: pointer;
-      transition: 0.3s ease;
-      box-shadow: 0 0 10px rgba(50, 205, 50, 0.8);
-      position: relative;
-      overflow: hidden;
-    }
+        /* Balance Button */
+        .balance-btn {
+            background: #32cd32;
+            color: #fff;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: 0.3s ease;
+            box-shadow: 0 0 10px rgba(50, 205, 50, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
 
-    /* Hover Effect */
-    .balance-btn:hover {
-      box-shadow: 0 0 15px rgba(50, 255, 50, 1);
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
+        /* Hover Effect */
+        .balance-btn:hover {
+            box-shadow: 0 0 15px rgba(50, 255, 50, 1);
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
 
-    /* Click Effect */
-    .balance-btn:active {
-      transform: scale(0.95);
-    }
+        /* Click Effect */
+        .balance-btn:active {
+            transform: scale(0.95);
+        }
 
-    /* Ripple Effect */
-    .balance-btn::after {
-      content: "";
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      background: rgba(50, 205, 50, 0.5);
-      opacity: 0;
-      transform: scale(0);
-      transition: transform 0.3s ease-out, opacity 0.3s ease-out;
-    }
+        /* Ripple Effect */
+        .balance-btn::after {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(50, 205, 50, 0.5);
+            opacity: 0;
+            transform: scale(0);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
 
-    .balance-btn:active::after {
-      opacity: 1;
-      transform: scale(1.5);
-    }
+        .balance-btn:active::after {
+            opacity: 1;
+            transform: scale(1.5);
+        }
 
-    /* Full-screen blur loading screen */
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
-      display: none; /* Initially hidden */
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
+        /* Full-screen blur loading screen */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
 
-    /* Spinner animation */
-    .spinner {
-      border: 5px solid #fff;
-      border-top: 5px solid #32cd32;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      animation: spin 1s linear infinite;
-      margin-top: 20px;
-    }
+        /* Spinner animation */
+        .spinner {
+            border: 5px solid #fff;
+            border-top: 5px solid #32cd32;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 20px;
+        }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+        /* Spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-    /* iframe container */
-    .iframe-container {
-      width: 80%;
-      height: 250px;
-      position: absolute;
-      top: 420px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
-      border: 10px solid rgba(0, 255, 0, 0.7);
-      z-index: 10;
-    }
+        /* iframe container */
+        .iframe-container {
+            width: 80%;
+            height: 250px;
+            position: absolute;
+            top: 420px; /* Position the iframe at the top */
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.7);
+            border: 10px solid rgba(0, 255, 0, 0.7); /* Neon edges */
+            z-index: 10;
+        }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
 
-    /* Sponsored Button */
-    .sponsored-btn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: #ff4500;
-      color: white;
-      padding: 8px 15px;
-      border-radius: 5px;
-      font-size: 14px;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 0 8px rgba(255, 69, 0, 0.8);
-      transition: all 0.3s ease;
-      z-index: 1000;
-    }
+        /* Sponsored Button */
+        .sponsored-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #ff4500;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 8px rgba(255, 69, 0, 0.8);
+            transition: all 0.3s ease;
+            z-index: 1000; /* Ensures the button stays on top */
+        }
 
-    .sponsored-btn:hover {
-      background-color: #ff6347;
-      box-shadow: 0 0 10px rgba(255, 69, 0, 1);
-    }
+        .sponsored-btn:hover {
+            background-color: #ff6347;
+            box-shadow: 0 0 10px rgba(255, 69, 0, 1);
+        }
 
-    .sponsored-btn:active {
-      transform: scale(0.95);
-    }
-  </style>
+        .sponsored-btn:active {
+            transform: scale(0.95);
+        }
+
+    </style>
 </head>
 <body>
-  <header>
-    <div class="profile">
-      <img src="https://via.placeholder.com/50" alt="Profile" class="profile-pic" />
-      <!-- Username now separate from profile picture -->
-      <div class="username-container" onclick="alert('Username Clicked!')">@Username</div>
+
+    <header>
+        <div class="profile">
+            <!-- Profile picture -->
+            <img id="profile-pic" src="https://via.placeholder.com/50" alt="Profile" class="profile-pic">
+            <!-- Username -->
+            <div id="username" class="username-container" onclick="alert('Username Clicked!')">Loading...</div>
+        </div>
+        <!-- Balance Button -->
+        <button id="balance-btn" class="balance-btn" onclick="showLoadingScreen()">Loading...</button>
+    </header>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <!-- Sponsored Button -->
+        <button class="sponsored-btn" onclick="window.open('https://example.com', '_blank')">CYBERCHAT</button>
+
+        <!-- Full Width Iframe -->
+        <div class="iframe-container">
+            <iframe src="https://ptounood.top/4/7950037" title="Loading Screen"></iframe>
+        </div>
+
+        <!-- Spinner -->
+        <div class="spinner"></div>
     </div>
-    <button class="balance-btn" onclick="showLoadingScreen()">$0.000</button>
-  </header>
 
-  <!-- Loading Overlay -->
-  <div id="loading-overlay" class="loading-overlay">
-    <!-- Sponsored Button -->
-    <button class="sponsored-btn" onclick="window.open('https://example.com', '_blank')">CYBERCHAT</button>
+    <!-- Firebase Configuration -->
+    <script type="module">
+        // Import the necessary Firebase functions
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    <!-- Full Width Iframe -->
-    <div class="iframe-container">
-      <iframe src="https://ptounood.top/4/7950037" title="Loading Screen"></iframe>
-    </div>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
 
-    <!-- Spinner -->
-    <div class="spinner"></div>
-  </div>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const database = getDatabase(app);
 
-  <!-- Firebase and Data Loading Script -->
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+        // Function to display user data
+        function loadUserData(user) {
+            const userRef = ref(database, 'users/' + user.uid); // Reference to user's data in Firebase
 
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+            get(userRef).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    // Set username and balance from Firebase
+                    document.getElementById("username").innerText = data.username || "Unknown User";
+                    document.getElementById("balance-btn").innerText = `$${data.balance || 0.00}`;
+                    document.getElementById("profile-pic").src = data.profilePic || "https://via.placeholder.com/50";
+                } else {
+                    console.log("No data available");
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // Listen for authentication state changes
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // If the user is logged in, fetch their data from the Realtime Database.
-        const uid = user.uid;
-        const userRef = ref(db, 'users/' + uid);
-        onValue(userRef, (snapshot) => {
-          const data = snapshot.val();
-          if (data) {
-            // Update the username and balance in the DOM.
-            document.querySelector('.username-container').textContent = data.username || '@Unknown';
-            document.querySelector('.balance-btn').textContent = '$' + (data.balance || '0.000');
-          }
+        // Monitor authentication state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loadUserData(user); // Load user data from Firebase if authenticated
+            } else {
+                console.log("User is not logged in");
+            }
         });
-      } else {
-        // No user is signed in; display default values.
-        document.querySelector('.username-container').textContent = '@Guest';
-        document.querySelector('.balance-btn').textContent = '$0.000';
-      }
-    });
 
-    // Function to show the loading overlay and redirect after a delay
-    window.showLoadingScreen = function () {
-      document.getElementById("loading-overlay").style.display = "flex";
-      setTimeout(function () {
-        window.location.href = 'balance.html';
-      }, 5000);
-    };
-  </script>
+        // Show loading overlay
+        function showLoadingScreen() {
+            document.getElementById("loading-overlay").style.display = "flex";
+            setTimeout(() => {
+                window.location.href = 'balance.html';
+            }, 5000);
+        }
+    </script>
+
 </body>
 </html>
