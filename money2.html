@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyberpunk Profile Modal</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --black-container: #000;
+      --accent: #00ffcc;
+      --text-color: #ffffffcc;
+      --border-radius: 12px;
+      --padding: 16px;
+      --transition: 0.3s ease;
+      --neon: 0 0 10px #00ffe1, 0 0 20px #00ffe1;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      font-family: "Segoe UI", sans-serif;
+      color: var(--text-color);
+    }
+
+    .main-header {
+      width: 80%;
+      max-width: 1000px;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: var(--padding);
+      margin: 24px auto 0 auto;
+      box-shadow: 0 0 10px #00000066;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-pic {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      padding: 2px;
+      background: linear-gradient(135deg, #ff00cc, #00ffff, #ffcc00, #ff00cc);
+      background-size: 300% 300%;
+      animation: cyber-glow 3s linear infinite;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .profile-pic::before {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      right: 2px;
+      bottom: 2px;
+      border-radius: 50%;
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6qIDmvAFbaVJ-xWCjaJV3ZhxUXewd2ddeA5Y6vcaRbNSqbd5UNLp_mUjT&s=10');
+      background-size: cover;
+      background-position: center;
+      z-index: 1;
+    }
+
+    @keyframes cyber-glow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .username-container {
+      background-color: var(--black-container);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .balance-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: var(--border-radius);
+      font-weight: 600;
+      font-family: inherit;
+      font-size: 1rem;
+      cursor: default;
+    }
+
+    /* Popup */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .popup {
+      background: #1b1b1b;
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: var(--neon);
+      color: #fff;
+    }
+
+    .popup h2 {
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+      color: #00ffcc;
+    }
+
+    .popup .username {
+      margin: 10px 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .edit-btn {
+      background-color: #000;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      padding: 8px 16px;
+      margin: 10px 0 20px;
+      border-radius: 25px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    .edit-btn:hover {
+      background-color: var(--accent);
+      color: #000;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .icon-grid div {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: #2c2c2c;
+      background-size: cover;
+      background-position: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.3s ease;
+    }
+
+    .icon-grid div:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main-header">
+    <div class="profile-section">
+      <div class="profile-pic" onclick="openPopup()"></div>
+      <div class="username-container">@username</div>
+    </div>
+    <button class="balance-btn">$0.000</button>
+  </div>
+
+  <div class="overlay" id="profilePopup" onclick="closePopup(event)">
+    <div class="popup" onclick="event.stopPropagation()">
+      <h2>Balance: $0.000</h2>
+      <div class="username">@username</div>
+      <button class="edit-btn">Edit Username</button>
+      <div class="icon-grid">
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6qIDmvAFbaVJ-xWCjaJV3ZhxUXewd2ddeA5Y6vcaRbNSqbd5UNLp_mUjT&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR6qIDmvAFbaVJ-xWCjaJV3ZhxUXewd2ddeA5Y6vcaRbNSqbd5UNLp_mUjT&s=10')"></div>
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtkhY30JdmBkhr5pkaac4xHVf5R7zD15VphNAQ6jrkChGOfeGg86WKc5zA&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtkhY30JdmBkhr5pkaac4xHVf5R7zD15VphNAQ6jrkChGOfeGg86WKc5zA&s=10')"></div>
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvn2Puly6lqfrX7P-jhxqMdLXKlQTJMjiAjRc-t6m44iIZg9q3GxsPElw&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvn2Puly6lqfrX7P-jhxqMdLXKlQTJMjiAjRc-t6m44iIZg9q3GxsPElw&s=10')"></div>
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxkupAOcr_kawA0vvEjm6JO1S7g2-lLDu1oA_xV6SdLTOhHeSAJpCHSFNk&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxkupAOcr_kawA0vvEjm6JO1S7g2-lLDu1oA_xV6SdLTOhHeSAJpCHSFNk&s=10')"></div>
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVTV-3ShBEuXKL4UhfD6v6p5UQcXoFtx6eOFKqOSjI-3m8atRo62S-P7Q&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVTV-3ShBEuXKL4UhfD6v6p5UQcXoFtx6eOFKqOSjI-3m8atRo62S-P7Q&s=10')"></div>
+        <div style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkF0sVBQDKzmtSd1-pzoAAKbWCbafbENsLglRQxJ_o4B5LuUUFjDk2PHA&s=10')" onclick="updateProfilePic('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSkF0sVBQDKzmtSd1-pzoAAKbWCbafbENsLglRQxJ_o4B5LuUUFjDk2PHA&s=10')"></div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  // Import Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getDatabase(app);
+
+  // Listen for authentication state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in, fetch the user data from the database
+      fetchUserData(user.uid);
+    } else {
+      // User is not signed in, handle the case for sign-in
+      console.log("User is not signed in");
+    }
+  });
+
+  // Function to fetch user data (username and balance) from Firebase Realtime Database
+  function fetchUserData(userId) {
+    const userRef = ref(db, 'users/' + userId);
+    get(userRef)
+      .then((snapshot) => {
+        if (snapshot.exists()) {
+          const userData = snapshot.val();
+          // Display user data on the page
+          updateUserInterface(userData);
+        } else {
+          console.log("No user data found!");
+        }
+      })
+      .catch((error) => {
+        console.error("Error getting user data:", error);
+      });
+  }
+
+  // Function to update the UI with user data (username and balance)
+  function updateUserInterface(userData) {
+    // Assuming there's an element for username and balance
+    document.getElementById('username').textContent = userData.username;
+    document.getElementById('balance').textContent = `$${userData.balance.toFixed(2)}`;
+  }
+
+  // Function to update user data in Firebase
+  function updateUserData(userId, username, balance) {
+    const userRef = ref(db, 'users/' + userId);
+    set(userRef, {
+      username: username,
+      balance: balance
+    })
+    .then(() => {
+      console.log("User data updated successfully!");
+    })
+    .catch((error) => {
+      console.error("Error updating user data:", error);
+    });
+  }
+
+  // Example: Update user data when the profile picture is changed (or another event occurs)
+  function updateProfilePic(imageUrl) {
+    const user = auth.currentUser;
+    if (user) {
+      const userId = user.uid;
+      // Fetch the current balance (you can replace this with your balance logic)
+      const currentBalance = 100; // Example static balance
+      const currentUsername = "ExampleUser"; // Example static username
+
+      // Update profile picture and save in the database
+      set(ref(db, 'users/' + userId), {
+        username: currentUsername,
+        balance: currentBalance,
+        profilePic: imageUrl
+      }).then(() => {
+        console.log('Profile picture updated successfully!');
+      }).catch((error) => {
+        console.error("Error updating profile picture:", error);
+      });
+    } else {
+      console.log("No user signed in.");
+    }
+  }
+</script>
+</body>
+</html>
