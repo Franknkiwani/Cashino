@@ -1,236 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Game - Tic Tac Toe</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #fff;
-            padding: 20px;
-            margin: 0;
-        }
-        button {
-            background-color: #00b3b3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #009c9c;
-        }
-        .online-user {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #333;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-        }
-        #online-users-list {
-            margin-top: 20px;
-        }
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-gap: 10px;
-            margin-top: 20px;
-        }
-        #game-board div {
-            width: 100px;
-            height: 100px;
-            background-color: #444;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            color: #fff;
-            cursor: pointer;
-        }
-        #status {
-            margin-top: 10px;
-            font-size: 18px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyberpunk Tic-Tac-Toe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #1a1a1a;
+      font-family: 'Press Start 2P', cursive;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 5px;
+    }
+
+    .cell {
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid #00ff00;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 32px;
+      font-weight: bold;
+      color: #00ff00;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .cell:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .cell.x {
+      color: #ff00ff;
+    }
+
+    .cell.o {
+      color: #00bfff;
+    }
+
+    .connect-btn {
+      background: #ff00ff;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      margin-top: 20px;
+      transition: background 0.3s ease;
+    }
+
+    .connect-btn:hover {
+      background: #ff66ff;
+    }
+
+    .countdown {
+      font-size: 24px;
+      color: #ff00ff;
+    }
+
+    .loading {
+      color: #ff66ff;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-
-    <h1>Welcome to Tic Tac Toe</h1>
-    <p id="status">Please log in to connect.</p>
-
-    <button id="connect-now-btn">Connect Now</button>
-
-    <div id="online-users-list">
-        <h2>Online Users</h2>
+  <div class="game-container">
+    <h1>Tic-Tac-Toe - Cyberpunk Style</h1>
+    <div id="countdown" class="countdown"></div>
+    <div class="grid" id="gameGrid">
+      <!-- 9 cells will go here -->
     </div>
+    <button id="connectBtn" class="connect-btn">Connect Now</button>
+    <div id="loading" class="loading" style="display: none;">Searching for players...</div>
+  </div>
 
-    <div id="game-board" style="display:none;">
-        <!-- Game board will be displayed here -->
-    </div>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-    <script type="module">
-        // Firebase Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-            projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-            messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            measurementId: "G-LLT6F9WRKH"
-        };
+    let gameStarted = false;
+    let currentPlayer = null;
+    let countdownTimer;
+    let countdownSeconds = 10;
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+    // Set up game grid
+    const gameGrid = document.getElementById('gameGrid');
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.setAttribute('data-index', i);
+      cell.addEventListener('click', handleCellClick);
+      gameGrid.appendChild(cell);
+    }
 
-        // Authentication logic (Anonymous login for this demo)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userId = user.uid;
-                document.getElementById('status').innerText = `Logged in as ${userId}. Ready to connect.`;
-            } else {
-                // Sign in anonymously if not logged in
-                signInAnonymously(auth).catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.log(errorCode, errorMessage);
-                });
-            }
-        });
+    const connectBtn = document.getElementById('connectBtn');
+    const countdownDisplay = document.getElementById('countdown');
+    const loadingDisplay = document.getElementById('loading');
 
-        // Handle connect button click
-        document.getElementById('connect-now-btn').addEventListener('click', () => {
-            const user = auth.currentUser;
-            if (user) {
-                const userId = user.uid;
+    connectBtn.addEventListener('click', () => {
+      connectBtn.disabled = true;
+      loadingDisplay.style.display = 'block';
+      countdownDisplay.innerText = `Searching for players... ${countdownSeconds}s`;
+      startCountdown();
+    });
 
-                // Mark user as online and add to matchmaking queue
-                const userRef = ref(db, `users/${userId}`);
-                set(userRef, {
-                    online: true,
-                    username: userId // Replace with actual username if you have one
-                });
+    function startCountdown() {
+      countdownTimer = setInterval(() => {
+        countdownSeconds--;
+        countdownDisplay.innerText = `Searching for players... ${countdownSeconds}s`;
+        if (countdownSeconds === 0) {
+          clearInterval(countdownTimer);
+          connectPlayers();
+        }
+      }, 1000);
+    }
 
-                const matchmakingQueueRef = ref(db, 'matchmaking/queue');
-                push(matchmakingQueueRef, {
-                    userId: userId,
-                    username: userId
-                });
+    function connectPlayers() {
+      const playersRef = ref(db, 'players');
+      const playerId = Math.random().toString(36).substring(2); // Simple unique ID
+      set(ref(db, `players/${playerId}`), { searching: true }).then(() => {
+        checkForOpponent(playerId);
+      });
+    }
 
-                document.getElementById('status').innerText = "You are now online and waiting for a match!";
-                displayOnlineUsers();
-            }
-        });
-
-        // Display online users
-        function displayOnlineUsers() {
-            const onlineUsersRef = ref(db, 'users');
-            onValue(onlineUsersRef, (snapshot) => {
-                const onlineUsersList = document.getElementById('online-users-list');
-                onlineUsersList.innerHTML = "<h2>Online Users</h2>";
-
-                snapshot.forEach((userSnapshot) => {
-                    const userData = userSnapshot.val();
-                    if (userData.online) {
-                        const userDiv = document.createElement('div');
-                        userDiv.classList.add('online-user');
-                        userDiv.innerHTML = `${userData.username} <button onclick="connectWithUser('${userSnapshot.key}')">Connect</button>`;
-                        onlineUsersList.appendChild(userDiv);
-                    }
-                });
-            });
+    function checkForOpponent(playerId) {
+      const playersRef = ref(db, 'players');
+      onValue(playersRef, (snapshot) => {
+        const players = snapshot.val();
+        let opponent = null;
+        for (const id in players) {
+          if (id !== playerId && players[id].searching) {
+            opponent = id;
+            break;
+          }
         }
 
-        // Match user with another player and start the game
-        function connectWithUser(playerId) {
-            const user = auth.currentUser;
-            if (user) {
-                const gameSessionRef = ref(db, 'games');
-                const newGameRef = push(gameSessionRef);
-
-                // Create game session
-                set(newGameRef, {
-                    player1: user.uid,
-                    player2: playerId,
-                    gameState: Array(9).fill(null), // Initialize empty Tic-Tac-Toe board
-                    currentPlayer: user.uid
-                });
-
-                // Hide matchmaking and show game board
-                document.getElementById('online-users-list').style.display = "none";
-                document.getElementById('game-board').style.display = "grid";
-                initializeGameBoard(newGameRef);
-            }
+        if (opponent) {
+          currentPlayer = Math.random() > 0.5 ? 'X' : 'O';
+          set(ref(db, `players/${playerId}`), { searching: false, symbol: currentPlayer });
+          set(ref(db, `players/${opponent}`), { searching: false, symbol: currentPlayer === 'X' ? 'O' : 'X' });
+          startGame(playerId, opponent);
         }
+      });
+    }
 
-        // Initialize game board and listen for updates
-        function initializeGameBoard(gameRef) {
-            const gameBoard = document.getElementById('game-board');
-            gameBoard.innerHTML = ''; // Clear previous board
+    function startGame(player1Id, player2Id) {
+      loadingDisplay.style.display = 'none';
+      gameStarted = true;
+      currentPlayer = player1Id;
 
-            // Create Tic-Tac-Toe grid
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.dataset.index = i;
-                cell.addEventListener('click', () => makeMove(gameRef, i));
-                gameBoard.appendChild(cell);
-            }
+      console.log('Game Started');
+      // Update the game logic here to let players take turns
+    }
 
-            // Listen for game state changes
-            onValue(gameRef, (snapshot) => {
-                const gameData = snapshot.val();
-                const gameState = gameData.gameState;
-
-                // Update board with game state
-                for (let i = 0; i < 9; i++) {
-                    const cell = gameBoard.children[i];
-                    cell.innerText = gameState[i] ? gameState[i] : '';
-                    cell.style.backgroundColor = gameState[i] ? '#555' : '#444';
-                }
-
-                // Check if it's the player's turn
-                if (gameData.currentPlayer !== auth.currentUser.uid) {
-                    document.getElementById('status').innerText = "Waiting for opponent's move...";
-                } else {
-                    document.getElementById('status').innerText = "Your turn!";
-                }
-            });
-        }
-
-        // Handle player moves
-        function makeMove(gameRef, index) {
-            const user = auth.currentUser;
-            const gameStateRef = ref(gameRef, 'gameState');
-            const currentPlayerRef = ref(gameRef, 'currentPlayer');
-            onValue(gameStateRef, (snapshot) => {
-                const gameState = snapshot.val();
-                if (!gameState[index] && user.uid === gameState.currentPlayer) {
-                    gameState[index] = user.uid === gameState.player1 ? 'X' : 'O';
-
-                    // Update game state
-                    update(gameStateRef, gameState);
-                    update(currentPlayerRef, {
-                        currentPlayer: gameState.player1 === user.uid ? gameState.player2 : gameState.player1
-                    });
-                }
-            });
-        }
-
-        // Display online users initially
-        displayOnlineUsers();
-    </script>
-
+    function handleCellClick(event) {
+      if (!gameStarted) return;
+      const cell = event.target;
+      if (cell.innerText !== '') return;
+      cell.innerText = currentPlayer;
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      // Check for win condition and update Firebase database
+    }
+  </script>
 </body>
 </html>
