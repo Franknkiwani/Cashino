@@ -1,226 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Modern Tic-Tac-Toe</title>
-  <style>
-    body {
-      background: #111;
-      font-family: Arial, sans-serif;
-      color: #fff;
-    }
-
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 5px;
-      width: 300px;
-      height: 300px;
-      margin: 50px auto;
-    }
-
-    .cell {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: rgba(255, 255, 255, 0.1);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      font-size: 2rem;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .cell:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-    }
-
-    .message {
-      text-align: center;
-      font-size: 1.5rem;
-      margin-top: 20px;
-    }
-
-    .message.error {
-      color: red;
-      font-weight: bold;
-    }
-
-    .retry-btn {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .retry-btn:hover {
-      background-color: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Users</title>
+    <style>
+        /* Basic styles for the app */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            padding: 20px;
+            margin: 0;
+        }
+        button {
+            background-color: #00b3b3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #009c9c;
+        }
+        .online-user {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #online-users-list {
+            margin-top: 20px;
+        }
+        #status {
+            margin-top: 10px;
+            font-size: 18px;
+        }
+    </style>
 </head>
 <body>
-  <div id="board"></div>
-  <div class="message" id="message">Searching for an opponent...</div>
-  <button class="retry-btn" id="retryBtn" style="display:none;">Retry</button>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, set, onValue, update, push, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    <h1>Welcome to the Online Game App</h1>
+    <p id="status">Please log in to connect.</p>
 
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+    <!-- Connect Now Button -->
+    <button id="connect-now-btn">Connect Now</button>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+    <!-- Online Users List -->
+    <div id="online-users-list">
+        <h2>Online Users</h2>
+        <!-- List of online users will appear here -->
+    </div>
 
-    let currentUser = null;
-    let gameId = null;
-    const gameRef = ref(db, 'games');  // Reference to games in DB
-    const searchingRef = ref(db, 'searching');  // Reference to users who are searching for a game
-    let searchTimeout = null;
-    let countdownInterval = null;
-    let countdown = 10;  // Countdown from 10 seconds
+    <!-- Firebase SDK (Add your Firebase config here) -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script>
+        // Your Firebase Config (replace with your actual Firebase project config)
+        const firebaseConfig = {
+            apiKey: "your-api-key",
+            authDomain: "your-auth-domain",
+            databaseURL: "your-database-url",
+            projectId: "your-project-id",
+            storageBucket: "your-storage-bucket",
+            messagingSenderId: "your-sender-id",
+            appId: "your-app-id"
+        };
 
-    // Firebase Auth listener
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('message').innerText = `Searching for opponent in ${countdown}...`;
-        startSearch();
-      } else {
-        alert("You must log in to play!");
-      }
-    });
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const auth = firebase.auth();
 
-    // Start searching for an opponent
-    function startSearch() {
-      // Add current user to the searching list in Firebase
-      const searchId = push(searchingRef);  // Generate unique search ID
-      set(searchId, {
-        userId: currentUser.uid,
-        username: currentUser.displayName,
-      });
+        // UI Elements
+        const connectNowButton = document.getElementById('connect-now-btn');
+        const onlineUsersContainer = document.getElementById('online-users-list');
+        const statusElement = document.getElementById('status');
 
-      // Countdown for searching
-      countdownInterval = setInterval(() => {
-        countdown--;
-        if (countdown <= 0) {
-          clearInterval(countdownInterval);
-          document.getElementById('message').innerText = "No opponent found. Check your internet connection.";
-          document.getElementById('message').classList.add('error'); // Apply red error class
-          document.getElementById('retryBtn').style.display = 'block';  // Show retry button
-        } else {
-          document.getElementById('message').innerText = `Searching for opponent in ${countdown}...`;
-        }
-      }, 1000);
+        let currentUserId = null;
 
-      // Listen for available players (2 users searching)
-      onValue(searchingRef, (snapshot) => {
-        const searchingUsers = snapshot.val();
-        if (!searchingUsers) return;
+        // Listen for authentication state changes
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUserId = user.uid;
+                statusElement.innerText = `Hello, ${user.displayName}!`;
 
-        // Look for two players
-        const players = [];
-        for (let key in searchingUsers) {
-          if (searchingUsers[key].userId !== currentUser.uid) {
-            players.push(searchingUsers[key]);
-          }
-        }
+                // Show the 'Connect Now' button only if the user is authenticated
+                connectNowButton.style.display = 'block';
 
-        if (players.length >= 1) {
-          // Found an opponent, create game room
-          createGame(players[0]);
-          // Remove the users from the searching list
-          Object.keys(searchingUsers).forEach(key => {
-            if (searchingUsers[key].userId !== currentUser.uid) {
-              // Remove the opponent
-              remove(ref(db, 'searching/' + key));
+                // Fetch the list of online users
+                fetchOnlineUsers();
+            } else {
+                statusElement.innerText = 'Please log in to connect.';
+                connectNowButton.style.display = 'none';
             }
-          });
-          // Remove current user from searching
-          remove(ref(db, 'searching/' + searchId.key));
+        });
+
+        // Connect now button click handler
+        connectNowButton.addEventListener('click', () => {
+            if (currentUserId) {
+                const userRef = db.ref(`users/${currentUserId}`);
+                userRef.update({
+                    online: true,
+                    username: auth.currentUser.displayName
+                });
+
+                console.log('User marked as online.');
+            } else {
+                console.log('User is not logged in.');
+            }
+        });
+
+        // Fetch online users and render them to the page
+        function fetchOnlineUsers() {
+            const usersRef = db.ref('users');
+            usersRef.on('value', snapshot => {
+                onlineUsersContainer.innerHTML = '<h2>Online Users</h2>'; // Clear previous list
+
+                snapshot.forEach(childSnapshot => {
+                    const userData = childSnapshot.val();
+                    if (userData.online) {
+                        const userDiv = document.createElement('div');
+                        userDiv.classList.add('online-user');
+                        userDiv.innerHTML = `
+                            <span>${userData.username}</span>
+                            <button onclick="connectUser('${childSnapshot.key}')">Connect</button>
+                        `;
+                        onlineUsersContainer.appendChild(userDiv);
+                    }
+                });
+            });
         }
-      });
-    }
 
-    // Retry search if user clicks retry button
-    document.getElementById('retryBtn').addEventListener('click', () => {
-      document.getElementById('retryBtn').style.display = 'none';  // Hide retry button
-      document.getElementById('message').innerText = "Searching for opponent...";
-      document.getElementById('message').classList.remove('error'); // Remove error class
-      countdown = 10;  // Reset countdown
-      startSearch();  // Restart search
-    });
+        // User connection logic (for example, opening a game session)
+        function connectUser(userId) {
+            console.log(`Connecting to user: ${userId}`);
+            // Implement your game session or match logic here
+        }
 
-    // Create a new game
-    function createGame(opponent) {
-      // Create a unique game ID
-      gameId = push(gameRef).key;
-      const gameData = {
-        players: {
-          [currentUser.uid]: {
-            username: currentUser.displayName,
-            symbol: 'X',
-            score: 0,
-          },
-          [opponent.userId]: {
-            username: opponent.username,
-            symbol: 'O',
-            score: 0,
-          }
-        },
-        board: Array(9).fill(null),
-        currentPlayer: currentUser.uid,
-        winner: null,
-      };
+        // Mark user as offline when they leave or close the page
+        function setUserOffline() {
+            if (currentUserId) {
+                const userRef = db.ref(`users/${currentUserId}`);
+                userRef.update({ online: false });
+                console.log('User marked as offline.');
+            }
+        }
 
-      // Set the game data in Firebase
-      set(ref(db, 'games/' + gameId), gameData);
+        // Handle page close or refresh
+        window.addEventListener('beforeunload', setUserOffline);
 
-      // Start the game by redirecting to game board
-      document.getElementById('message').innerText = `Game started! ${currentUser.displayName} (X) vs ${opponent.username} (O)`;
-      setupGame();
-    }
+        // Handle Firebase Authentication (Sign-in & Sign-out)
+        function signInWithEmailPassword(email, password) {
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => console.error(error));
+        }
 
-    // Set up the game (board UI)
-    function setupGame() {
-      const boardElement = document.getElementById('board');
-      const board = Array(9).fill(null);
-
-      function createCell(index) {
-        const cell = document.createElement('div');
-        cell.classList.add('cell');
-        cell.dataset.index = index;
-        cell.addEventListener('click', () => makeMove(index));
-        return cell;
-      }
-
-      for (let i = 0; i < 9; i++) {
-        boardElement.appendChild(createCell(i));
-      }
-    }
-
-    // Make a move (game logic can be added here)
-    function makeMove(index) {
-      // Add move logic here
-    }
-  </script>
+        function signOutUser() {
+            auth.signOut()
+                .then(() => {
+                    console.log('User signed out');
+                    statusElement.innerText = 'Please log in to connect.';
+                    connectNowButton.style.display = 'none';
+                });
+        }
+    </script>
 </body>
 </html>
