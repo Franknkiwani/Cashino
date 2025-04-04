@@ -1,204 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cyberpunk Tic-Tac-Toe</title>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <style>
-    body {
-      background: #1a1a1a;
-      font-family: 'Press Start 2P', cursive;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      flex-direction: column;
-    }
-
-    .game-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 5px;
-    }
-
-    .cell {
-      width: 100px;
-      height: 100px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid #00ff00;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 32px;
-      font-weight: bold;
-      color: #00ff00;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .cell:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    .cell.x {
-      color: #ff00ff;
-    }
-
-    .cell.o {
-      color: #00bfff;
-    }
-
-    .connect-btn {
-      background: #ff00ff;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      margin-top: 20px;
-      transition: background 0.3s ease;
-    }
-
-    .connect-btn:hover {
-      background: #ff66ff;
-    }
-
-    .countdown {
-      font-size: 24px;
-      color: #ff00ff;
-    }
-
-    .loading {
-      color: #ff66ff;
-      font-size: 18px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #f39c12;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 10px;
+            margin: 20px auto;
+            justify-content: center;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #34495e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .cell:hover {
+            background-color: #16a085;
+        }
+        .status {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+        .status span {
+            color: #e74c3c;
+        }
+        .connect-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #f39c12;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+        }
+        .connect-btn:disabled {
+            background-color: #7f8c8d;
+        }
+    </style>
 </head>
 <body>
-  <div class="game-container">
-    <h1>Tic-Tac-Toe - Cyberpunk Style</h1>
-    <div id="countdown" class="countdown"></div>
-    <div class="grid" id="gameGrid">
-      <!-- 9 cells will go here -->
-    </div>
-    <button id="connectBtn" class="connect-btn">Connect Now</button>
-    <div id="loading" class="loading" style="display: none;">Searching for players...</div>
-  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    <h1>Tic Tac Toe</h1>
+    <button class="connect-btn" id="connectBtn">Connect Now</button>
+    <div class="status" id="status">Waiting for player...</div>
     
-    // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+    <div class="board" id="board" style="display: none;">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    <script type="module">
+  // Import the functions you need from Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+  import { getDatabase, ref, set, get, update, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    let gameStarted = false;
-    let currentPlayer = null;
-    let countdownTimer;
-    let countdownSeconds = 10;
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    // Set up game grid
-    const gameGrid = document.getElementById('gameGrid');
-    for (let i = 0; i < 9; i++) {
-      const cell = document.createElement('div');
-      cell.classList.add('cell');
-      cell.setAttribute('data-index', i);
-      cell.addEventListener('click', handleCellClick);
-      gameGrid.appendChild(cell);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  // Initialize Firebase Auth and Realtime Database
+  const auth = getAuth();
+  const db = getDatabase();
+
+  // Function to sign in the user anonymously (if needed)
+  async function signInUser() {
+    try {
+      const userCredential = await signInAnonymously(auth);
+      const user = userCredential.user;
+      console.log('User signed in:', user.uid);
+      return user.uid;
+    } catch (error) {
+      console.error('Error signing in user:', error);
     }
+  }
 
-    const connectBtn = document.getElementById('connectBtn');
-    const countdownDisplay = document.getElementById('countdown');
-    const loadingDisplay = document.getElementById('loading');
+  // Function to add a player to the queue
+  async function addPlayerToQueue() {
+    const userId = await signInUser();
+    const batchRef = ref(db, 'playersQueue/batch_1');
 
-    connectBtn.addEventListener('click', () => {
-      connectBtn.disabled = true;
-      loadingDisplay.style.display = 'block';
-      countdownDisplay.innerText = `Searching for players... ${countdownSeconds}s`;
-      startCountdown();
+    set(ref(batchRef, userId), {
+      status: 'waiting',
+      id: userId
+    }).then(() => {
+      console.log('Player added to queue');
+      checkBatchForMatch(userId);
     });
+  }
 
-    function startCountdown() {
-      countdownTimer = setInterval(() => {
-        countdownSeconds--;
-        countdownDisplay.innerText = `Searching for players... ${countdownSeconds}s`;
-        if (countdownSeconds === 0) {
-          clearInterval(countdownTimer);
-          connectPlayers();
+  // Function to check if there's a match for the player
+  function checkBatchForMatch(userId) {
+    const batchRef = ref(db, 'playersQueue/batch_1');
+    
+    get(batchRef).then((snapshot) => {
+      const players = snapshot.val();
+      const waitingPlayers = [];
+
+      for (const id in players) {
+        if (players[id].status === 'waiting' && id !== userId) {
+          waitingPlayers.push(id);
         }
-      }, 1000);
-    }
+      }
 
-    function connectPlayers() {
-      const playersRef = ref(db, 'players');
-      const playerId = Math.random().toString(36).substring(2); // Simple unique ID
-      set(ref(db, `players/${playerId}`), { searching: true }).then(() => {
-        checkForOpponent(playerId);
-      });
-    }
+      if (waitingPlayers.length >= 1) {
+        const opponentId = waitingPlayers[0];
+        const playerSymbol = Math.random() > 0.5 ? 'X' : 'O';
+        const opponentSymbol = playerSymbol === 'X' ? 'O' : 'X';
+        const gameId = Math.random().toString(36).substring(2);
 
-    function checkForOpponent(playerId) {
-      const playersRef = ref(db, 'players');
-      onValue(playersRef, (snapshot) => {
-        const players = snapshot.val();
-        let opponent = null;
-        for (const id in players) {
-          if (id !== playerId && players[id].searching) {
-            opponent = id;
-            break;
-          }
-        }
+        // Create a new game in the database
+        const gameRef = ref(db, 'games/' + gameId);
+        set(gameRef, {
+          player1Id: userId,
+          player2Id: opponentId,
+          symbol1: playerSymbol,
+          symbol2: opponentSymbol,
+          board: ["", "", "", "", "", "", "", "", ""], // Empty board
+          currentTurn: userId,
+          status: 'inProgress'
+        }).then(() => {
+          console.log('Game started');
+          updatePlayerStatus(userId, opponentId);
+        });
+      } else {
+        console.log('No opponent found, retrying...');
+        setTimeout(() => checkBatchForMatch(userId), 1000); // Keep checking for another player
+      }
+    });
+  }
 
-        if (opponent) {
-          currentPlayer = Math.random() > 0.5 ? 'X' : 'O';
-          set(ref(db, `players/${playerId}`), { searching: false, symbol: currentPlayer });
-          set(ref(db, `players/${opponent}`), { searching: false, symbol: currentPlayer === 'X' ? 'O' : 'X' });
-          startGame(playerId, opponent);
-        }
-      });
-    }
+  // Update player status to 'playing'
+  function updatePlayerStatus(userId, opponentId) {
+    const batchRef = ref(db, 'playersQueue/batch_1');
+    update(ref(batchRef, userId), { status: 'playing' });
+    update(ref(batchRef, opponentId), { status: 'playing' });
+  }
 
-    function startGame(player1Id, player2Id) {
-      loadingDisplay.style.display = 'none';
-      gameStarted = true;
-      currentPlayer = player1Id;
+  // Call the function to add the player to the queue and start searching for an opponent
+  addPlayerToQueue();
 
-      console.log('Game Started');
-      // Update the game logic here to let players take turns
-    }
-
-    function handleCellClick(event) {
-      if (!gameStarted) return;
-      const cell = event.target;
-      if (cell.innerText !== '') return;
-      cell.innerText = currentPlayer;
-      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-      // Check for win condition and update Firebase database
-    }
-  </script>
+</script>
 </body>
 </html>
