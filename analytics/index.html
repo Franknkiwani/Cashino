@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SoloShopper Analytics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      background: linear-gradient(145deg, #e8ecf3, #fdfdff);
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 2rem;
+      padding: 2rem;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    .count {
+      font-size: 3rem;
+      font-weight: bold;
+      margin: 0.5rem 0;
+    }
+
+    .label {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    .divider {
+      height: 1px;
+      width: 80%;
+      background: #ccc;
+      margin: 1.5rem auto;
+      opacity: 0.4;
+    }
+
+    .success { color: #3cb371; }
+    .fail { color: #e74c3c; }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #121212;
+        color: #fff;
+      }
+      .card {
+        background: rgba(30, 30, 30, 0.6);
+        color: white;
+      }
+      .label { color: #bbb; }
+      .divider { background: #555; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1> SoloShopper </h1>
+  <div class="card">
+    <div class="label">✅ Successful Visits (Germany)</div>
+    <div class="count success" id="successful">0</div>
+
+    <div class="divider"></div>
+
+    <div class="label">❌ Failed Visits (Others)</div>
+    <div class="count fail" id="failed">0</div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const successfulEl = document.getElementById('successful');
+    const failedEl = document.getElementById('failed');
+
+    db.ref('soloshoppervisits/successful').on('value', snap => {
+      successfulEl.textContent = snap.val() || 0;
+    });
+
+    db.ref('soloshoppervisits/failed').on('value', snap => {
+      failedEl.textContent = snap.val() || 0;
+    });
+  </script>
+
+</body>
+</html>
