@@ -444,6 +444,61 @@
 <script type="text/javascript" src="//www.highperformanceformat.com/2a9930a498db1f8096726619a2fe13ff/invoke.js"></script>
   </div>
 </div>
+  <!-- Firebase App SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    async function checkAndTrackVisitor() {
+      const status = document.getElementById('status');
+
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        const country = data?.country_name || 'Unknown';
+
+        const isGerman = country === 'Germany';
+        const path = `soloshoppervisits/${isGerman ? 'successful' : 'failed'}`;
+
+        const counterRef = db.ref(path);
+        counterRef.transaction(current => (current || 0) + 1);
+
+        if (isGerman) {
+          status.textContent = `✅ You're from ${country}. Counted as a successful visit.`;
+        } else {
+          status.textContent = `❌ You're from ${country}. Counted as a failed visit.`;
+        }
+
+        console.log(`Country: ${country} → ${isGerman ? '✅ Success' : '❌ Fail'}`);
+
+      } catch (err) {
+        // Count as failed if country check fails
+        const failRef = db.ref('soloshoppervisits/failed');
+        failRef.transaction(current => (current || 0) + 1);
+
+        status.textContent = `⚠️ Country unknown. Counted as a failed visit.`;
+        console.warn("Country detection failed. Counted as failed.");
+      }
+    }
+
+    checkAndTrackVisitor();
+  </script>
 <script>
   async function checkCountry() {
     try {
