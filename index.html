@@ -449,9 +449,7 @@
 <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
 
 <script>
-  // Wait until Firebase scripts are fully loaded and DOM is ready
   document.addEventListener("DOMContentLoaded", () => {
-    // ✅ Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -459,33 +457,50 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    // ✅ Init Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // ✅ Only run if not already counted this session
-    if (!sessionStorage.getItem("countryCounted")) {
-      fetch('https://ipapi.co/json/')
-        .then(res => res.json())
-        .then(data => {
-          const country = data?.country_name || 'Unknown';
-          const isGermany = country === 'Germany';
-          const path = `soloshoppervisits/${isGermany ? 'successful' : 'failed'}`;
-          db.ref(path).transaction(current => (current || 0) + 1);
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => {
+        const ip = data.ip || "Unknown";
+        const countryRaw = data.country_name || "Unknown";
+        const countryCode = data.country || "??";
+        const isGerman = countryRaw.toLowerCase().includes("germany");
+        const time = new Date().toISOString();
 
-          console.log(`Country: ${country} → ${isGermany ? '✅ Success' : '❌ Fail'}`);
-          sessionStorage.setItem("countryCounted", "true"); // prevent re-count on reload
-        })
-        .catch(() => {
-          db.ref('soloshoppervisits/failed').transaction(current => (current || 0) + 1);
-          console.warn("⚠️ IP lookup failed → Counted as failed.");
-          sessionStorage.setItem("countryCounted", "true");
+        // Count path (success or failed)
+        const countPath = `soloshoppervisits/${isGerman ? "successful" : "failed"}`;
+        db.ref(countPath).transaction(current => (current || 0) + 1);
+
+        // Log full visit details
+        const logRef = db.ref("soloshoppervisits/logs").push();
+        logRef.set({
+          ip: ip,
+          country: countryRaw,
+          code: countryCode,
+          isGerman: isGerman,
+          timestamp: time
         });
-    }
+
+        console.log(`🟢 Visit logged: ${ip} from ${countryRaw} (${countryCode}) at ${time}`);
+      })
+      .catch(err => {
+        const time = new Date().toISOString();
+        db.ref("soloshoppervisits/failed").transaction(current => (current || 0) + 1);
+        db.ref("soloshoppervisits/logs").push().set({
+          ip: "Unknown",
+          country: "Unknown",
+          code: "??",
+          isGerman: false,
+          timestamp: time,
+          error: String(err)
+        });
+        console.warn("⚠️ Visit logged as failed (error getting country).", err);
+      });
   });
 </script>
 <script>
