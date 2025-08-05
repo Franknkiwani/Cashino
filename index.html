@@ -444,12 +444,14 @@
 <script type="text/javascript" src="//www.highperformanceformat.com/2a9930a498db1f8096726619a2fe13ff/invoke.js"></script>
   </div>
 </div>
-  <!-- Firebase App SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+<!-- Firebase App SDK -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
 
-  <script>
-    // Your Firebase config
+<script>
+  // Wait until Firebase scripts are fully loaded and DOM is ready
+  document.addEventListener("DOMContentLoaded", () => {
+    // ✅ Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -461,44 +463,31 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    // Initialize Firebase
+    // ✅ Init Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    async function checkAndTrackVisitor() {
-      const status = document.getElementById('status');
+    // ✅ Only run if not already counted this session
+    if (!sessionStorage.getItem("countryCounted")) {
+      fetch('https://ipapi.co/json/')
+        .then(res => res.json())
+        .then(data => {
+          const country = data?.country_name || 'Unknown';
+          const isGermany = country === 'Germany';
+          const path = `soloshoppervisits/${isGermany ? 'successful' : 'failed'}`;
+          db.ref(path).transaction(current => (current || 0) + 1);
 
-      try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        const country = data?.country_name || 'Unknown';
-
-        const isGerman = country === 'Germany';
-        const path = `soloshoppervisits/${isGerman ? 'successful' : 'failed'}`;
-
-        const counterRef = db.ref(path);
-        counterRef.transaction(current => (current || 0) + 1);
-
-        if (isGerman) {
-          status.textContent = `✅ You're from ${country}. Counted as a successful visit.`;
-        } else {
-          status.textContent = `❌ You're from ${country}. Counted as a failed visit.`;
-        }
-
-        console.log(`Country: ${country} → ${isGerman ? '✅ Success' : '❌ Fail'}`);
-
-      } catch (err) {
-        // Count as failed if country check fails
-        const failRef = db.ref('soloshoppervisits/failed');
-        failRef.transaction(current => (current || 0) + 1);
-
-        status.textContent = `⚠️ Country unknown. Counted as a failed visit.`;
-        console.warn("Country detection failed. Counted as failed.");
-      }
+          console.log(`Country: ${country} → ${isGermany ? '✅ Success' : '❌ Fail'}`);
+          sessionStorage.setItem("countryCounted", "true"); // prevent re-count on reload
+        })
+        .catch(() => {
+          db.ref('soloshoppervisits/failed').transaction(current => (current || 0) + 1);
+          console.warn("⚠️ IP lookup failed → Counted as failed.");
+          sessionStorage.setItem("countryCounted", "true");
+        });
     }
-
-    checkAndTrackVisitor();
-  </script>
+  });
+</script>
 <script>
   async function checkCountry() {
     try {
